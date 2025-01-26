@@ -13,6 +13,8 @@
       devShells."x86_64-linux".default = pkgs.mkShell {
         packages = [
           pkgs.bun
+          pkgs.nodePackages.eslint
+          pkgs.vscode-langservers-extracted
         ];
       };
     };

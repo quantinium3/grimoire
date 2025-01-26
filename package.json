@@ -2,9 +2,9 @@
   "name": "grimoire",
   "version": "0.1.0",
   "description": "static site generator for markdown notes",
-  "main": "src/index.js",
+  "main": "src/index.ts",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "bun run src/index.ts"
   },
   "repository": {
     "type": "git",
@@ -17,17 +17,22 @@
   },
   "homepage": "https://github.com/quantinium03/grimoire#readme",
   "devDependencies": {
+    "@eslint/js": "^9.19.0",
+    "@types/bun": "^1.2.0",
     "@types/fs-extra": "^11.0.4",
     "@types/globby": "^9.1.0",
     "@types/node": "^22.10.10",
     "chokidar": "^4.0.3",
+    "eslint": "^9.19.0",
     "fs-extra": "^11.3.0",
+    "globals": "^15.14.0",
     "globby": "^14.0.2",
     "gray-matter": "^4.0.3",
     "handlebars": "^4.7.8",
     "remark-html": "^16.0.1",
     "remark-parse": "^11.0.0",
     "typescript": "^5.7.3",
+    "typescript-eslint": "^8.21.0",
     "unified": "^11.0.5"
   }
 }
