@@ -1,0 +1,33 @@
+{
+  "name": "grimoire",
+  "version": "0.1.0",
+  "description": "static site generator for markdown notes",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/quantinium03/grimoire.git"
+  },
+  "author": "quantinium03",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/quantinium03/grimoire/issues"
+  },
+  "homepage": "https://github.com/quantinium03/grimoire#readme",
+  "devDependencies": {
+    "@types/fs-extra": "^11.0.4",
+    "@types/globby": "^9.1.0",
+    "@types/node": "^22.10.10",
+    "chokidar": "^4.0.3",
+    "fs-extra": "^11.3.0",
+    "globby": "^14.0.2",
+    "gray-matter": "^4.0.3",
+    "handlebars": "^4.7.8",
+    "remark-html": "^16.0.1",
+    "remark-parse": "^11.0.0",
+    "typescript": "^5.7.3",
+    "unified": "^11.0.5"
+  }
+}
