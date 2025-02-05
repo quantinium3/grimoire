@@ -3,8 +3,6 @@ title: Note 2
 ---
 # Note 2
 
-This is the second note. It links back to [[Note 1]] and forward to [[Note 3]].
-
 ---
 
 ## Features of Note 2
@@ -19,6 +17,3 @@ This is the second note. It links back to [[Note 1]] and forward to [[Note 3]].
 
 ### Related Links
 
-- [[Home]]
-- [[Note-3]]
-- [[Note-3]]

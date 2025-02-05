@@ -13,29 +13,19 @@ const getAllMarkdownFiles = async (inputPath: string) => {
     return paths;
 };
 
-const replaceInternalLinks = async (content: string, currentDir: string) => {
-    const internalLinkRegex = /\[\[([^\]]+)\]\]/g;
-    content.replace(internalLinkRegex, async (match, pageName: string) => {
-        console.log(pageName + '.md');
-        console.log(currentDir)
-        const file = await globby(encodeURIComponent(pageName), { cwd: currentDir })
-        console.log(file)
-    })
-    return content;
-}
-
 const main = async (): Promise<void> => {
     const paths: string[] = await getAllMarkdownFiles('content/**/*.md');
+    const PathBasenameMap: Map<string, string> = new Map();
+
+    paths.map((pathName) => {
+        PathBasenameMap.set(path.basename(pathName), pathName.replace('content/', ''));
+    })
+    console.log(PathBasenameMap)
 
     await Promise.all(
         paths.map(async (filepath: string) => {
             const fileContent = await fs.readFile(filepath, 'utf-8');
             const { content, data } = matter(fileContent);
-
-            console.log("currentdir : ",filepath)
-            const currentDir = path.dirname(filepath).replace('content/', '');
-            console.log("currentdir : ",currentDir)
-            const proccessedContent = replaceInternalLinks(content, currentDir);
 
             const htmlContent = await unified()
                 .use(markdown)
@@ -44,7 +34,7 @@ const main = async (): Promise<void> => {
 
             const outputPath = path.join(
                 'dist',
-                filepath.replace('content/', '').replace('.md', '.html')
+                filepath.replace('content/', '').replace('.md', '.html').replace(/ /g, '-')
             );
 
             const template = Handlebars.compile(

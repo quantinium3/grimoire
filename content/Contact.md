@@ -13,8 +13,3 @@ Feel free to reach out!
 - **GitHub**: [My GitHub Profile](https://github.com)
 
 ---
-
-### Related Links
-
-- [[Home]]
-- [[About]]

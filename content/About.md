@@ -6,7 +6,6 @@ title: About
 This site is a demo for a static site generator. It includes:
 
 - **Markdown Support**: All standard Markdown features.
-- **Internal Links**: Wiki-style links like `[[Note 1]]`.
 - **Code Highlighting**: Syntax highlighting for code blocks.
 
 ---
@@ -17,10 +16,3 @@ This site is a demo for a static site generator. It includes:
 - [GitHub](https://github.com)
 
 ---
-
-### Related Links
-
-- [[Home]]
-- [[Note-1]]
-- [[Note-2]]
-- [[Note-3]]
