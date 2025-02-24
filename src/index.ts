@@ -1,65 +1,56 @@
-import { globby } from 'globby';
+import { readFile, writeFile } from "fs/promises";
+import Handlebars from "handlebars";
+import path from "path";
 import matter from 'gray-matter';
 import { unified } from 'unified';
 import markdown from 'remark-parse';
 import html from 'remark-html';
-import path from 'path';
-import Handlebars from 'handlebars';
-import { promises as fs } from 'fs';
-import fse from 'fs-extra';
+import navbarData from "../grimoire.config.json";
 
-const getAllMarkdownFiles = async (inputPath: string) => {
-    const paths = await globby(inputPath);
-    return paths;
-};
+Handlebars.registerHelper('replaceExtension', function (path: string) {
+    return path.replace(/\.md$/, '.html');
+});
 
-const main = async (): Promise<void> => {
-    const paths: string[] = await getAllMarkdownFiles('content/**/*.md');
-    const PathBasenameMap: Map<string, string> = new Map();
+const main = async () => {
+    await compileLayout();
+}
 
-    paths.map((pathName) => {
-        PathBasenameMap.set(path.basename(pathName), pathName.replace('content/', ''));
-    })
-    console.log(PathBasenameMap)
+const compileLayout = async () => {
+    try {
+        const [navbarTemplate, pageTemplate, layoutTemplate] = await Promise.all([
+            readFile("./templates/navbar.hbs", "utf-8"),
+            readFile("./templates/page.hbs", "utf-8"),
+            readFile("./templates/layout.hbs", "utf-8")
+        ]);
 
-    await Promise.all(
-        paths.map(async (filepath: string) => {
-            const fileContent = await fs.readFile(filepath, 'utf-8');
-            const { content, data } = matter(fileContent);
+        const targetPage = navbarData.navbar.find((page) => page.path === "index.md");
+        if (!targetPage) {
+            console.error(`Markdown file "index.md" not found in navbar.json`);
+            return;
+        }
 
-            const htmlContent = await unified()
-                .use(markdown)
-                .use(html, { sanitize: false })
-                .process(content);
+        const navbarCompiled = Handlebars.compile(navbarTemplate);
+        const navbarHTML = navbarCompiled(navbarData);
 
-            const outputPath = path.join(
-                'dist',
-                filepath.replace('content/', '').replace('.md', '.html').replace(/ /g, '-')
-            );
+        Handlebars.registerPartial("navbar", navbarHTML);
 
-            const template = Handlebars.compile(
-                await fs.readFile('templates/base.hbs', 'utf-8')
-            );
+        const mdFilePath = path.join("./content", "index.md");
+        const mdContent = await readFile(mdFilePath, "utf-8");
+        const { content, data: frontmatter } = matter(mdContent);
+        const htmlContent = await unified().use(markdown).use(html).process(content);
 
-            const outPutHtml = template({
-                ...data,
-                content: htmlContent.toString(),
-            });
+        const pageCompiled = Handlebars.compile(pageTemplate);
+        const finalHTML = pageCompiled({ title: targetPage.name, frontmatter, content: htmlContent.toString() });
 
-            await fs.mkdir(path.dirname(outputPath), { recursive: true });
-            await fs.writeFile(outputPath, outPutHtml);
-        })
-    );
+        const layoutCompiled = Handlebars.compile(layoutTemplate);
+        const outputHTML = layoutCompiled({ title: targetPage.name, content: finalHTML });
 
-    await fse.copy('content/assets', 'dist/assets');
-    await fse.copy('public', 'dist');
+        const outputPath = path.join("dist", targetPage.path.replace('.md', '.html'));
+        await writeFile(outputPath, outputHTML, "utf-8");
+        console.log(`Generated: ${outputPath}`);
+    } catch (error) {
+        console.error("Error compiling layout:", error);
+    }
+}
 
-    console.log('Site built successfully!');
-};
-
-(async () => {
-    await main().catch((err) => {
-        console.error('Failed to build the site:', err.stack || err);
-        process.exit(1);
-    });
-})();
+await main();

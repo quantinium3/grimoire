@@ -1,0 +1,19 @@
+{
+    "navbar": [
+        {
+            "type": "file",
+            "name": "Home",
+            "path": "index.md"
+        },
+        {
+            "type": "file",
+            "name": "Resources",
+            "path": "resource.md"
+        }.
+        {
+            "type": "dir",
+            "name": "Blog",
+            "path": "index.md"
+        }
+    ]
+}

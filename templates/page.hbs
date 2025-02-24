@@ -1,0 +1,21 @@
+<article>
+    {{#if title}}
+        <h1>{{title}}</h1>
+    {{/if}}
+    
+    {{#if frontmatter}}
+        <div class="frontmatter">
+            {{#if frontmatter.date}}
+                <p class="date">Published: {{frontmatter.date}}</p>
+            {{/if}}
+            {{#if frontmatter.author}}
+                <p class="author">By: {{frontmatter.author}}</p>
+            {{/if}}
+        </div>
+    {{/if}}
+    
+    <div class="content">
+        {{{content}}}
+    </div>
+</article>
+
