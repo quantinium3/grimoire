@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>On getting started with Category Theory</title>
+    <style>
+        /* Basic styling */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        .navbar {
+            background: #333;
+            padding: 1rem;
+        }
+        .navbar ul {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            gap: 1rem;
+        }
+        .navbar a {
+            color: white;
+            text-decoration: none;
+        }
+        .navbar a.active {
+            font-weight: bold;
+            border-bottom: 2px solid white;
+        }
+        .content {
+            padding: 2rem;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body>
+    <ul class="navbar">
+        <a href="index.html">Home</a>
+        <a href="ML_Resource.html">ML Resources</a>
+        <a href="CS_Resource.html">CS Resources</a>
+        <a href="blog">Blog</a>
+    </ul>
+    <main class="content">
+        <article>
+        <h1>On getting started with Category Theory</h1>
+    
+        <div class="frontmatter">
+                <p class="date">Published: 10 Dec, 2024</p>
+        </div>
+    
+    <div class="content">
+        <h1>Category Theory: An Addictive and Powerful Mental Model</h1>
+<h2>Intro</h2>
+<p>Category Theory looked scary when I first encountered it - a world of obscure nomenclature like endofunctors and Yoneda Lemma. Something that seemed reserved for the nerdiest programming language theorists, hardcore Haskellers, and near-schizophrenic mathematicians.</p>
+<p>Earlier this year, I spent a couple of hours watching YouTube videos on it just so I could go from 0 ("I have no idea what it is but I have heard the name") to 0.1 ("I still have no idea what it actually is, but I have a general idea of the main concepts") and double-check my intuitions. What I found is a very addictive, immensely powerful mental model that applies to countless things both in CS but also in nearly everything else. It's also fundamentally very fun to think about and do. I feel like mathematicians and computer scientists alike fall into it like a curious-minded kid falls into redstones and Minecraft modding.</p>
+<p>Around a month ago, I finally decided to commit and jump right in, my interest having been piqued by the first video linked below. Since then, I have accumulated many a talk, paper, and book, and I wanted to have a place to stash it all, and so here we are.</p>
+<p>You can skip ahead if you're only interested in the resources.</p>
+<h2>Why It Grabbed Me</h2>
+<p>For me, Category Theory has been one of these things where, once you learn about it, you can literally see it everywhere. Everything starts looking like morphisms between objects and functors between categories. I have found the overwhelming majority of the ideas in it to be truly, deeply intuitive. It's still a work in progress to have a real sense of how immensely powerful they are, and my definition of the "essence of category theory" is still getting new shades every week.</p>
+<p>Overall, it did help me sink in two immensely important things, that were previously only intuitions: the power of abstraction and composition.</p>
+<p>I have started writing a lot more about abstraction and the expressive powers it enables to try and synthesize my thoughts. There are also some markdown with vague scribbles on composition and how fundamentally important it is. Lately, I have been trying to also collect my thoughts on the why and what it is that I truly find attractive and useful as a mental model of things about Category Theory and give meaningful examples by looking at the troves of FP concepts that have appeared since the 2010s in non-FP languages like Java, C++, JS, Python, and with entire languages like Rust.</p>
+<p>There's lots more to say about how research in that field has poured into FP and then into OOP &#x26; imperative languages, how come it is so, and there are many more examples to give around: frontend frameworks, the growth in popularity of declarative languages, or even in the complexity of distributed systems (etc...) and how all of these being are either influenced or can be interpreted in category theoretic ways.</p>
+<p>However, I am no Gwern, and I intend to move off this bearblog ASAP and to my soon-to-be-ready forever home on the internet.</p>
+<h2>Resources</h2>
+<h3>YouTube Intros / One-offs</h3>
+<ul>
+<li><strong>A Crash Course in Category Theory</strong> - Bartosz Milewski<br>
+If you were to watch only one video, it should be the first 22 minutes of this one. If you are not deeply intrigued by these first 22 minutes, maybe it isn't time for your category theory arc just yet.</li>
+<li><strong>What Did Category Theory Ever Do for Us (Functional Programmers)</strong><br>
+Incredible pragmatic, down-to-business view of category theory from a FP programmer's perspective.</li>
+<li><strong>Category Theory, The Essence of Interface-Based Design</strong> - Erik Meijer<br>
+An incredible talk that gets a bit more into the weeds but remains a very pragmatic look at how category theory helps API and interface design.</li>
+<li><strong>"Categories for the Working Hacker"</strong> by Philip Wadler</li>
+<li><strong>Category Theory</strong> by Tom LaGatta<br>
+<a href="https://x.com/ludwigABAP/status/1862284994124648892">Link</a></li>
+<li><strong>Applied Category Theory</strong><br>
+Just a fun look at some applied category theory for curiosity's and rabbit holes' sake.</li>
+</ul>
+<h3>Lectures</h3>
+<ul>
+<li><strong>Programming with Categories - Lecture 0</strong><br>
+This is by far the single best series.</li>
+<li><strong>The Language of Categories | Category Theory and Why We Care 1.1</strong><br>
+A very soft &#x26; light intro series to category theory, with plenty of analogies, animations, etc.</li>
+</ul>
+<h3>Books</h3>
+<ul>
+<li><strong>Category Theory for Programmers</strong> - Bartosz Milewski<br>
+The best introduction book, to accompany or lead the YouTube series from Bartosz himself linked above. Clear language with lots of analogies and a pragmatic programming-oriented approach to examples. Difficulty: 1/3</li>
+<li><strong>Category Theory for Scientists</strong> - David I. Spivak<br>
+Features the now-famous relational database schemas example. It is, to me, the second nicest book on Category Theory, in that it was the second most easily digestible one and served (and still serves) as a great introduction to it. Difficulty: 1+/3</li>
+<li><strong>An Introduction to Category Theory</strong> - Harold Simmons<br>
+Accompanied by <em>An Introduction to Category Theory (The Solutions)</em> from the same author, it is a rigorous, formal, and straight-to-business introduction to category theory. Difficulty: 2/3</li>
+</ul>
+<p>The following books, unlike the ones above, I have either not fully gone through or only use to get different verbiage around concepts I am struggling with:</p>
+<ul>
+<li><strong>Basic Category Theory</strong> - Tom Leinster<br>
+<a href="https://arxiv.org/pdf/1612.09375">PDF</a><br>
+Heavy, formal, full of signal. Difficulty: 2+/3</li>
+<li><strong>Categories for the Working Mathematician</strong> - Saunders Mac Lane<br>
+Also heavy, formal, full of signal. Difficulty: 2+/3</li>
+</ul>
+<p>These ones I am eager to get started with and have, in an act of pure greed, already flicked through and read some parts of:</p>
+<ul>
+<li><strong>An Invitation to Applied Category Theory (Seven Sketches in Compositionality)</strong> - Brendan Fong, David I. Spivak</li>
+<li><strong>Category Theory for Computer Scientists</strong> - Benjamin C. Pierce</li>
+</ul>
+<h3>Random Papers</h3>
+<h4>On Databases x Category Theory:</h4>
+<ul>
+<li><strong>Exploring Category-Theoretic Approaches to Databases</strong></li>
+<li><strong>Categorical Databases</strong></li>
+<li><strong>Exploring Category-Theoretic Approaches to Databases</strong></li>
+</ul>
+<h4>On ML:</h4>
+<ul>
+<li><strong>Towards a Categorical Foundation of Deep Learning: A Survey</strong><br>
+This one was linked to me on X! I have barely started reading it but shall devour it soon.</li>
+<li><strong>Robust Diagrams for Deep Learning Architectures: Applications and Theory</strong><br>
+This one is incredibly long but fascinating, although somewhat tangential. I actually saw these diagrams often on my TL but could barely read them and had no idea they were influenced by Category Theory.</li>
+<li><strong>Backprop as Functor: A Compositional Perspective on Supervised Learning</strong><br>
+Incredibly interesting look at backpropagation as a monoidal functor.</li>
+<li><strong>Fundamental Components of Deep Learning: A Category-Theoretic Approach</strong><br>
+Haven't started reading it yet!</li>
+</ul>
+
+    </div>
+</article>
+
+
+    </main>
+</body>
+</html>
