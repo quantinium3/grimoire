@@ -19,6 +19,11 @@
             "type": "directory",
             "name": "Blog",
             "path": "blog"
+        },
+        {
+            "type": "directory",
+            "name": "Daily",
+            "path": "daily"
         }
     ]
 }
