@@ -1,5 +1,5 @@
 ---
-title: "My Page"
+title: "Home"
 author: "John Doe"
 ---
 swe at [redacted] -- currently building large-scale distributed systems
