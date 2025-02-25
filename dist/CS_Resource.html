@@ -1,42 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CS Resources</title>
-    <style>
-        /* Basic styling */
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-        }
-        .navbar {
-            background: #333;
-            padding: 1rem;
-        }
-        .navbar ul {
-            list-style: none;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            gap: 1rem;
-        }
-        .navbar a {
-            color: white;
-            text-decoration: none;
-        }
-        .navbar a.active {
-            font-weight: bold;
-            border-bottom: 2px solid white;
-        }
-        .content {
-            padding: 2rem;
-            max-width: 800px;
-            margin: 0 auto;
-        }
-    </style>
+    <link rel="stylesheet" href="assets/styles.css">
 </head>
+
 <body>
     <ul class="navbar">
         <a href="/index.html">Home</a>
@@ -47,55 +18,65 @@
     </ul>
     <main class="content">
         <article>
-        <h1>CS Resources</h1>
-    
-        <div class="frontmatter">
-                <p class="author">By: John Doe</p>
-        </div>
-    
-    <div class="content">
-        <h1>Recommended Resources for Learning Computers and Programming</h1>
-<h2>You Want to Learn How Computers Work</h2>
-<ul>
-<li><strong>"The Elements of Computing Systems: Building a Modern Computer from First Principles"</strong> by Noam Nisan, Shimon Schocken</li>
-<li><strong>"Code: The Hidden Language of Computer Hardware and Software"</strong> by Charles Petzold</li>
-<li><strong>"Computer Systems: A Programmer's Perspective"</strong> by Randal Bryant, David O'Hallaron</li>
-</ul>
-<h2>You Want to Learn How Computers and Programming Languages Intersect</h2>
-<ul>
-<li><strong>"Crafting Interpreters"</strong> by Robert Nystrom</li>
-<li><strong>"Structure and Interpretation of Computer Programs"</strong></li>
-<li><strong>"An Introduction to Assembly Programming with RISC-V"</strong> by Edson Borin</li>
-</ul>
-<h2>You Want to Read the Classics</h2>
-<ul>
-<li><strong>"The C Programming Language"</strong> by Dennis Ritchie, Brian Kernighan</li>
-<li><strong>"The Art of Computer Programming"</strong>, volumes 1 and 4B by Donald Knuth</li>
-<li><strong>"A Discipline of Programming"</strong> by Edsger W. Dijkstra</li>
-<li><strong>"Hackers Delight"</strong> by Henry S. Warren, Jr.</li>
-<li><strong>"Optimizing Compilers for Modern Architectures"</strong> by Randy Allen, Ken Kennedy</li>
-</ul>
-<h2>You Want to Learn Math Through Your Programmer's Lens</h2>
-<ul>
-<li><strong>"A Programmer's Introduction to Mathematics"</strong> by Jeremy Kun</li>
-</ul>
-<h2>You Want to Program with GPUs</h2>
-<ul>
-<li><strong>"Programming Massively Parallel Processors: A Hands-on Approach"</strong> by David Kirk, Wen-mei Hwu</li>
-</ul>
-<h2>Tips</h2>
-<ul>
-<li><strong>Do the exercises!</strong> Don't just read.</li>
-<li><strong>Learning to code is done by coding.</strong> Build terminal applications, build simple HTTP servers, build tools you might want to use. Nothing is too complicated.</li>
-<li><strong>Study the fundamentals.</strong> Data structures, algorithms. Networking. How does memory work? What happens when you type <code>google.com</code> in your search bar?</li>
-<li><strong>Look underneath software you use.</strong> A lot of software is open-source. Consume a lot of code. Be curious.</li>
-<li><strong>If you have a specific career path and/or just want to enter the job market</strong> — you can DM or @ me on X.</li>
-</ul>
+            <h1>CS Resources</h1>
 
-    </div>
-</article>
+            <div class="frontmatter">
+                <p class="author">By: John Doe</p>
+            </div>
+
+            <div class="content">
+                <h1>Recommended Resources for Learning Computers and Programming</h1>
+                <h2>You Want to Learn How Computers Work</h2>
+                <ul>
+                    <li><strong>"The Elements of Computing Systems: Building a Modern Computer from First
+                            Principles"</strong> by Noam Nisan, Shimon Schocken</li>
+                    <li><strong>"Code: The Hidden Language of Computer Hardware and Software"</strong> by Charles
+                        Petzold</li>
+                    <li><strong>"Computer Systems: A Programmer's Perspective"</strong> by Randal Bryant, David
+                        O'Hallaron</li>
+                </ul>
+                <h2>You Want to Learn How Computers and Programming Languages Intersect</h2>
+                <ul>
+                    <li><strong>"Crafting Interpreters"</strong> by Robert Nystrom</li>
+                    <li><strong>"Structure and Interpretation of Computer Programs"</strong></li>
+                    <li><strong>"An Introduction to Assembly Programming with RISC-V"</strong> by Edson Borin</li>
+                </ul>
+                <h2>You Want to Read the Classics</h2>
+                <ul>
+                    <li><strong>"The C Programming Language"</strong> by Dennis Ritchie, Brian Kernighan</li>
+                    <li><strong>"The Art of Computer Programming"</strong>, volumes 1 and 4B by Donald Knuth</li>
+                    <li><strong>"A Discipline of Programming"</strong> by Edsger W. Dijkstra</li>
+                    <li><strong>"Hackers Delight"</strong> by Henry S. Warren, Jr.</li>
+                    <li><strong>"Optimizing Compilers for Modern Architectures"</strong> by Randy Allen, Ken Kennedy
+                    </li>
+                </ul>
+                <h2>You Want to Learn Math Through Your Programmer's Lens</h2>
+                <ul>
+                    <li><strong>"A Programmer's Introduction to Mathematics"</strong> by Jeremy Kun</li>
+                </ul>
+                <h2>You Want to Program with GPUs</h2>
+                <ul>
+                    <li><strong>"Programming Massively Parallel Processors: A Hands-on Approach"</strong> by David Kirk,
+                        Wen-mei Hwu</li>
+                </ul>
+                <h2>Tips</h2>
+                <ul>
+                    <li><strong>Do the exercises!</strong> Don't just read.</li>
+                    <li><strong>Learning to code is done by coding.</strong> Build terminal applications, build simple
+                        HTTP servers, build tools you might want to use. Nothing is too complicated.</li>
+                    <li><strong>Study the fundamentals.</strong> Data structures, algorithms. Networking. How does
+                        memory work? What happens when you type <code>google.com</code> in your search bar?</li>
+                    <li><strong>Look underneath software you use.</strong> A lot of software is open-source. Consume a
+                        lot of code. Be curious.</li>
+                    <li><strong>If you have a specific career path and/or just want to enter the job market</strong> —
+                        you can DM or @ me on X.</li>
+                </ul>
+
+            </div>
+        </article>
 
 
     </main>
 </body>
+
 </html>
