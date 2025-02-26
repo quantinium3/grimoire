@@ -1,14 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ML Resources</title>
     <link rel="stylesheet" href="assets/styles.css">
 </head>
-
 <body>
+    <div class="top">
+        <h1 class="logo">
+            Quantinium
+        </h1>
+        <div>
+            <span id="time"></span>
+        </div>
+    </div>
     <ul class="navbar">
         <a href="/index.html">Home</a>
         <a href="/ML_Resource.html">ML Resources</a>
@@ -18,60 +24,63 @@
     </ul>
     <main class="content">
         <article>
-            <h1>ML Resources</h1>
-
-            <div class="frontmatter">
+        <h1>ML Resources</h1>
+    
+        <div class="frontmatter">
                 <p class="author">By: Ludwig</p>
-            </div>
+        </div>
+    
+    <div class="content">
+        <h1>Recommended Resources for Learning Machine Learning (ML)</h1>
+<h2>You Want to Get Into How ML Works Beneath the Frameworks</h2>
+<ul>
+<li><strong>"Understanding Deep Learning"</strong> by Simon J. D. Prince</li>
+<li><strong>"The Hundred Pages Machine Learning Book"</strong> by Andriy Burkov</li>
+<li><strong>"The Little Book of Deep Learning"</strong> by François Fleuret</li>
+</ul>
+<h2>You Lack the Math Skills to Read the Above</h2>
+<ul>
+<li><strong>"Mathematics for Machine Learning"</strong> by Marc Peter Deisenroth, A. Aldo Faisal, Cheng Soon Ong</li>
+<li><strong>"Linear Algebra Done Right"</strong> by Sheldon Axler</li>
+<li><strong>"Linear Algebra"</strong> by 3Blue1Brown (YouTube series)</li>
+</ul>
+<h2>You Just Want to Do ML</h2>
+<ul>
+<li><strong>FastAI Book</strong></li>
+<li><strong>FastAI Video Course</strong></li>
+</ul>
+<h2>You Want to Learn About LLMs (Large Language Models)</h2>
+<ul>
+<li><strong>Karpathy's YouTube Channel</strong> — This has the most amount of signal and the highest amount of alpha to learn about LLMs and building GPT-2 level transformer models.</li>
+</ul>
+<h2>Tips</h2>
+<ul>
+<li><strong>Do the exercises, always.</strong>
+<ul>
+<li>You're not learning math if you don't do the exercises.</li>
+<li>You're not learning ML if you don't build models! Train them from scratch! Implement a multi-layer perceptron from scratch!</li>
+</ul>
+</li>
+<li><strong>Tinker after chapters/videos.</strong>
+<ul>
+<li>Tweak the examples or exercises.</li>
+<li>Build simple models.</li>
+<li>Build yet another MNIST classifier, but tinker!</li>
+</ul>
+</li>
+</ul>
 
-            <div class="content">
-                <h1>Recommended Resources for Learning Machine Learning (ML)</h1>
-                <h2>You Want to Get Into How ML Works Beneath the Frameworks</h2>
-                <ul>
-                    <li><strong>"Understanding Deep Learning"</strong> by Simon J. D. Prince</li>
-                    <li><strong>"The Hundred Pages Machine Learning Book"</strong> by Andriy Burkov</li>
-                    <li><strong>"The Little Book of Deep Learning"</strong> by François Fleuret</li>
-                </ul>
-                <h2>You Lack the Math Skills to Read the Above</h2>
-                <ul>
-                    <li><strong>"Mathematics for Machine Learning"</strong> by Marc Peter Deisenroth, A. Aldo Faisal,
-                        Cheng Soon Ong</li>
-                    <li><strong>"Linear Algebra Done Right"</strong> by Sheldon Axler</li>
-                    <li><strong>"Linear Algebra"</strong> by 3Blue1Brown (YouTube series)</li>
-                </ul>
-                <h2>You Just Want to Do ML</h2>
-                <ul>
-                    <li><strong>FastAI Book</strong></li>
-                    <li><strong>FastAI Video Course</strong></li>
-                </ul>
-                <h2>You Want to Learn About LLMs (Large Language Models)</h2>
-                <ul>
-                    <li><strong>Karpathy's YouTube Channel</strong> — This has the most amount of signal and the highest
-                        amount of alpha to learn about LLMs and building GPT-2 level transformer models.</li>
-                </ul>
-                <h2>Tips</h2>
-                <ul>
-                    <li><strong>Do the exercises, always.</strong>
-                        <ul>
-                            <li>You're not learning math if you don't do the exercises.</li>
-                            <li>You're not learning ML if you don't build models! Train them from scratch! Implement a
-                                multi-layer perceptron from scratch!</li>
-                        </ul>
-                    </li>
-                    <li><strong>Tinker after chapters/videos.</strong>
-                        <ul>
-                            <li>Tweak the examples or exercises.</li>
-                            <li>Build simple models.</li>
-                            <li>Build yet another MNIST classifier, but tinker!</li>
-                        </ul>
-                    </li>
-                </ul>
-
-            </div>
-        </article>
+    </div>
+</article>
 
 
     </main>
+    <script>
+        const time = document.getElementById("time");
+        const interval = setInterval(() => {
+              const t = new Date().toLocaleTimeString("en-US", { hour12: false })
+            time.innerHTML = t;
+        }, 1000)
+    </script>
 </body>
-
 </html>

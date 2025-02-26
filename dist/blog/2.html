@@ -7,6 +7,14 @@
     <link rel="stylesheet" href="assets/styles.css">
 </head>
 <body>
+    <div class="top">
+        <h1 class="logo">
+            Quantinium
+        </h1>
+        <div>
+            <span id="time"></span>
+        </div>
+    </div>
     <ul class="navbar">
         <a href="/index.html">Home</a>
         <a href="/ML_Resource.html">ML Resources</a>
@@ -92,5 +100,12 @@
 
 
     </main>
+    <script>
+        const time = document.getElementById("time");
+        const interval = setInterval(() => {
+              const t = new Date().toLocaleTimeString("en-US", { hour12: false })
+            time.innerHTML = t;
+        }, 1000)
+    </script>
 </body>
 </html>
