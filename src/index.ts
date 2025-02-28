@@ -28,85 +28,134 @@ const ensureDirectoryExists = async (dirPath: string) => {
     }
 };
 
-const main = async () => {
+const compileTemplate = async (templateName: string, data: any, layoutData: any = {}) => {
     try {
-        await ensureDirectoryExists('./dist');
-        
-        const fileContent = await readFile("grimoire.config.json", "utf-8");
-        const config: Config = JSON.parse(fileContent);
-        
-        const navbarTemplate = await readFile("./templates/navbar.hbs", "utf-8");
-        const navbarCompiled = Handlebars.compile(navbarTemplate);
-        const navbarHTML = navbarCompiled(config);
-        
-        Handlebars.registerPartial('navbar', navbarHTML);
-        
-        for (const item of config.navbar) {
-            if (item.type === 'file') {
-                await compilePage(item.name, path.join("./content", item.path), config);
-            } else if (item.type === 'directory') {
-                const files = await globby([path.join("./content", item.path, "*.md")]);
-                for (const file of files) {
-                    const filename = path.basename(file, '.md');
-                    await compilePage(filename, file, config);
-                }
-            }
-        }
-        
-        console.log("Site generation completed successfully!");
+        const [pageTemplate, layoutTemplate] = await Promise.all([
+            readFile(`./templates/${templateName}.hbs`, "utf-8"),
+            readFile("./templates/layout.hbs", "utf-8")
+        ]);
+
+        const pageCompiled = Handlebars.compile(pageTemplate);
+        const contentHTML = pageCompiled(data);
+
+        const layoutCompiled = Handlebars.compile(layoutTemplate);
+        const finalHTML = layoutCompiled({
+            title: layoutData.title || data.title || "",
+            content: contentHTML
+        });
+
+        return finalHTML;
     } catch (error) {
-        console.error("Error generating site:", error);
+        console.error(`Error compiling template ${templateName}:`, error);
+        throw error;
+    }
+};
+
+const outputHTML = async (outputPath: string, html: string) => {
+    await ensureDirectoryExists(path.dirname(outputPath));
+    await writeFile(outputPath, html, "utf-8");
+    console.log(`Generated: ${outputPath}`);
+};
+
+const processMarkdownFile = async (filepath: string) => {
+    const mdContent = await readFile(filepath, "utf-8");
+    const { content, data: frontmatter } = matter(mdContent);
+    
+    const htmlContent = await unified()
+        .use(remarkParse)
+        .use(remarkHtml)
+        .process(content);
+        
+    return {
+        content: htmlContent.toString(),
+        frontmatter
+    };
+};
+
+const generateIndexFile = async (dirPath: string, files: string[], config: Config) => {
+    try {
+        const fileLinks = await Promise.all(files.map(async (file) => {
+            const filename = path.basename(file, '.md');
+            const { frontmatter } = await processMarkdownFile(file);
+            return {
+                name: frontmatter['title'] || filename,
+                path: `./${filename}.html`
+            };
+        }));
+
+        const directoryName = path.basename(dirPath);
+        const html = await compileTemplate('index', {
+            files: fileLinks,
+            heading: directoryName
+        }, { title: directoryName });
+        
+        const outputPath = path.join(dirPath, "index.html");
+        await outputHTML(outputPath, html);
+    } catch (error) {
+        console.error(`Error generating index file for directory ${dirPath}:`, error);
     }
 };
 
 const compilePage = async (filename: string, filepath: string, config: Config) => {
     try {
-        const [pageTemplate, layoutTemplate] = await Promise.all([
-            readFile("./templates/page.hbs", "utf-8"),
-            readFile("./templates/layout.hbs", "utf-8")
-        ]);
-        
         const relativePath = path.relative('./content', filepath);
         const targetPage = config.navbar.find((page) => page.path === relativePath);
-        
-        if (!targetPage) {
-            console.warn(`Warning: Markdown file "${relativePath}" not found in navbar config. Using filename as title.`);
-        }
-        
-        const mdContent = await readFile(filepath, "utf-8");
-        const { content, data: frontmatter } = matter(mdContent);
-        
-        const htmlContent = await unified()
-            .use(remarkParse)
-            .use(remarkHtml)
-            .process(content);
-        
-        const pageCompiled = Handlebars.compile(pageTemplate);
-        const pageData = {
-            title: frontmatter["title"] || filename,
+
+        const { content, frontmatter } = await processMarkdownFile(filepath);
+
+        const html = await compileTemplate('page', {
+            title: frontmatter["title"] || "",
             frontmatter,
-            content: htmlContent.toString()
-        };
-        const finalHTML = pageCompiled(pageData);
-        
-        const layoutCompiled = Handlebars.compile(layoutTemplate);
-        const outputHTML = layoutCompiled({
-            title: frontmatter["title"] || filename,
-            content: finalHTML
-        });
-        
+            content
+        }, { title: frontmatter["title"] || filename });
+
         const outputPath = path.join(
             "dist",
-            targetPage?.path.replace('.md', '.html') || 
+            targetPage?.path.replace('.md', '.html') ||
             relativePath.replace('.md', '.html')
         );
-        
-        await ensureDirectoryExists(path.dirname(outputPath));
-        
-        await writeFile(outputPath, outputHTML, "utf-8");
-        console.log(`Generated: ${outputPath}`);
+
+        await outputHTML(outputPath, html);
     } catch (error) {
         console.error(`Error compiling page ${filename}:`, error);
+    }
+};
+
+const main = async () => {
+    try {
+        await ensureDirectoryExists('./dist');
+        await ensureDirectoryExists('./dist/assets');
+
+        const fileContent = await readFile("grimoire.config.json", "utf-8");
+        const config: Config = JSON.parse(fileContent);
+
+        const navbarTemplate = await readFile("./templates/navbar.hbs", "utf-8");
+        const navbarCompiled = Handlebars.compile(navbarTemplate);
+        const navbarHTML = navbarCompiled(config);
+        Handlebars.registerPartial('navbar', navbarHTML);
+
+        for (const item of config.navbar) {
+            if (item.type === 'file') {
+                await compilePage(item.name, path.join("./content", item.path), config);
+            } else if (item.type === 'directory') {
+                const dirPath = path.join("./dist", item.path);
+                await ensureDirectoryExists(dirPath);
+
+                const files = await globby([path.join("./content", item.path, "*.md")]);
+                for (const file of files) {
+                    const filename = path.basename(file, '.md');
+                    await compilePage(filename, file, config);
+                }
+                await generateIndexFile(dirPath, files, config);
+            }
+        }
+
+        const cssContent = await readFile('./templates/assets/styles.css');
+        await writeFile('./dist/assets/styles.css', cssContent);
+
+        console.log("Site generation completed successfully!");
+    } catch (error) {
+        console.error("Error generating site:", error);
     }
 };
 

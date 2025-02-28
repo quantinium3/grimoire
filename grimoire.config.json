@@ -7,13 +7,13 @@
         },
         {
             "type": "file",
-            "name": "ML Resources",
-            "path": "ML_Resource.md"
+            "name": "Bookmarks",
+            "path": "Bookmarks.md"
         },
         {
             "type": "file",
-            "name": "CS Resources",
-            "path": "CS_Resource.md"
+            "name": "Resources",
+            "path": "Resource.md"
         },
         {
             "type": "directory",
