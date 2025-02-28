@@ -4,7 +4,9 @@ import Handlebars from "handlebars";
 import matter from 'gray-matter';
 import { unified } from 'unified';
 import remarkParse from 'remark-parse';
-import remarkHtml from 'remark-html';
+import remarkRehype from 'remark-rehype';
+import rehypeRaw from 'rehype-raw';
+import rehypeStringify from 'rehype-stringify';
 import { globby } from 'globby';
 import { existsSync } from 'fs';
 
@@ -63,9 +65,12 @@ const processMarkdownFile = async (filepath: string) => {
     const mdContent = await readFile(filepath, "utf-8");
     const { content, data: frontmatter } = matter(mdContent);
     
+    // Updated markdown processor to preserve raw HTML
     const htmlContent = await unified()
         .use(remarkParse)
-        .use(remarkHtml)
+        .use(remarkRehype, { allowDangerousHtml: true }) // Allow HTML in markdown
+        .use(rehypeRaw) // Parse the raw HTML
+        .use(rehypeStringify) // Convert to HTML string
         .process(content);
         
     return {
