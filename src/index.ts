@@ -87,6 +87,7 @@ const generateIndexFile = async (dirPath: string, files: string[], config: Confi
 
         const directoryName = path.basename(dirPath);
         const html = await compileTemplate('index', {
+            owner: config['owner'],
             files: fileLinks,
             heading: directoryName
         }, { title: directoryName });
