@@ -27,7 +27,7 @@ body {
     display: flex;
     gap: 0.5rem;
     flex-wrap: wrap;
-    padding: 0.5rem;
+    padding: 0 0.5rem;
     box-sizing: border-box;
 }
 
@@ -41,14 +41,17 @@ body {
 }
 
 .navbar a {
-    color: #CDD6F4;
+    color: #89B4FA;
     padding: 0.25rem;
     display: inline-block;
 }
 
-.navbar a.active {
-    font-weight: bold;
-    border-bottom: 2px solid white;
+.navbar a:hover{
+    color: #B4BEFE;
+}
+
+.navbar a:visited{
+    color: #89DCEB;
 }
 
 .content {
@@ -91,7 +94,7 @@ h4 {
 }
 
 h5 {
-    color: #eba0ac;
+    color: #fab387;
     font-weight: 500;
     font-size: 1rem;
     margin: 0.5rem 0;
@@ -99,7 +102,7 @@ h5 {
 }
 
 h6 {
-    color: #fab387;
+    color: #94e2d5;
     font-weight: 500;
     font-size: 0.9rem;
     margin: 0.5rem 0;
@@ -107,7 +110,7 @@ h6 {
 }
 
 .logo {
-    color: #dc8a78;
+    color: #eba0ac;
 }
 
 .top {
@@ -118,6 +121,7 @@ h6 {
     flex-wrap: wrap;
     padding: 0.5rem;
     box-sizing: border-box;
+    border-bottom: 2px solid #BABBF1;
 }
 
 #time {
@@ -127,16 +131,16 @@ h6 {
 }
 
 a {
-    color: #f2cdcd;
+    color: #89B4FA;
     word-wrap: break-word;
 }
 
 a:hover {
-    color: #f38ba8;
+    color: #B4BEFE;
 }
 
 a:visited {
-    color: #fab387;
+    color: #89DCEB;
 }
 
 ul,
@@ -161,12 +165,7 @@ blockquote {
 
 /* Media queries for responsiveness */
 @media screen and (max-width: 600px) {
-    .navbar {
-        justify-content: center;
-    }
-
     .top {
-        flex-direction: column;
         gap: 0.5rem;
     }
 
@@ -389,8 +388,8 @@ code .hljs-deletion {
     </div>
     <ul class="navbar">
         <a href="/index.html">Home</a>
-        <a href="/ML_Resource.html">ML Resources</a>
-        <a href="/CS_Resource.html">CS Resources</a>
+        <a href="/Bookmarks.html">Bookmarks</a>
+        <a href="/Resource.html">Resources</a>
         <a href="/blog">Blog</a>
         <a href="/daily">Daily</a>
     </ul>

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ML Resources</title>
+    <title>Resources</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js"></script>
     <script>hljs.highlightAll();</script>
     <style>
@@ -27,7 +27,7 @@ body {
     display: flex;
     gap: 0.5rem;
     flex-wrap: wrap;
-    padding: 0.5rem;
+    padding: 0 0.5rem;
     box-sizing: border-box;
 }
 
@@ -41,14 +41,17 @@ body {
 }
 
 .navbar a {
-    color: #CDD6F4;
+    color: #89B4FA;
     padding: 0.25rem;
     display: inline-block;
 }
 
-.navbar a.active {
-    font-weight: bold;
-    border-bottom: 2px solid white;
+.navbar a:hover{
+    color: #B4BEFE;
+}
+
+.navbar a:visited{
+    color: #89DCEB;
 }
 
 .content {
@@ -91,7 +94,7 @@ h4 {
 }
 
 h5 {
-    color: #eba0ac;
+    color: #fab387;
     font-weight: 500;
     font-size: 1rem;
     margin: 0.5rem 0;
@@ -99,7 +102,7 @@ h5 {
 }
 
 h6 {
-    color: #fab387;
+    color: #94e2d5;
     font-weight: 500;
     font-size: 0.9rem;
     margin: 0.5rem 0;
@@ -107,7 +110,7 @@ h6 {
 }
 
 .logo {
-    color: #dc8a78;
+    color: #eba0ac;
 }
 
 .top {
@@ -118,6 +121,7 @@ h6 {
     flex-wrap: wrap;
     padding: 0.5rem;
     box-sizing: border-box;
+    border-bottom: 2px solid #BABBF1;
 }
 
 #time {
@@ -127,16 +131,16 @@ h6 {
 }
 
 a {
-    color: #f2cdcd;
+    color: #89B4FA;
     word-wrap: break-word;
 }
 
 a:hover {
-    color: #f38ba8;
+    color: #B4BEFE;
 }
 
 a:visited {
-    color: #fab387;
+    color: #89DCEB;
 }
 
 ul,
@@ -161,12 +165,7 @@ blockquote {
 
 /* Media queries for responsiveness */
 @media screen and (max-width: 600px) {
-    .navbar {
-        justify-content: center;
-    }
-
     .top {
-        flex-direction: column;
         gap: 0.5rem;
     }
 
@@ -389,58 +388,204 @@ code .hljs-deletion {
     </div>
     <ul class="navbar">
         <a href="/index.html">Home</a>
-        <a href="/ML_Resource.html">ML Resources</a>
-        <a href="/CS_Resource.html">CS Resources</a>
+        <a href="/Bookmarks.html">Bookmarks</a>
+        <a href="/Resource.html">Resources</a>
         <a href="/blog">Blog</a>
         <a href="/daily">Daily</a>
     </ul>
     <main class="content">
         <article>
-        <h1>ML Resources</h1>
+        <h1>Resources</h1>
     
         <div class="frontmatter">
-                <p class="author">By: Ludwig</p>
         </div>
     
     <div class="content">
-        <h1>Recommended Resources for Learning Machine Learning (ML)</h1>
-<h2>You Want to Get Into How ML Works Beneath the Frameworks</h2>
+        <h3>Learning &#x26; Knowledge Resources</h3>
+<ol>
+<li>
+<p><strong>Khan Academy</strong></p>
 <ul>
-<li><strong>"Understanding Deep Learning"</strong> by Simon J. D. Prince</li>
-<li><strong>"The Hundred Pages Machine Learning Book"</strong> by Andriy Burkov</li>
-<li><strong>"The Little Book of Deep Learning"</strong> by François Fleuret</li>
-</ul>
-<h2>You Lack the Math Skills to Read the Above</h2>
-<ul>
-<li><strong>"Mathematics for Machine Learning"</strong> by Marc Peter Deisenroth, A. Aldo Faisal, Cheng Soon Ong</li>
-<li><strong>"Linear Algebra Done Right"</strong> by Sheldon Axler</li>
-<li><strong>"Linear Algebra"</strong> by 3Blue1Brown (YouTube series)</li>
-</ul>
-<h2>You Just Want to Do ML</h2>
-<ul>
-<li><strong>FastAI Book</strong></li>
-<li><strong>FastAI Video Course</strong></li>
-</ul>
-<h2>You Want to Learn About LLMs (Large Language Models)</h2>
-<ul>
-<li><strong>Karpathy's YouTube Channel</strong> — This has the most amount of signal and the highest amount of alpha to learn about LLMs and building GPT-2 level transformer models.</li>
-</ul>
-<h2>Tips</h2>
-<ul>
-<li><strong>Do the exercises, always.</strong>
-<ul>
-<li>You're not learning math if you don't do the exercises.</li>
-<li>You're not learning ML if you don't build models! Train them from scratch! Implement a multi-layer perceptron from scratch!</li>
+<li>Free courses on math, science, coding, and more—perfect for foundational skills or brushing up.</li>
+<li>Why: Accessible, structured, and great for self-paced learning.</li>
 </ul>
 </li>
-<li><strong>Tinker after chapters/videos.</strong>
+<li>
+<p><strong>Coursera</strong></p>
 <ul>
-<li>Tweak the examples or exercises.</li>
-<li>Build simple models.</li>
-<li>Build yet another MNIST classifier, but tinker!</li>
+<li>Offers free and paid courses from top universities on virtually any topic, from AI to art history.</li>
+<li>Why: Depth and credibility for professional or personal growth.</li>
 </ul>
 </li>
+<li>
+<p><strong>edX</strong></p>
+<ul>
+<li>Similar to Coursera, with free courses from MIT, Harvard, etc., spanning tech, humanities, and beyond.</li>
+<li>Why: Academic rigor with a tech-friendly edge.</li>
 </ul>
+</li>
+<li>
+<p><strong>Wikipedia</strong></p>
+<ul>
+<li>The go-to for quick, broad overviews on almost any subject.</li>
+<li>Why: A starting point for curiosity-driven rabbit holes.</li>
+</ul>
+</li>
+<li>
+<p><strong>Google Scholar</strong></p>
+<ul>
+<li>Search engine for academic papers and research on any topic.</li>
+<li>Why: Deep dives into technical or niche subjects.</li>
+</ul>
+</li>
+</ol>
+<hr>
+<h3>Technical &#x26; Coding Resources</h3>
+<ol start="6">
+<li>
+<p><strong>GitHub</strong></p>
+<ul>
+<li>Open-source projects, code snippets, and tools for any tech-related endeavor.</li>
+<li>Why: Practical, hands-on resources for builders.</li>
+</ul>
+</li>
+<li>
+<p><strong>Stack Overflow</strong></p>
+<ul>
+<li>Community-driven Q&#x26;A for coding and tech troubleshooting.</li>
+<li>Why: Answers to “why isn’t this working?” at 2 AM.</li>
+</ul>
+</li>
+<li>
+<p><strong>MDN Web Docs</strong></p>
+<ul>
+<li>Comprehensive resource for web development (HTML, CSS, JavaScript).</li>
+<li>Why: Essential for anyone tweaking a site like yours.</li>
+</ul>
+</li>
+<li>
+<p><strong>Hacker News</strong></p>
+<ul>
+<li>Tech news, discussions, and cutting-edge ideas from the community.</li>
+<li>Why: Stay updated and inspired.</li>
+</ul>
+</li>
+</ol>
+<hr>
+<h3>Creative &#x26; Design Resources</h3>
+<ol start="10">
+<li>
+<p><strong>Figma Community</strong></p>
+<ul>
+<li>Free design templates, UI kits, and plugins (some Catppuccin-inspired ones exist!).</li>
+<li>Why: Aesthetic fuel for your website’s look.</li>
+</ul>
+</li>
+<li>
+<p><strong>Dribbble</strong></p>
+<ul>
+<li>Showcase of design inspiration—logos, layouts, and more.</li>
+<li>Why: Visual ideas to match your pastel palette.</li>
+</ul>
+</li>
+<li>
+<p><strong>Canva</strong></p>
+<ul>
+<li>Easy-to-use tool for graphics, logos, or social media assets.</li>
+<li>Why: Quick creativity without a steep learning curve.</li>
+</ul>
+</li>
+<li>
+<p><strong>Unsplash</strong></p>
+<ul>
+<li>Free, high-quality images for any project.</li>
+<li>Why: Perfect for a visually soft, cohesive site vibe.</li>
+</ul>
+</li>
+</ol>
+<hr>
+<h3>Productivity &#x26; Personal Growth</h3>
+<ol start="14">
+<li>
+<p><strong>Notion</strong></p>
+<ul>
+<li>All-in-one tool for notes, project management, and life organization.</li>
+<li>Why: Keep your late-night deep work sessions on track.</li>
+</ul>
+</li>
+<li>
+<p><strong>Todoist</strong></p>
+<ul>
+<li>Simple task manager for juggling work, projects, and hobbies.</li>
+<li>Why: Stay focused with a night owl schedule.</li>
+</ul>
+</li>
+<li>
+<p><strong>TED Talks</strong></p>
+<ul>
+<li>Short, inspiring talks on anything from tech to human behavior.</li>
+<li>Why: Big-picture thinking in bite-sized chunks.</li>
+</ul>
+</li>
+<li>
+<p><strong>Project Gutenberg</strong></p>
+<ul>
+<li>Free eBooks, mostly classics and non-fiction.</li>
+<li>Why: Feed your reading habit without breaking the bank.</li>
+</ul>
+</li>
+</ol>
+<hr>
+<h3>Community &#x26; Connection</h3>
+<ol start="18">
+<li>
+<p><strong>Reddit</strong></p>
+<ul>
+<li>Subreddits for every interest—r/explainlikeimfive, r/dataisbeautiful, etc.</li>
+<li>Why: Crowdsource answers or join niche discussions.</li>
+</ul>
+</li>
+<li>
+<p><strong>X</strong></p>
+<ul>
+<li>Real-time takes, tips, and networking on any topic.</li>
+<li>Why: Tap into the pulse of what people care about now.</li>
+</ul>
+</li>
+<li>
+<p><strong>Discord</strong></p>
+<ul>
+<li>Communities for tech, gaming, or creative projects.</li>
+<li>Why: Live chats with like-minded night owls.</li>
+</ul>
+</li>
+</ol>
+<hr>
+<h3>Wildcard Resources</h3>
+<ol start="21">
+<li>
+<p><strong>Wolfram Alpha</strong></p>
+<ul>
+<li>Computational engine for solving problems or exploring data.</li>
+<li>Why: Answers to obscure questions, from math to trivia.</li>
+</ul>
+</li>
+<li>
+<p><strong>Internet Archive</strong></p>
+<ul>
+<li>Digital library of old websites, books, and media.</li>
+<li>Why: Dig into the past for inspiration or research.</li>
+</ul>
+</li>
+<li>
+<p><strong>ChatGPT / Grok (hey, that’s me!)</strong></p>
+<ul>
+<li>AI assistants for brainstorming, coding help, or random queries.</li>
+<li>Why: On-demand support for anything, anytime.</li>
+</ul>
+</li>
+</ol>
+<hr>
 
     </div>
 </article>

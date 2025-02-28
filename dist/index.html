@@ -27,7 +27,7 @@ body {
     display: flex;
     gap: 0.5rem;
     flex-wrap: wrap;
-    padding: 0.5rem;
+    padding: 0 0.5rem;
     box-sizing: border-box;
 }
 
@@ -41,14 +41,17 @@ body {
 }
 
 .navbar a {
-    color: #CDD6F4;
+    color: #89B4FA;
     padding: 0.25rem;
     display: inline-block;
 }
 
-.navbar a.active {
-    font-weight: bold;
-    border-bottom: 2px solid white;
+.navbar a:hover{
+    color: #B4BEFE;
+}
+
+.navbar a:visited{
+    color: #89DCEB;
 }
 
 .content {
@@ -91,7 +94,7 @@ h4 {
 }
 
 h5 {
-    color: #eba0ac;
+    color: #fab387;
     font-weight: 500;
     font-size: 1rem;
     margin: 0.5rem 0;
@@ -99,7 +102,7 @@ h5 {
 }
 
 h6 {
-    color: #fab387;
+    color: #94e2d5;
     font-weight: 500;
     font-size: 0.9rem;
     margin: 0.5rem 0;
@@ -107,7 +110,7 @@ h6 {
 }
 
 .logo {
-    color: #dc8a78;
+    color: #eba0ac;
 }
 
 .top {
@@ -118,6 +121,7 @@ h6 {
     flex-wrap: wrap;
     padding: 0.5rem;
     box-sizing: border-box;
+    border-bottom: 2px solid #BABBF1;
 }
 
 #time {
@@ -127,16 +131,16 @@ h6 {
 }
 
 a {
-    color: #f2cdcd;
+    color: #89B4FA;
     word-wrap: break-word;
 }
 
 a:hover {
-    color: #f38ba8;
+    color: #B4BEFE;
 }
 
 a:visited {
-    color: #fab387;
+    color: #89DCEB;
 }
 
 ul,
@@ -161,12 +165,7 @@ blockquote {
 
 /* Media queries for responsiveness */
 @media screen and (max-width: 600px) {
-    .navbar {
-        justify-content: center;
-    }
-
     .top {
-        flex-direction: column;
         gap: 0.5rem;
     }
 
@@ -389,212 +388,37 @@ code .hljs-deletion {
     </div>
     <ul class="navbar">
         <a href="/index.html">Home</a>
-        <a href="/ML_Resource.html">ML Resources</a>
-        <a href="/CS_Resource.html">CS Resources</a>
+        <a href="/Bookmarks.html">Bookmarks</a>
+        <a href="/Resource.html">Resources</a>
         <a href="/blog">Blog</a>
         <a href="/daily">Daily</a>
     </ul>
     <main class="content">
         <article>
-        <h1>Home</h1>
     
         <div class="frontmatter">
-                <p class="author">By: John Doe</p>
         </div>
     
     <div class="content">
-        <p>Javascript / Java (same thing) is the language used to make websites by making them dynamic.</p>
+        <h3>About This Site</h3>
+<p>These are the notes for [your-blog-name]. I’m a technical consultant and researcher focused on infrastructure, machine learning, and security.</p>
+<hr>
+<h3>Personal</h3>
+<p>I live in a bustling metro area and work as a generalist at a managed service provider (MSP). My core expertise lies in designing and implementing infrastructure, networking, cybersecurity, and identity access management (IAM).</p>
+<p>After hours, I dive into personal projects—think experimental tech ventures and creative side hustles. I unwind with non-fiction reads, manga, or the occasional gaming session (FPS, MMOs). Recently, I’ve been exploring VR, which has been a fun new rabbit hole.</p>
+<p>A typical day kicks off around 7 AM, work runs from 8 AM to 6 PM, and I’m usually up until 2 AM— netting me about 5-6 hours of sleep. (I’ve mused more about my sleep habits [here]). The quiet late-night and early-morning hours are my sweet spot for deep work: no noise, no distractions, just focus. Definitely a night owl at heart—there’s something magical about those AM hours for getting stuff done.</p>
+<p>I’m active in online communities—think tech forums, social platforms, and niche networking groups—often under various pseudonyms. I’ve also volunteered for a national communications service for over a decade, mostly hands-on.</p>
+<hr>
+<h3>Contact</h3>
+<p>I love connecting with people about tech, projects, or honestly, anything that sparks a good convo. First time reaching out? Drop me an email at [your-email]@[your-domain]!</p>
 <ul>
-<li><a href="https://www.howtogeek.com/devops/what-is-just-in-time-jit-compilation/#what-does-jit-compilation-do">Just-in-time-compiled</a> - Compiling of program while it's being executed.</li>
-<li><a href="https://developer.mozilla.org/en-US/docs/Glossary/Prototype-based_programming">Prototype-based</a></li>
-<li>Single-threaded</li>
-<li>Dynamic language</li>
+<li><strong>GitHub</strong>: [your-username]</li>
+<li><strong>Project 1 Inquiries</strong>: [your-email]@[project1-domain]</li>
+<li><strong>Project 2 Inquiries</strong>: [your-email]@[project2-domain]</li>
+<li><strong>PGP Key</strong>: [link-to-key; fingerprint: XXXX XXXX XXXX XXXX XXXX XXXX XXXX XXXX]</li>
+<li><strong>Network-Related Inquiries</strong>: For networks I manage, email the address listed in the respective WHOIS contact. For P1 emergencies, reach out to ops@[project1-domain].</li>
 </ul>
-<pre><code class="language-js">console.log("Hello World");
-</code></pre>
-<p>In JS, you can use a template literal to interpolate dynamic values into a string templates. Kinda like python f-string.
-Template literals start with back-ticks. It allows us to interpolate dynamic values into string template.</p>
-<pre><code class="language-js">const v = 5; //declare using const
-let w = 5; // declare using let
-console.log(`v is ${v}`);
-</code></pre>
-<h3>null</h3>
-<p>It's null. Most programming languages have it. null values are 'falsy'
-**Conversion^ -</p>
-<ul>
-<li>False - boolean</li>
-<li>0 - number zero</li>
-<li>'' = empty string</li>
-</ul>
-<h3>undefined poor man's null.</h3>
-<p><strong>undefined</strong> means the variable was never assigned a value.
-<strong>null</strong> is just same but we assign it explicitly. It doesn't mean we can't assign undefined.</p>
-<h3>Operators and if-else</h3>
-<p>Normal operator usage and normal if else and ternary operator like python or c.</p>
-<h3>Functions</h3>
-<pre><code class="language-js">console.log(getLabel(3))
-// prints 'awful'
-
-function getLabel(numStars) {
-  if (numStars > 7) {
-    return 'great'
-  } else if (numStars > 3) {
-    return 'okay'
-  } else {
-    return 'awful'
-  }
-}
-</code></pre>
-<p>JS interpreter reads whole first and function definition are globally scoped, then goes back to executing where it is called. In JS it doesn't matter where the function definitions occur.</p>
-<h4>Other ways to define a function</h4>
-<pre><code class="language-js">//using the function keyworkd
-function add(x, y) {
-    return x + y;
-}
-const add = function(x, y) {
-  return x + y
-}
-
-// Fat arrow function
-const add = (x, y) => {
-  return x + y
-}
-</code></pre>
-<h3>Arrays</h3>
-<p>These are dynamically allocated arrays. Python list. C++ vectors.</p>
-<pre><code class="language-js">const numbers = [1, 2, 3, 4, 5]
-const strings = ['banana', 'apple', 'pear']
-const miscellaneous = [true, 7, 'adamantium']
-numbers.push(6);
-console.log(numbers[0])
-</code></pre>
-<h3>Loops</h3>
-<pre><code class="language-js">for (let i = 0; i &#x3C; 10; i++) {
-  console.log(i)
-}
-
-let list = [4, 5, 6];
-// for...in return the keys
-for (let i in list) {
-  console.log(i); // "0", "1", "2",
-}
-//for...of return the values.
-for (let i of list) {
-  console.log(i); // 4, 5, 6
-}
-</code></pre>
-<h3>Objects</h3>
-<p>JS has a object type. They are variables that can hold more complex information than basic types like String, Number and Boolean.</p>
-<pre><code class="language-js">const apple = {
-  name: 'Apple',
-  radius: 2,
-  color: 'red',
-}
-</code></pre>
-<p><strong>Syntactic Sugar</strong></p>
-<pre><code class="language-js">const name = 'Apple'
-const radius = 2
-const color = 'red'
-const apple = {
-  name,
-  radius,
-  color,
-}
-
-// Similar to 
-const name = 'Apple'
-const radius = 2
-const color = 'red'
-const apple = {
-  name: name,
-  radius: radius,
-  color: color,
-}
-</code></pre>
-<h4>Object Methods</h4>
-<p>Javascript Object have methods. Methods are functions that are defined inside an object. They can access and change the properties of the object in question.</p>
-<pre><code class="language-js">const person = {
-  firstName: 'Lane',
-  lastName: 'Wagner',
-  getFullName() {
-    return this.firstName + ' ' + this.lastName
-  }
-}
-
-console.log(person.getFullName())
-</code></pre>
-<p>Methods can mutate the properties of their object.</p>
-<pre><code class="language-js">const tree = {
-  height: 256,
-  color: 'green',
-  cut() {
-    this.height /= 2
-  }
-}
-
-tree.cut()
-console.log(tree.height)
-// prints 128
-</code></pre>
-<h3>this</h3>
-<pre><code class="language-js">const author = {
-  firstName: 'Lane',
-  lastName: 'Wagner',
-  getName() {
-    return `${this.firstName} ${this.lastName}`
-  }
-}
-console.log(author.getName())
-// Prints: Lane Wagner
-</code></pre>
-<pre><code class="language-js">const author = {
-  firstName: 'Lane',
-  lastName: 'Wagner',
-  getName: () => {
-    return `${this.firstName} ${this.lastName}`
-  }
-}
-console.log(author.getName())
-// Prints: undefined undefined
-// because the parent scope (the scope outside of the author object)
-// never defined .firstName and .lastName properties
-</code></pre>
-<p>As we can see when we use the <strong>fat arrow function</strong>  syntax, you sometimes get a different this object.</p>
-<p>==this== points to the object on which it is called.</p>
-<p>This is due to property how <strong>fat arrow functions</strong> work. With a fat arrow function ==this== will always refer to the same object that its parent scope would.</p>
-<p>Essentially ==this's == value depends on which context it appears - function, class or global.</p>
-<h3>Errors</h3>
-<p>Gonna catch deez errors.</p>
-<p>It's try catch finally. finally is rarely used so we generally use try-catch.</p>
-<pre><code class="language-js">try {
-  //code to run
-} catch (err) {
-  //if err occurs log it out
-  console.log(err.message);
-} finally {
-  // It will always run. [OPTIONAL]
-}
-</code></pre>
-<p>Throwing our own error. If we know something bad will happen if the input is of something we know is entered, we can throw an error.</p>
-<pre><code class="language-js">throw new Error('something went wrong');
-</code></pre>
-<h3>Runtime</h3>
-<p>A runtime environment is where your program runs. Since JS can run in many places outside browsers so different runtimes are made.</p>
-<h4>Different runtime</h4>
-<ul>
-<li>A Browser</li>
-<li>Nodejs</li>
-<li>A web worker within a browser</li>
-<li>Deno.js</li>
-<li>Bun and many more.</li>
-</ul>
-<h4>Whats different in all these runtime</h4>
-<ul>
-<li>Performance</li>
-<li>API - you can use Canvas api to render graphics in browser but can't do those things in node or bun that don't support those.</li>
-<li>Global object - In browsers, global object is ==window== but in node it's ==global==.</li>
-</ul>
-<p><a href="https://www.freecodecamp.org/news/javascript-engine-and-runtime-explained/">JS Runtimes</a></p>
+<hr>
 
     </div>
 </article>
