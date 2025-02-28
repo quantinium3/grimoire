@@ -4,9 +4,379 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Home</title>
-    <link rel="stylesheet" href="assets/styles.css" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js"></script>
     <script>hljs.highlightAll();</script>
+    <style>
+body {
+    font-family: monospace, Arial, sans-serif;
+    margin: 0 auto;
+    padding: 0;
+    background-color: #1E1E2E;
+    max-width: 48rem;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    color: #BAC2DE;
+    align-items: center;
+    box-sizing: border-box;
+}
+
+.navbar {
+    width: 100%;
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    padding: 0.5rem;
+    box-sizing: border-box;
+}
+
+.navbar ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.navbar a {
+    color: #CDD6F4;
+    padding: 0.25rem;
+    display: inline-block;
+}
+
+.navbar a.active {
+    font-weight: bold;
+    border-bottom: 2px solid white;
+}
+
+.content {
+    width: 100%;
+    margin: 0;
+    padding: 0.5rem 1rem;
+    box-sizing: border-box;
+}
+
+h1 {
+    color: #f5e0dc;
+    font-weight: 700;
+    font-size: 1.5rem;
+    margin: 0.5rem 0;
+    word-wrap: break-word;
+}
+
+h2 {
+    color: #f2cdcd;
+    font-weight: 600;
+    font-size: 1.3rem;
+    margin: 0.5rem 0;
+    word-wrap: break-word;
+}
+
+h3 {
+    color: #cba6f7;
+    font-weight: 600;
+    font-size: 1.2rem;
+    margin: 0.5rem 0;
+    word-wrap: break-word;
+}
+
+h4 {
+    color: #f5c2e7;
+    font-weight: 500;
+    font-size: 1.1rem;
+    margin: 0.5rem 0;
+    word-wrap: break-word;
+}
+
+h5 {
+    color: #eba0ac;
+    font-weight: 500;
+    font-size: 1rem;
+    margin: 0.5rem 0;
+    word-wrap: break-word;
+}
+
+h6 {
+    color: #fab387;
+    font-weight: 500;
+    font-size: 0.9rem;
+    margin: 0.5rem 0;
+    word-wrap: break-word;
+}
+
+.logo {
+    color: #dc8a78;
+}
+
+.top {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    align-items: center;
+    flex-wrap: wrap;
+    padding: 0.5rem;
+    box-sizing: border-box;
+}
+
+#time {
+    font-weight: bold;
+    font-size: 0.9em;
+    text-decoration: underline;
+}
+
+a {
+    color: #f2cdcd;
+    word-wrap: break-word;
+}
+
+a:hover {
+    color: #f38ba8;
+}
+
+a:visited {
+    color: #fab387;
+}
+
+ul,
+ol {
+    padding-left: 1.5rem;
+}
+
+ul li::marker {
+    color: #74c7ec;
+}
+
+ol li::marker {
+    color: #74c7ec;
+}
+
+blockquote {
+    border-left: 2px solid #f5e0dc;
+    padding-left: 16px;
+    margin: 0;
+}
+
+
+/* Media queries for responsiveness */
+@media screen and (max-width: 600px) {
+    .navbar {
+        justify-content: center;
+    }
+
+    .top {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .content {
+        padding: 0.5rem;
+    }
+}
+
+img {
+    max-width: 100%;
+    height: auto;
+}
+
+
+pre {
+    background: #11111b;
+    padding: 0.5rem;
+}
+code.hljs {
+    color: #cdd6f4;
+    background: #11111b;
+    overflow-x: auto;
+    max-width: 100%;
+    border-radius: 4px;
+    word-wrap: break-word;
+    white-space: pre-wrap;
+}
+
+code .hljs-keyword {
+    color: #cba6f7
+}
+
+code .hljs-built_in {
+    color: #f38ba8
+}
+
+code .hljs-type {
+    color: #f9e2af
+}
+
+code .hljs-literal {
+    color: #fab387
+}
+
+code .hljs-number {
+    color: #fab387
+}
+
+code .hljs-operator {
+    color: #89dceb
+}
+
+code .hljs-punctuation {
+    color: #bac2de
+}
+
+code .hljs-property {
+    color: #94e2d5
+}
+
+code .hljs-regexp {
+    color: #f5c2e7
+}
+
+code .hljs-string {
+    color: #a6e3a1
+}
+
+code .hljs-char.escape_ {
+    color: #a6e3a1
+}
+
+code .hljs-subst {
+    color: #a6adc8
+}
+
+code .hljs-symbol {
+    color: #f2cdcd
+}
+
+code .hljs-variable {
+    color: #cba6f7
+}
+
+code .hljs-variable.language_ {
+    color: #cba6f7
+}
+
+code .hljs-variable.constant_ {
+    color: #fab387
+}
+
+code .hljs-title {
+    color: #89b4fa
+}
+
+code .hljs-title.class_ {
+    color: #f9e2af
+}
+
+code .hljs-title.function_ {
+    color: #89b4fa
+}
+
+code .hljs-params {
+    color: #cdd6f4
+}
+
+code .hljs-comment {
+    color: #9399b2
+}
+
+code .hljs-doctag {
+    color: #f38ba8
+}
+
+code .hljs-meta {
+    color: #fab387
+}
+
+code .hljs-section {
+    color: #89b4fa
+}
+
+code .hljs-tag {
+    color: #94e2d5
+}
+
+code .hljs-name {
+    color: #cba6f7
+}
+
+code .hljs-attr {
+    color: #89b4fa
+}
+
+code .hljs-attribute {
+    color: #a6e3a1
+}
+
+code .hljs-bullet {
+    color: #94e2d5
+}
+
+code .hljs-code {
+    color: #a6e3a1
+}
+
+code .hljs-emphasis {
+    color: #f38ba8;
+    font-style: italic
+}
+
+code .hljs-strong {
+    color: #f38ba8;
+    font-weight: bold
+}
+
+code .hljs-formula {
+    color: #94e2d5
+}
+
+code .hljs-link {
+    color: #74c7ec;
+    font-style: italic
+}
+
+code .hljs-quote {
+    color: #a6e3a1;
+    font-style: italic
+}
+
+code .hljs-selector-tag {
+    color: #f9e2af
+}
+
+code .hljs-selector-id {
+    color: #89b4fa
+}
+
+code .hljs-selector-class {
+    color: #94e2d5
+}
+
+code .hljs-selector-attr {
+    color: #cba6f7
+}
+
+code .hljs-selector-pseudo {
+    color: #94e2d5
+}
+
+code .hljs-template-tag {
+    color: #f2cdcd
+}
+
+code .hljs-template-variable {
+    color: #f2cdcd
+}
+
+code .hljs-addition {
+    color: #a6e3a1;
+    background: rgba(166, 227, 161, .15)
+}
+
+code .hljs-deletion {
+    color: #f38ba8;
+    background: rgba(243, 139, 168, .15)
+}
+    </style>
 </head>
 <body>
     <div class="top">
@@ -33,93 +403,198 @@
         </div>
     
     <div class="content">
-        <p>swe at [redacted] -- currently building large-scale distributed systems</p>
-<p>If you wanna chat, message me on <a href="https://www.x.com">x.com</a></p>
-<blockquote>
-<p>I am a generalist. I am most engaged when working on hard problems that I have not yet wrapped my brain around.</p>
-</blockquote>
-<p>Andrew Kelley</p>
-<h1>Hello World</h1>
-<p>This is <strong>Markdown</strong> content.</p>
-<h2>Headers</h2>
-<h1>H1 Header</h1>
-<h2>H2 Header</h2>
-<h3>H3 Header</h3>
-<h4>H4 Header</h4>
-<h5>H5 Header</h5>
-<h6>H6 Header</h6>
-<h2>Lists</h2>
-<h3>Unordered List:</h3>
+        <p>Javascript / Java (same thing) is the language used to make websites by making them dynamic.</p>
 <ul>
-<li>Item 1</li>
-<li>Item 2
-<ul>
-<li>Sub-item 1</li>
-<li>Sub-item 2</li>
+<li><a href="https://www.howtogeek.com/devops/what-is-just-in-time-jit-compilation/#what-does-jit-compilation-do">Just-in-time-compiled</a> - Compiling of program while it's being executed.</li>
+<li><a href="https://developer.mozilla.org/en-US/docs/Glossary/Prototype-based_programming">Prototype-based</a></li>
+<li>Single-threaded</li>
+<li>Dynamic language</li>
 </ul>
-</li>
-<li>Item 3</li>
-</ul>
-<h3>Ordered List:</h3>
-<ol>
-<li>First Item</li>
-<li>Second Item
-<ol>
-<li>Nested Item 1</li>
-<li>Nested Item 2</li>
-</ol>
-</li>
-<li>Third Item</li>
-</ol>
-<h2>Code Blocks</h2>
-<h3>Inline Code:</h3>
-<p>Here is some <code>inline code</code> inside text.</p>
-<h3>Block Code (fenced):</h3>
-<pre><code class="language-python"># Python Example
-def hello():
-    print("Hello, World!")
+<pre><code class="language-js">console.log("Hello World");
 </code></pre>
-<pre><code class="language-javascript">// JavaScript Example
-console.log("Hello, World!");
+<p>In JS, you can use a template literal to interpolate dynamic values into a string templates. Kinda like python f-string.
+Template literals start with back-ticks. It allows us to interpolate dynamic values into string template.</p>
+<pre><code class="language-js">const v = 5; //declare using const
+let w = 5; // declare using let
+console.log(`v is ${v}`);
 </code></pre>
-<h2>Tables</h2>
-<p>| Column 1 | Column 2 | Column 3 |
-|----------|----------|----------|
-| Data 1   | Data 2   | Data 3   |
-| Data 4   | Data 5   | Data 6   |</p>
-<h2>Images</h2>
-<p><img src="https://markdown-here.com/img/icon256.png" alt="Markdown Logo"></p>
-<h2>Blockquotes</h2>
-<blockquote>
-<p>This is a blockquote.</p>
-<p>It can span multiple lines.</p>
-</blockquote>
-<h2>Horizontal Rule</h2>
-<hr>
-<h2>Task Lists</h2>
+<h3>null</h3>
+<p>It's null. Most programming languages have it. null values are 'falsy'
+**Conversion^ -</p>
 <ul>
-<li>[x] Task 1</li>
-<li>[ ] Task 2</li>
-<li>[ ] Task 3</li>
+<li>False - boolean</li>
+<li>0 - number zero</li>
+<li>'' = empty string</li>
 </ul>
-<h2>Links</h2>
-<p><a href="https://www.google.com">Google</a></p>
-<h2>Bold, Italic, and Strikethrough</h2>
+<h3>undefined poor man's null.</h3>
+<p><strong>undefined</strong> means the variable was never assigned a value.
+<strong>null</strong> is just same but we assign it explicitly. It doesn't mean we can't assign undefined.</p>
+<h3>Operators and if-else</h3>
+<p>Normal operator usage and normal if else and ternary operator like python or c.</p>
+<h3>Functions</h3>
+<pre><code class="language-js">console.log(getLabel(3))
+// prints 'awful'
+
+function getLabel(numStars) {
+  if (numStars > 7) {
+    return 'great'
+  } else if (numStars > 3) {
+    return 'okay'
+  } else {
+    return 'awful'
+  }
+}
+</code></pre>
+<p>JS interpreter reads whole first and function definition are globally scoped, then goes back to executing where it is called. In JS it doesn't matter where the function definitions occur.</p>
+<h4>Other ways to define a function</h4>
+<pre><code class="language-js">//using the function keyworkd
+function add(x, y) {
+    return x + y;
+}
+const add = function(x, y) {
+  return x + y
+}
+
+// Fat arrow function
+const add = (x, y) => {
+  return x + y
+}
+</code></pre>
+<h3>Arrays</h3>
+<p>These are dynamically allocated arrays. Python list. C++ vectors.</p>
+<pre><code class="language-js">const numbers = [1, 2, 3, 4, 5]
+const strings = ['banana', 'apple', 'pear']
+const miscellaneous = [true, 7, 'adamantium']
+numbers.push(6);
+console.log(numbers[0])
+</code></pre>
+<h3>Loops</h3>
+<pre><code class="language-js">for (let i = 0; i &#x3C; 10; i++) {
+  console.log(i)
+}
+
+let list = [4, 5, 6];
+// for...in return the keys
+for (let i in list) {
+  console.log(i); // "0", "1", "2",
+}
+//for...of return the values.
+for (let i of list) {
+  console.log(i); // 4, 5, 6
+}
+</code></pre>
+<h3>Objects</h3>
+<p>JS has a object type. They are variables that can hold more complex information than basic types like String, Number and Boolean.</p>
+<pre><code class="language-js">const apple = {
+  name: 'Apple',
+  radius: 2,
+  color: 'red',
+}
+</code></pre>
+<p><strong>Syntactic Sugar</strong></p>
+<pre><code class="language-js">const name = 'Apple'
+const radius = 2
+const color = 'red'
+const apple = {
+  name,
+  radius,
+  color,
+}
+
+// Similar to 
+const name = 'Apple'
+const radius = 2
+const color = 'red'
+const apple = {
+  name: name,
+  radius: radius,
+  color: color,
+}
+</code></pre>
+<h4>Object Methods</h4>
+<p>Javascript Object have methods. Methods are functions that are defined inside an object. They can access and change the properties of the object in question.</p>
+<pre><code class="language-js">const person = {
+  firstName: 'Lane',
+  lastName: 'Wagner',
+  getFullName() {
+    return this.firstName + ' ' + this.lastName
+  }
+}
+
+console.log(person.getFullName())
+</code></pre>
+<p>Methods can mutate the properties of their object.</p>
+<pre><code class="language-js">const tree = {
+  height: 256,
+  color: 'green',
+  cut() {
+    this.height /= 2
+  }
+}
+
+tree.cut()
+console.log(tree.height)
+// prints 128
+</code></pre>
+<h3>this</h3>
+<pre><code class="language-js">const author = {
+  firstName: 'Lane',
+  lastName: 'Wagner',
+  getName() {
+    return `${this.firstName} ${this.lastName}`
+  }
+}
+console.log(author.getName())
+// Prints: Lane Wagner
+</code></pre>
+<pre><code class="language-js">const author = {
+  firstName: 'Lane',
+  lastName: 'Wagner',
+  getName: () => {
+    return `${this.firstName} ${this.lastName}`
+  }
+}
+console.log(author.getName())
+// Prints: undefined undefined
+// because the parent scope (the scope outside of the author object)
+// never defined .firstName and .lastName properties
+</code></pre>
+<p>As we can see when we use the <strong>fat arrow function</strong>  syntax, you sometimes get a different this object.</p>
+<p>==this== points to the object on which it is called.</p>
+<p>This is due to property how <strong>fat arrow functions</strong> work. With a fat arrow function ==this== will always refer to the same object that its parent scope would.</p>
+<p>Essentially ==this's == value depends on which context it appears - function, class or global.</p>
+<h3>Errors</h3>
+<p>Gonna catch deez errors.</p>
+<p>It's try catch finally. finally is rarely used so we generally use try-catch.</p>
+<pre><code class="language-js">try {
+  //code to run
+} catch (err) {
+  //if err occurs log it out
+  console.log(err.message);
+} finally {
+  // It will always run. [OPTIONAL]
+}
+</code></pre>
+<p>Throwing our own error. If we know something bad will happen if the input is of something we know is entered, we can throw an error.</p>
+<pre><code class="language-js">throw new Error('something went wrong');
+</code></pre>
+<h3>Runtime</h3>
+<p>A runtime environment is where your program runs. Since JS can run in many places outside browsers so different runtimes are made.</p>
+<h4>Different runtime</h4>
 <ul>
-<li><strong>Bold Text</strong></li>
-<li><em>Italic Text</em></li>
-<li>~~Strikethrough~~</li>
+<li>A Browser</li>
+<li>Nodejs</li>
+<li>A web worker within a browser</li>
+<li>Deno.js</li>
+<li>Bun and many more.</li>
 </ul>
-<h2>Math Equations (LaTeX)</h2>
-<p>$$
-E = mc^2
-$$</p>
-<p>Inline equation: $a^2 + b^2 = c^2$</p>
-<h2>Footnotes</h2>
-<p>Here is a sentence with a footnote.[^1]</p>
-<p>[^1]: This is the footnote text.</p>
-<h2>Emojis 🎉</h2>
-<p>That’s it! 🎯</p>
+<h4>Whats different in all these runtime</h4>
+<ul>
+<li>Performance</li>
+<li>API - you can use Canvas api to render graphics in browser but can't do those things in node or bun that don't support those.</li>
+<li>Global object - In browsers, global object is ==window== but in node it's ==global==.</li>
+</ul>
+<p><a href="https://www.freecodecamp.org/news/javascript-engine-and-runtime-explained/">JS Runtimes</a></p>
 
     </div>
 </article>
