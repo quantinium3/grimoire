@@ -16,6 +16,7 @@ interface NavbarItem {
 
 interface Config {
     navbar: NavbarItem[];
+    owner: string;
 }
 
 Handlebars.registerHelper('replaceExtension', function(path: string) {
@@ -40,6 +41,7 @@ const compileTemplate = async (templateName: string, data: any, layoutData: any 
 
         const layoutCompiled = Handlebars.compile(layoutTemplate);
         const finalHTML = layoutCompiled({
+            owner: data.owner,
             title: layoutData.title || data.title || "",
             content: contentHTML
         });
@@ -96,14 +98,15 @@ const generateIndexFile = async (dirPath: string, files: string[], config: Confi
     }
 };
 
+
 const compilePage = async (filename: string, filepath: string, config: Config) => {
     try {
         const relativePath = path.relative('./content', filepath);
         const targetPage = config.navbar.find((page) => page.path === relativePath);
 
         const { content, frontmatter } = await processMarkdownFile(filepath);
-
         const html = await compileTemplate('page', {
+            owner: config['owner'],
             title: frontmatter["title"] || "",
             frontmatter,
             content
