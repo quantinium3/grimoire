@@ -12,11 +12,6 @@
             "path": "Bookmarks.md"
         },
         {
-            "type": "file",
-            "name": "Resources",
-            "path": "Resource.md"
-        },
-        {
             "type": "directory",
             "name": "Blog",
             "path": "blog"

@@ -9,6 +9,7 @@ import rehypeRaw from 'rehype-raw';
 import rehypeStringify from 'rehype-stringify';
 import { globby } from 'globby';
 import { existsSync } from 'fs';
+import { minify } from "html-minifier";
 
 interface NavbarItem {
     type: string;
@@ -57,22 +58,25 @@ const compileTemplate = async (templateName: string, data: any, layoutData: any 
 
 const outputHTML = async (outputPath: string, html: string) => {
     await ensureDirectoryExists(path.dirname(outputPath));
-    await writeFile(outputPath, html, "utf-8");
+    await writeFile(outputPath, minify(html, {
+        collapseWhitespace: true,
+        removeComments: true,
+        minifyCSS: true, 
+    }), "utf-8");
     console.log(`Generated: ${outputPath}`);
 };
 
 const processMarkdownFile = async (filepath: string) => {
     const mdContent = await readFile(filepath, "utf-8");
     const { content, data: frontmatter } = matter(mdContent);
-    
-    // Updated markdown processor to preserve raw HTML
+
     const htmlContent = await unified()
         .use(remarkParse)
-        .use(remarkRehype, { allowDangerousHtml: true }) // Allow HTML in markdown
-        .use(rehypeRaw) // Parse the raw HTML
-        .use(rehypeStringify) // Convert to HTML string
+        .use(remarkRehype, { allowDangerousHtml: true })
+        .use(rehypeRaw)
+        .use(rehypeStringify)
         .process(content);
-        
+
     return {
         content: htmlContent.toString(),
         frontmatter
@@ -96,7 +100,7 @@ const generateIndexFile = async (dirPath: string, files: string[], config: Confi
             files: fileLinks,
             heading: directoryName
         }, { title: directoryName });
-        
+
         const outputPath = path.join(dirPath, "index.html");
         await outputHTML(outputPath, html);
     } catch (error) {

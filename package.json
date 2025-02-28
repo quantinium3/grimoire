@@ -36,6 +36,8 @@
     "unified": "^11.0.5"
   },
   "dependencies": {
+    "@types/html-minifier": "^4.0.5",
+    "html-minifier": "^4.0.0",
     "rehype-raw": "^7.0.0",
     "rehype-stringify": "^10.0.1",
     "remark-rehype": "^11.1.1"

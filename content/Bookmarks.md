@@ -1,113 +1,16 @@
 ---
 title: "Bookmarks"
 ---
-### Tech & Work Bookmarks
-1. **https://github.com/**  
-   - Open-source hub for code, projects, and inspiration.  
-   - Why: Essential for personal projects or browsing repos.
-
-2. **https://stackoverflow.com/**  
-   - Go-to for solving coding or tech problems.  
-   - Why: A lifeline during late-night debugging.
-
-3. **https://news.ycombinator.com/**  
-   - Hacker News for tech updates and discussions.  
-   - Why: Stay in the loop with minimal fluff.
-
-4. **https://www.reddit.com/r/sysadmin/**  
-   - Sysadmin subreddit for infrastructure and networking tips.  
-   - Why: Community wisdom for MSP life.
-
-5. **https://arxiv.org/**  
-   - Research papers on machine learning, security, and more.  
-   - Why: Deep dives for a researcher mindset.
-
-6. **https://www.cloudflare.com/learning/**  
-   - Cloudflare’s learning hub for networking and security explainers.  
-   - Why: Clear, concise, and relevant to IAM/infrastructure.
-
----
-
-### Creative & Design Bookmarks
-7. **https://catppuccin.com/**  
-   - Official Catppuccin site for palette inspiration.  
-   - Why: Keep your site’s aesthetic on-brand.
-
-8. **https://dribbble.com/**  
-   - Design showcase for UI, logos, and visuals.  
-   - Why: Spark ideas for your site’s look.
-
-9. **https://coolors.co/**  
-   - Color palette generator.  
-   - Why: Tweak your Catppuccin hues or experiment.
-
-10. **https://fonts.google.com/**  
-    - Free fonts to pair with your pastel vibe.  
-    - Why: Typography matters for a polished site.
-
----
-
-### Personal & Hobbyist Bookmarks
-11. **https://www.goodreads.com/**  
-    - Track non-fiction and manga reading.  
-    - Why: Organize your bookish side.
-
-12. **https://mangadex.org/**  
-    - Free manga reading platform.  
-    - Why: Unwind with a quick chapter.
-
-13. **https://store.steampowered.com/**  
-    - Gaming storefront for FPS and MMOs.  
-    - Why: Browse deals during downtime.
-
-14. **https://www.meta.com/quest/**  
-    - Meta Quest hub for VR updates or games.  
-    - Why: Feed your recent VR pickup.
-
----
-
-### Productivity & Deep Work
-15. **https://notion.so/**  
-    - All-in-one workspace for notes and projects.  
-    - Why: Structure those 2 AM focus sessions.
-
-16. **https://todoist.com/**  
-    - Task manager for work and personal goals.  
-    - Why: Keep your sleep-deprived self on track.
-
-17. **https://www.rescuetime.com/**  
-    - Time tracking to optimize your day (or night).  
-    - Why: Night owl efficiency boost.
-
----
-
-### Community & Networking
-18. **https://x.com/**  
-    - Social platform for tech takes and pseudonymous chats.  
-    - Why: Connect with the hive mind.
-
-19. **https://www.nanog.org/**  
-    - North American Network Operators’ Group for networking pros.  
-    - Why: Niche but gold for infrastructure nerds.
-
-20. **https://www.reddit.com/r/netsec/**  
-    - Network security subreddit.  
-    - Why: Cybersecurity insights from peers.
-
----
-
-### Wildcard Fun
-21. **https://www.wolframalpha.com/**  
-    - Computational answers to random questions.  
-    - Why: Curiosity fuel at 3 AM.
-
-22. **https://archive.org/**  
-    - Digital time capsule of the web and media.  
-    - Why: Nostalgia or obscure research.
-
-23. **https://neal.fun/**  
-    - Quirky, interactive web toys.  
-    - Why: A playful break from deep work.
-
----
-
+- [A Distributed Systems Reading List](https://dancres.github.io/Pages/)
+- [Ray Tracing in One Weekend](https://raytracing.github.io/books/RayTracingInOneWeekend.html#defocusblur/athinlensapproximation)
+- [Pointer Compression in V8](https://v8.dev/blog/pointer-compression)
+- [What Every C Programmer Should Know About Undefined Behavior](https://blog.llvm.org/2011/05/what-every-c-programmer-should-know.html)
+- [What is Systems Programming, Really?](https://willcrichton.net/notes/systems-programming/)
+- [John Carmack on Functional Programming in C++](http://sevangelatos.com/john-carmack-on/)
+- [A Guide to Undefined Behavior in C and C++](https://blog.regehr.org/archives/213)
+- [The Copenhagen Book](https://thecopenhagenbook.com/)
+- [Updating the Go Memory Model](https://research.swtch.com/gomm)
+- [How I built zig-sqlite](https://rischmann.fr/blog/how-i-built-zig-sqlite#what-is-comptime)
+- [Rust's incremental compiler architecture](https://lwn.net/Articles/997784/)
+- [The Book of Shaders](https://thebookofshaders.com/)
+- [Optimizations in C++ Compilers](https://queue.acm.org/detail.cfm?id=3372264)
