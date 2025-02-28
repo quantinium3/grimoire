@@ -14,12 +14,12 @@
         {
             "type": "directory",
             "name": "Blog",
-            "path": "blog"
+            "path": "Blog"
         },
         {
             "type": "directory",
             "name": "Daily",
-            "path": "daily"
+            "path": "Daily"
         }
     ]
 }
