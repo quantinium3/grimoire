@@ -15,7 +15,7 @@ Static site generator for Obsidian notes
 - [ ] Export to PDF or other formats
 - [ ] Custom themes
 - [ ] Backlink display (showing notes that link to the current one)
-- [/] Markdown metadata/frontmatter support (e.g., tags, title, date)
+- [ ] Markdown metadata/frontmatter support (e.g., tags, title, date)
 - [ ] Embedded media support (e.g., YouTube, audio files)
 - [ ] RSS feed generation for blog-like notes
 - [ ] Vim Motions
