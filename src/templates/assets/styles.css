@@ -1,12 +1,5 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{title}}</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js"></script>
-    <script>hljs.highlightAll();</script>
-    <style>
+@import "tailwindcss";
+
 body {
     font-family: monospace, Arial, sans-serif;
     margin: 0 auto;
@@ -47,11 +40,11 @@ body {
     display: inline-block;
 }
 
-.navbar a:hover{
+.navbar a:hover {
     color: #B4BEFE;
 }
 
-.navbar a:visited{
+.navbar a:visited {
     color: #89DCEB;
 }
 
@@ -185,6 +178,7 @@ pre {
     background: #11111b;
     padding: 0.5rem;
 }
+
 code.hljs {
     color: #cdd6f4;
     background: #11111b;
@@ -387,28 +381,71 @@ hr {
 footer {
     margin-bottom: 1rem;
 }
-    </style>
-</head>
-<body>
-    <div class="top">
-        <h1 class="logo">
-            {{owner}}
-        </h1>
-        <div>
-            <span id="time"></span>
-        </div>
-    </div>
-    {{> navbar}}
-    <main class="content">
-        {{{content}}}
-    </main>
-    <footer>Powered By Grimoire</footer>
-    <script>
-        const time = document.getElementById("time");
-        const interval = setInterval(() => {
-              const t = new Date().toLocaleTimeString("en-US", { hour12: false })
-            time.innerHTML = t;
-        }, 1000)
-    </script>
-</body>
-</html>
+
+.file-tree {
+    background-color: white;
+    border-radius: 5px;
+    padding: 15px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.file-tree ul {
+    list-style-type: none;
+    padding-left: 20px;
+    margin: 0;
+}
+
+.file-tree>ul {
+    padding-left: 0;
+}
+
+.file-tree li {
+    cursor: pointer;
+    margin: 8px 0;
+    padding: 4px 0;
+    transition: all 0.2s;
+}
+
+.file-tree li.directory::before {
+    content: "📁 ";
+}
+
+.file-tree li.directory.open::before {
+    content: "📂 ";
+}
+
+.file-tree li.file::before {
+    content: "📄 ";
+}
+
+.file-tree li.file {
+    color: #007bff;
+}
+
+.file-tree li.file:hover {
+    color: #0056b3;
+    text-decoration: underline;
+}
+
+.file-tree li.directory:hover {
+    background-color: #f0f0f0;
+    border-radius: 3px;
+}
+
+/* Hide child elements by default */
+.file-tree ul.collapsed {
+    display: none;
+}
+
+table {
+    @apply w-full border-collapse border border-gray-300;
+}
+
+th,
+td {
+    @apply border border-gray-300 p-2 text-left;
+}
+
+th {
+    @apply bg-gray-100 font-bold;
+}

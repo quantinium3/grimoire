@@ -3,8 +3,14 @@
   "version": "0.1.0",
   "description": "static site generator for markdown notes",
   "main": "src/index.ts",
+  "type": "module",
   "scripts": {
-    "test": "bun run src/index.ts"
+    "build:css": "bunx tailwindcss -i ./src/styles.css -o ./dist/assets/styles.css",
+    "build:ts": "bun run ./src/main.ts",
+    "watch:css": "bunx tailwindcss -i ./src/styles.css -o ./dist/assets/styles.css --watch",
+    "watch:ts": "bun run ./src/watch.ts",
+    "serve": "bunx browser-sync start --server './dist' --files './dist/*' --no-open",
+    "dev": "bun run build:css && bunx vite"
   },
   "repository": {
     "type": "git",
@@ -22,24 +28,39 @@
     "@types/fs-extra": "^11.0.4",
     "@types/globby": "^9.1.0",
     "@types/node": "^22.10.10",
-    "chokidar": "^4.0.3",
+    "autoprefixer": "^10.4.20",
     "eslint": "^9.19.0",
     "fs-extra": "^11.3.0",
     "globals": "^15.14.0",
     "globby": "^14.0.2",
     "gray-matter": "^4.0.3",
     "handlebars": "^4.7.8",
+    "postcss": "^8.5.3",
+    "prismjs": "^1.29.0",
+    "rehype-prism-plus": "^2.0.0",
     "remark-html": "^16.0.1",
     "remark-parse": "^11.0.0",
     "typescript": "^5.7.3",
     "typescript-eslint": "^8.21.0",
-    "unified": "^11.0.5"
+    "unified": "^11.0.5",
+    "vite": "^6.2.0",
+    "vite-plugin-handlebars": "^2.0.0"
   },
   "dependencies": {
+    "@catppuccin/highlightjs": "^1.0.0",
+    "@tailwindcss/cli": "^4.0.9",
+    "@tailwindcss/vite": "^4.0.9",
+    "@types/highlightjs": "^9.12.6",
     "@types/html-minifier": "^4.0.5",
+    "directory-tree": "^3.5.2",
+    "glob": "^11.0.1",
+    "highlightjs": "^9.16.2",
     "html-minifier": "^4.0.0",
+    "rehype-highlight": "^7.0.2",
     "rehype-raw": "^7.0.0",
     "rehype-stringify": "^10.0.1",
-    "remark-rehype": "^11.1.1"
+    "remark-gfm": "^4.0.1",
+    "remark-rehype": "^11.1.1",
+    "tailwindcss": "^4.0.9"
   }
 }

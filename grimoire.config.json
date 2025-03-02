@@ -1,4 +1,6 @@
 {
+    "inputDir": "./content",
+    "relativeDir": ".",
     "owner": "Quantinium",
     "navbar": [
         {
