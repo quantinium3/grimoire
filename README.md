@@ -4,6 +4,7 @@ Static site generator for Obsidian notes
 ## TODO
 - [x] File tree
 - [x] Make Images work
+- [ ] Add video to iframe creation
 - [ ] Summaries on Hover
 - [ ] Proper Styling
 - [x] Syntax Highlighting 
