@@ -3,7 +3,7 @@ Static site generator for Obsidian notes
 
 ## TODO
 - [x] File tree
-- [ ] Make Images work
+- [x] Make Images work
 - [ ] Summaries on Hover
 - [ ] Proper Styling
 - [x] Syntax Highlighting 

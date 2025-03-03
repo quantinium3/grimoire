@@ -8,14 +8,14 @@ import remarkRehype from "remark-rehype";
 import rehypeRaw from "rehype-raw";
 import rehypeStringify from "rehype-stringify";
 import { minify } from "html-minifier";
-import { existsSync } from "fs";
-import { mkdir } from "fs/promises";
 import Handlebars from "handlebars";
 import rehypePrism from "rehype-prism-plus";
 import { visit } from "unist-util-visit";
 import { type Node } from "unist";
 import { type Element } from "hast";
 import remarkGfm from "remark-gfm";
+import { remarkObsidianImages } from "./remark";
+import { copyImages, ensureDirectory } from "./utils";
 
 interface Metadata {
     title: string;
@@ -91,14 +91,11 @@ const processNode = async (
     file_tree: string
 ): Promise<void> => {
     if (node.type === "file") {
-        // Process the file directly
         await compilePage(node.name, path.join(inputDir, node.path), file_tree);
     } else if (node.type === "directory") {
-        // Create the output directory
         const dirPath = path.join("dist", node.path);
         await ensureDirectory(dirPath);
 
-        // Process all children nodes recursively
         await Promise.all(
             node.children.map(child => processNode(child, inputDir, file_tree))
         );
@@ -124,7 +121,8 @@ const main = async (): Promise<void> => {
             await readFile("./node_modules/prismjs/themes/prism-okaidia.css", "utf-8")
         );
 
-        // Process all top-level nodes recursively
+
+        await copyImages(config.inputDir, "dist/assets/images");
         await Promise.all(
             fileTreeNodes.map(node => processNode(node, config.inputDir, file_tree))
         );
@@ -175,11 +173,6 @@ const outputHTML = async (outputPath: string, html: string): Promise<void> => {
     }
 };
 
-const ensureDirectory = async (dirpath: string): Promise<void> => {
-    if (!existsSync(dirpath)) {
-        await mkdir(dirpath, { recursive: true });
-    }
-};
 
 const compileTemplate = async (
     templateName: string,
@@ -236,6 +229,7 @@ const processMarkdown = async (
 
         const htmlContent = await unified()
             .use(remarkParse)
+            .use(remarkObsidianImages)
             .use(remarkGfm)
             .use(remarkRehype, { allowDangerousHtml: true })
             .use(rehypePrism, { showLineNumbers: true })
