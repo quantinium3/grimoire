@@ -34,3 +34,32 @@ export const remarkObsidianImages: Plugin<[], Node> = () => {
         });
     };
 };
+
+export const rehypeAddCopyButton: Plugin<[], Node> = () => {
+    return (tree) => {
+        visit(tree, "element", (node: Element, index, parent) => {
+            if (node.tagName === "pre" && node.children.some(child => child.type === "element" && child.tagName === "code")) {
+                const copyButton: Element = {
+                    type: "element",
+                    tagName: "button",
+                    properties: {
+                        className: ["copy-button"],
+                        "data-copy-state": "copy",
+                    },
+                    children: [{ type: "text", value: "Copy" }],
+                };
+
+                const wrapper: Element = {
+                    type: "element",
+                    tagName: "div",
+                    properties: { className: ["code-block-wrapper"] },
+                    children: [copyButton, { ...node }],
+                };
+
+                if (parent && index !== undefined) {
+                    parent.children[index] = wrapper;
+                }
+            }
+        });
+    };
+};
