@@ -21,3 +21,4 @@ Static site generator for Obsidian notes
 - [ ] RSS feed generation for blog-like notes
 - [ ] Vim Motions
 - [ ] image as header
+- [x] compress images
