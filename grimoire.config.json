@@ -23,5 +23,6 @@
             "name": "Daily",
             "path": "Daily"
         }
-    ]
+    ],
+    "symlink": "/home/quantinium/personal/obsidian/quantinium/"
 }

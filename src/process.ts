@@ -21,13 +21,12 @@ export const compilePage = async (
     file_tree: string
 ): Promise<void> => {
     try {
-        // Only process markdown files
         if (!filepath.toLowerCase().endsWith('.md')) {
             return;
         }
 
         const { content, frontmatter } = await processMarkdown(filepath);
-        const html = await compileTemplate("page", frontmatter, content, file_tree);
+        const html = await compileTemplate("page", frontmatter, content, file_tree.replaceAll("index.md", ""));
 
         const relativePath = filepath.includes("content/")
             ? filepath.substring(filepath.indexOf("content/") + 8)

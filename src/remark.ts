@@ -15,12 +15,12 @@ export const remarkObsidianImages: Plugin<[], Node> = () => {
                             const imageName = fileName.replace(/ /g, "-");
                             node.children[index] = {
                                 type: "image",
-                                url: `/assets/images/${imageName}`,
+                                url: `/assets/${imageName}`,
                                 alt: imageName,
                                 data: {
                                     hName: "img",
                                     hProperties: {
-                                        src: `/assets/images/${imageName}`,
+                                        src: `/assets/${imageName}`,
                                         alt: imageName,
                                         loading: "lazy"
                                     }

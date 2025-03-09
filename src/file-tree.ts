@@ -28,12 +28,14 @@ export const buildFileTree = async (base: string, relative: string): Promise<Fil
 
             if (isDir) {
                 const children = await buildFileTree(base, relPath);
-                nodes.push({
-                    name: fileName,
-                    path: pathStr,
-                    type: "directory",
-                    children: children,
-                });
+                if (children.length != 0) {
+                    nodes.push({
+                        name: fileName,
+                        path: pathStr,
+                        type: "directory",
+                        children: children,
+                    });
+                }
             } else if (path.extname(fileName) === ".md") {
                 nodes.push({
                     name: fileName,
@@ -53,6 +55,5 @@ export const buildFileTree = async (base: string, relative: string): Promise<Fil
         if (a.type === "file" && b.type === "directory") return 1;
         return a.name.toLowerCase().localeCompare(b.name.toLowerCase());
     });
-
     return nodes;
 };

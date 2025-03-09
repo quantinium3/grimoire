@@ -24,7 +24,6 @@ const main = async (): Promise<void> => {
             await readFile("./node_modules/prismjs/themes/prism-okaidia.css", "utf-8")
         );
 
-
         await copyImages(config.inputDir, "dist/assets/images");
         await Promise.all(
             fileTreeNodes.map(node => processNode(node, config.inputDir, file_tree))
