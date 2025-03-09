@@ -4,6 +4,7 @@ import { copyImages, getConfig } from "./utils";
 import type { Config, FileNode } from "./consts";
 import { processNode } from "./process";
 import { ensureDir } from "fs-extra";
+import { rmSync } from "fs";
 
 const main = async (): Promise<void> => {
     try {
@@ -15,6 +16,7 @@ const main = async (): Promise<void> => {
 
         const file_tree = JSON.stringify(fileTreeNodes);
 
+        rmSync('dist', { recursive: true, force: true });
         await ensureDir("dist");
         await ensureDir("dist/assets/styles");
         await ensureDir("dist/assets/js");

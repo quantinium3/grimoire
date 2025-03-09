@@ -1,34 +1,55 @@
 import { existsSync, rmSync } from "fs";
 import path from "path";
 import { globby } from "globby";
-import { copyFile } from "fs/promises";
 import type { Config } from "./consts";
 import { readFile } from "fs/promises";
 import { ensureDir } from "fs-extra";
 import { cp } from "fs/promises";
+import Ffmpeg from "fluent-ffmpeg";
 
 export const copyImages = async (inputDir: string, outputDir: string): Promise<void> => {
     try {
         const imagePattern = [
-            `${inputDir}/**/*.{png,jpg,jpeg,gif,webp,svg}`
-        ]
+            `${inputDir}/**/*.{png,jpg,jpeg,gif,webp,svg}`,
+        ];
+
         const imagePaths = await globby(imagePattern, {
             absolute: true,
-        })
-        await ensureDir(outputDir)
+            caseSensitiveMatch: false,
+        });
+
+        await ensureDir(outputDir);
+
         await Promise.all(
             imagePaths.map(async (imagePath: string) => {
-                const fileName = path.basename(imagePath).replace(/ /g, "-");
-                const destPath = path.join(outputDir, fileName);
-                await copyFile(imagePath, destPath);
-                console.log(`Copied image: ${destPath}`);
+                try {
+                    const fileName = path.basename(imagePath)
+                        .replace(/[^\w.-]/g, '-')
+                    const baseName = fileName.split('.')[0];
+                    const destPath = path.join(outputDir, `${baseName}.jpeg`);
+
+                    await new Promise((resolve, reject) => {
+                        Ffmpeg(imagePath)
+                            .outputOptions(['-vf scale=-2:360'])
+                            .outputOptions(['-q:v 2'])
+                            .on('end', resolve)
+                            .on('error', reject)
+                            .save(destPath);
+                    });
+
+                    console.log(`Processed image: ${destPath}`);
+                } catch (error) {
+                    console.error(`Failed to process ${imagePath}:`, error);
+                    throw error;
+                }
             })
         );
     } catch (err) {
-        console.error("Error copying images:", err);
+        console.error("Error in copyImages:", err);
         throw err;
     }
-}
+};
+
 
 export const getConfig = async (): Promise<Config> => {
     try {

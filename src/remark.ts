@@ -12,7 +12,7 @@ export const remarkObsidianImages: Plugin<[], Node> = () => {
                         const fileName = match[1];
                         const imgExtensions = /\.(png|jpg|jpeg|svg|webp)$/i;
                         if (imgExtensions.test(fileName)) {
-                            const imageName = fileName.replace(/ /g, "-");
+                            const imageName = fileName.replace(/ /g, "-").split('.')[0] + '.jpeg';
                             node.children[index] = {
                                 type: "image",
                                 url: `/assets/images/${imageName}`,
