@@ -11,14 +11,15 @@ import { readFile } from "fs/promises";
 import path from "path";
 import { writeFile } from "fs/promises";
 import { minify } from "html-minifier";
-import type { FileNode, Metadata } from "./consts";
+import type { Config, FileNode, Metadata } from "./consts";
 import Handlebars from "handlebars";
 import { ensureDir } from "fs-extra";
 
 export const compilePage = async (
     filename: string,
     filepath: string,
-    file_tree: string
+    file_tree: string,
+    config: Config
 ): Promise<void> => {
     try {
         if (!filepath.toLowerCase().endsWith('.md')) {
@@ -26,7 +27,7 @@ export const compilePage = async (
         }
 
         const { content, frontmatter } = await processMarkdown(filepath);
-        const html = await compileTemplate("page", frontmatter, content, file_tree.replaceAll("index.md", ""));
+        const html = await compileTemplate("page", frontmatter, content, file_tree.replaceAll("index.md", ""), config);
 
         const relativePath = filepath.includes("content/")
             ? filepath.substring(filepath.indexOf("content/") + 8)
@@ -59,7 +60,8 @@ export const compileTemplate = async (
     templateName: string,
     metadata: Partial<Metadata>,
     content: string,
-    file_tree: string
+    file_tree: string,
+    config: Config,
 ): Promise<string> => {
     try {
         const [pageTemplate, layoutTemplate] = await Promise.all([
@@ -92,6 +94,7 @@ export const compileTemplate = async (
             modified: metadata.modified || "",
             content: contentHTML,
             file_tree,
+            owner: config.owner,
             // Add script and style for copy functionality
             includesCopyButton: true,
         });
@@ -131,16 +134,17 @@ export const processMarkdown = async (
 export const processNode = async (
     node: FileNode,
     inputDir: string,
-    file_tree: string
+    file_tree: string,
+    config: Config
 ): Promise<void> => {
     if (node.type === "file") {
-        await compilePage(node.name, path.join(inputDir, node.path), file_tree);
+        await compilePage(node.name, path.join(inputDir, node.path), file_tree, config);
     } else if (node.type === "directory") {
         const dirPath = path.join("dist", node.path);
         await ensureDir(dirPath);
 
         await Promise.all(
-            node.children.map(child => processNode(child, inputDir, file_tree))
+            node.children.map(child => processNode(child, inputDir, file_tree, config))
         );
     }
 };

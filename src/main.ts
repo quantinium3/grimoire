@@ -26,7 +26,7 @@ const main = async (): Promise<void> => {
 
         await copyImages(config.inputDir, "dist/assets/images");
         await Promise.all(
-            fileTreeNodes.map(node => processNode(node, config.inputDir, file_tree))
+            fileTreeNodes.map(node => processNode(node, config.inputDir, file_tree, config))
         );
 
         console.log("Site generation completed successfully!");

@@ -34,6 +34,7 @@
         .file-tree .collapsed {
             display: none;
         }
+
         #time {
             position: absolute;
             bottom: 10px;
@@ -69,132 +70,132 @@
             background-color: #2D2D2D;
         }
     </style>
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const fileTreeData = JSON.parse('{{{file_tree}}}');
-        initializeFileTree(fileTreeData);
-        initializeClock();
-        initializeCopyButton();
-    });
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const fileTreeData = JSON.parse('{{{file_tree}}}');
+            initializeFileTree(fileTreeData);
+            initializeClock();
+            initializeCopyButton();
+        });
 
-    function initializeFileTree(fileTreeData) {
-        const fileTreeElement = document.getElementById('file-tree');
-        if (!fileTreeElement) return;
+        function initializeFileTree(fileTreeData) {
+            const fileTreeElement = document.getElementById('file-tree');
+            if (!fileTreeElement) return;
 
-        // Load expanded state from localStorage (or initialize an empty object)
-        const expandedStateKey = 'fileTreeExpandedState';
-        const expandedState = new Map(JSON.parse(localStorage.getItem(expandedStateKey)) || []);
+            // Load expanded state from localStorage (or initialize an empty object)
+            const expandedStateKey = 'fileTreeExpandedState';
+            const expandedState = new Map(JSON.parse(localStorage.getItem(expandedStateKey)) || []);
 
-        // Save expanded state to localStorage whenever it changes
-        function saveExpandedState() {
-            localStorage.setItem(expandedStateKey, JSON.stringify([...expandedState]));
-        }
-
-        function renderFileTreeNode(node, path = '') {
-            const list = document.createElement('ul');
-            const item = document.createElement('li');
-            item.textContent = node.name.replace(".md", "");
-            item.classList.add(node.type);
-            list.appendChild(item);
-
-            const currentPath = path ? `${path}/${node.name}` : node.name;
-
-            if (node.type === 'directory' && node.children && node.children.length > 0) {
-                const childList = document.createElement('ul');
-                // Check if this directory should be expanded based on saved state
-                const isExpanded = expandedState.get(currentPath) || false;
-                if (isExpanded) {
-                    item.classList.add('open');
-                } else {
-                    childList.classList.add('collapsed');
-                }
-
-                node.children.forEach(child => {
-                    const childNode = renderFileTreeNode(child, currentPath);
-                    childList.appendChild(childNode);
-                });
-
-                item.addEventListener('click', function (e) {
-                    e.stopPropagation();
-                    const isOpen = this.classList.toggle('open');
-                    childList.classList.toggle('collapsed');
-                    // Update and save the state
-                    expandedState.set(currentPath, isOpen);
-                    saveExpandedState();
-                });
-
-                item.appendChild(childList);
-            } else if (node.type === 'file') {
-                item.addEventListener('click', function (e) {
-                    e.stopPropagation();
-                    const path = node.path.replace(/\.md$/, '.html');
-                    window.location.href = '/' + path;
-                });
+            // Save expanded state to localStorage whenever it changes
+            function saveExpandedState() {
+                localStorage.setItem(expandedStateKey, JSON.stringify([...expandedState]));
             }
 
-            return item;
-        }
+            function renderFileTreeNode(node, path = '') {
+                const list = document.createElement('ul');
+                const item = document.createElement('li');
+                item.textContent = node.name.replace(".md", "");
+                item.classList.add(node.type);
+                list.appendChild(item);
 
-        const rootList = document.createElement('ul');
-        fileTreeData.forEach(node => {
-            rootList.appendChild(renderFileTreeNode(node));
-        });
+                const currentPath = path ? `${path}/${node.name}` : node.name;
 
-        fileTreeElement.appendChild(rootList);
-    }
+                if (node.type === 'directory' && node.children && node.children.length > 0) {
+                    const childList = document.createElement('ul');
+                    // Check if this directory should be expanded based on saved state
+                    const isExpanded = expandedState.get(currentPath) || false;
+                    if (isExpanded) {
+                        item.classList.add('open');
+                    } else {
+                        childList.classList.add('collapsed');
+                    }
 
-    function initializeClock() {
-        let timeElement = document.getElementById('time');
-        if (!timeElement) {
-            timeElement = document.createElement('div');
-            timeElement.id = 'time';
-            document.body.appendChild(timeElement);
-        }
+                    node.children.forEach(child => {
+                        const childNode = renderFileTreeNode(child, currentPath);
+                        childList.appendChild(childNode);
+                    });
 
-        function updateTime() {
-            const now = new Date();
-            timeElement.textContent = now.toLocaleTimeString('en-US', {hour12: false});
-        }
+                    item.addEventListener('click', function (e) {
+                        e.stopPropagation();
+                        const isOpen = this.classList.toggle('open');
+                        childList.classList.toggle('collapsed');
+                        // Update and save the state
+                        expandedState.set(currentPath, isOpen);
+                        saveExpandedState();
+                    });
 
-        updateTime();
-        setInterval(updateTime, 1000);
-    }
-
-    function initializeCopyButton() {
-        document.querySelectorAll('.copy-button').forEach(button => {
-            button.addEventListener('click', () => {
-                const codeBlock = button.nextElementSibling;
-                const codeElement = codeBlock.querySelector('code');
-
-                if (codeElement) {
-                    const textToCopy = codeElement.innerText;
-
-                    navigator.clipboard.writeText(textToCopy).then(() => {
-                        button.textContent = 'Copied!';
-                        button.dataset.copyState = 'copied';
-
-                        setTimeout(() => {
-                            button.textContent = 'Copy';
-                            button.dataset.copyState = 'copy';
-                        }, 1000);
-                    }).catch(err => {
-                        console.error('Failed to copy text: ', err);
-                        button.textContent = 'Failed!';
-
-                        setTimeout(() => {
-                            button.textContent = 'Copy';
-                        }, 1000);
+                    item.appendChild(childList);
+                } else if (node.type === 'file') {
+                    item.addEventListener('click', function (e) {
+                        e.stopPropagation();
+                        const path = node.path.replace(/\.md$/, '.html');
+                        window.location.href = '/' + path;
                     });
                 }
+
+                return item;
+            }
+
+            const rootList = document.createElement('ul');
+            fileTreeData.forEach(node => {
+                rootList.appendChild(renderFileTreeNode(node));
             });
-        });
-    }
-</script>
+
+            fileTreeElement.appendChild(rootList);
+        }
+
+        function initializeClock() {
+            let timeElement = document.getElementById('time');
+            if (!timeElement) {
+                timeElement = document.createElement('div');
+                timeElement.id = 'time';
+                document.body.appendChild(timeElement);
+            }
+
+            function updateTime() {
+                const now = new Date();
+                timeElement.textContent = now.toLocaleTimeString('en-US', {hour12: false});
+            }
+
+            updateTime();
+            setInterval(updateTime, 1000);
+        }
+
+        function initializeCopyButton() {
+            document.querySelectorAll('.copy-button').forEach(button => {
+                button.addEventListener('click', () => {
+                    const codeBlock = button.nextElementSibling;
+                    const codeElement = codeBlock.querySelector('code');
+
+                    if (codeElement) {
+                        const textToCopy = codeElement.innerText;
+
+                        navigator.clipboard.writeText(textToCopy).then(() => {
+                            button.textContent = 'Copied!';
+                            button.dataset.copyState = 'copied';
+
+                            setTimeout(() => {
+                                button.textContent = 'Copy';
+                                button.dataset.copyState = 'copy';
+                            }, 1000);
+                        }).catch(err => {
+                            console.error('Failed to copy text: ', err);
+                            button.textContent = 'Failed!';
+
+                            setTimeout(() => {
+                                button.textContent = 'Copy';
+                            }, 1000);
+                        });
+                    }
+                });
+            });
+        }
+    </script>
 </head>
 
 <body>
     <aside class="sidebar">
-        <h3 class="text-3xl">Navigation</h3>
+        <h3 class="text-3xl"><a href="/">{{owner}}</a></h3>
         <div id="file-tree" class="file-tree"></div>
         <div id="time"></div>
     </aside>
@@ -252,4 +253,5 @@
         </section>
     </main>
 </body>
+
 </html>
