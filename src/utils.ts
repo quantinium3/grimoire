@@ -7,6 +7,8 @@ import { ensureDir } from "fs-extra";
 import { cp } from "fs/promises";
 import Ffmpeg from "fluent-ffmpeg";
 
+Ffmpeg.setFfmpegPath(path.resolve(__dirname, './bin/ffmpeg-git-20240629-amd64-static/ffmpeg'));
+
 export const copyImages = async (inputDir: string, outputDir: string): Promise<void> => {
     try {
         const imagePattern = [
