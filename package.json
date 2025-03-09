@@ -49,6 +49,7 @@
   "dependencies": {
     "@catppuccin/highlightjs": "^1.0.0",
     "@tailwindcss/cli": "^4.0.9",
+    "@tailwindcss/typography": "^0.5.16",
     "@tailwindcss/vite": "^4.0.9",
     "@types/highlightjs": "^9.12.6",
     "@types/html-minifier": "^4.0.5",

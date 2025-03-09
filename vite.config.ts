@@ -24,7 +24,6 @@ const ensureDistDirectory = () => {
 
 const generateHtmlAndCssPlugin = (): Plugin => {
   const regenerateFiles = () => {
-    // Ensure the dist directory exists
     ensureDistDirectory();
     
     console.log("Running Tailwind CLI to generate CSS...");
@@ -54,10 +53,6 @@ const generateHtmlAndCssPlugin = (): Plugin => {
       console.log("Starting build process...");
       regenerateFiles();
     },
-    configResolved() {
-      console.log("Config resolved, regenerating files...");
-      regenerateFiles();
-    }
   };
 };
 
