@@ -7,10 +7,11 @@ import { globSync } from "glob";
 import path from "path";
 import fs from "fs";
 
+// Plugin to generate HTML and CSS files
 const generateHtmlAndCssPlugin = (): Plugin => {
     const regenerateFiles = () => {
         console.log("Running Tailwind CLI to generate CSS...");
-        spawnSync("bunx", ["@tailwindcss/cli", "-i", "./src/templates/assets/input.css", "-o", "./dist/assets/styles.css"], { 
+        spawnSync("bunx", ["@tailwindcss/cli", "-i", "./src/templates/assets/input.css", "-o", "./dist/assets/style.css"], { 
             stdio: "inherit",
             shell: true
         });
@@ -27,37 +28,11 @@ const generateHtmlAndCssPlugin = (): Plugin => {
         configResolved() {
             regenerateFiles();
         },
-        configureServer(server) {
-            const templatePaths = [
-                resolve(__dirname, "src/templates/layout.hbs"),
-                resolve(__dirname, "src/templates/page.hbs"),
-            ];
-            
-            // Ensure the paths exist
-            templatePaths.forEach(path => {
-                if (fs.existsSync(path)) {
-                    console.log(`Watching ${path} for changes...`);
-                } else {
-                    console.warn(`Warning: ${path} does not exist`);
-                }
-            });
-            
-            server.watcher.add(templatePaths);
-            
-            server.watcher.on("change", (file) => {
-                const normalizedFile = path.normalize(file);
-                
-                // Check if the changed file is one of our templates or main.ts
-                if (templatePaths.some(template => normalizedFile === path.normalize(template)) || 
-                    normalizedFile.endsWith("main.ts")) {
-                    console.log(`Change detected in ${normalizedFile}, regenerating files...`);
-                    regenerateFiles();
-                }
-            });
-        }
+        // No server configuration since we're only building
     };
 };
 
+// Helper function to get HTML files for rollup input
 const htmlFiles = () => {
     try {
         return globSync("dist/**/*.html").reduce((acc, file) => {
@@ -71,19 +46,8 @@ const htmlFiles = () => {
     }
 };
 
+// Build-only configuration
 export default defineConfig({
-    root: "./dist",
-    build: {
-        outDir: "../dist",
-        emptyOutDir: true,
-        manifest: true,
-        rollupOptions: {
-            input: {
-                ...htmlFiles(),
-                styles: resolve(__dirname, "src/styles.css"),
-            },
-        },
-    },
     plugins: [
         handlebars({
             partialDirectory: resolve(__dirname, "src/templates/partials"),
@@ -92,11 +56,15 @@ export default defineConfig({
         generateHtmlAndCssPlugin(),
         tailwindcss(),
     ],
-    server: {
-        open: "/index.html",
-        watch: {
-            usePolling: true,
-            ignored: ["**/node_modules/**"],
+    build: {
+        outDir: resolve(__dirname, "dist"),
+        emptyOutDir: true,
+        manifest: true,
+        rollupOptions: {
+            input: {
+                ...htmlFiles(),
+                styles: resolve(__dirname, "src/styles.css"),
+            },
         },
     },
 });
