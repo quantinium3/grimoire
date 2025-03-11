@@ -7,6 +7,7 @@
     <title>{{title}}</title>
     <link rel="stylesheet" href="/assets/styles.css">
     <link rel="stylesheet" href="/assets/styles/prism.css">
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
         .file-tree ul {
             list-style-type: none;
@@ -35,58 +36,33 @@
             display: none;
         }
 
-        #time {
-            position: absolute;
-            bottom: 10px;
-            left: 10px;
-            font-size: 0.8rem;
-            color: var(--secondary-color);
-        }
-
-        .code-block-wrapper {
-            position: relative;
-        }
-
-        .copy-button {
-            position: absolute;
-            top: 5px;
-            right: 5px;
-            padding: 4px 8px;
-            background-color: #2d2d2d;
-            color: #ffffff;
-            border: none;
-            border-radius: 4px;
-            font-size: 12px;
-            cursor: pointer;
-            opacity: 0.7;
-            transition: opacity 0.2s;
-        }
-
-        .copy-button:hover {
-            opacity: 1;
-        }
-
         .copy-button[data-copy-state="copied"] {
             background-color: #2D2D2D;
         }
     </style>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
+            console.log('DOM loaded'); // Debug
             const fileTreeData = JSON.parse('{{{file_tree}}}');
+            console.log('File tree data:', fileTreeData); // Debug
             initializeFileTree(fileTreeData);
             initializeClock();
             initializeCopyButton();
+
+            const sidebar = document.getElementById('sidebar');
+            const sidebarToggle = document.getElementById('sidebar-toggle');
+            sidebarToggle.addEventListener('click', () => {
+                sidebar.classList.toggle('-translate-x-full');
+            });
         });
 
         function initializeFileTree(fileTreeData) {
             const fileTreeElement = document.getElementById('file-tree');
             if (!fileTreeElement) return;
 
-            // Load expanded state from localStorage (or initialize an empty object)
             const expandedStateKey = 'fileTreeExpandedState';
             const expandedState = new Map(JSON.parse(localStorage.getItem(expandedStateKey)) || []);
 
-            // Save expanded state to localStorage whenever it changes
             function saveExpandedState() {
                 localStorage.setItem(expandedStateKey, JSON.stringify([...expandedState]));
             }
@@ -102,7 +78,6 @@
 
                 if (node.type === 'directory' && node.children && node.children.length > 0) {
                     const childList = document.createElement('ul');
-                    // Check if this directory should be expanded based on saved state
                     const isExpanded = expandedState.get(currentPath) || false;
                     if (isExpanded) {
                         item.classList.add('open');
@@ -119,7 +94,6 @@
                         e.stopPropagation();
                         const isOpen = this.classList.toggle('open');
                         childList.classList.toggle('collapsed');
-                        // Update and save the state
                         expandedState.set(currentPath, isOpen);
                         saveExpandedState();
                     });
@@ -143,115 +117,89 @@
 
             fileTreeElement.appendChild(rootList);
         }
-
-        function initializeClock() {
-            let timeElement = document.getElementById('time');
-            if (!timeElement) {
-                timeElement = document.createElement('div');
-                timeElement.id = 'time';
-                document.body.appendChild(timeElement);
-            }
-
-            function updateTime() {
-                const now = new Date();
-                timeElement.textContent = now.toLocaleTimeString('en-US', {hour12: false});
-            }
-
-            updateTime();
-            setInterval(updateTime, 1000);
-        }
-
-        function initializeCopyButton() {
-            document.querySelectorAll('.copy-button').forEach(button => {
-                button.addEventListener('click', () => {
-                    const codeBlock = button.nextElementSibling;
-                    const codeElement = codeBlock.querySelector('code');
-
-                    if (codeElement) {
-                        const textToCopy = codeElement.innerText;
-
-                        navigator.clipboard.writeText(textToCopy).then(() => {
-                            button.textContent = 'Copied!';
-                            button.dataset.copyState = 'copied';
-
-                            setTimeout(() => {
-                                button.textContent = 'Copy';
-                                button.dataset.copyState = 'copy';
-                            }, 1000);
-                        }).catch(err => {
-                            console.error('Failed to copy text: ', err);
-                            button.textContent = 'Failed!';
-
-                            setTimeout(() => {
-                                button.textContent = 'Copy';
-                            }, 1000);
-                        });
-                    }
-                });
-            });
-        }
     </script>
 </head>
 
-<body>
-    <aside class="sidebar">
-        <h3 class="text-3xl"><a href="/">{{owner}}</a></h3>
-        <div id="file-tree" class="file-tree"></div>
-        <div id="time"></div>
-    </aside>
-
-    <main class="main-content">
-        <header class="page-header">
-            <h1 class="page-title">{{title}}</h1>
-
-            <div class="metadata">
-                {{#if date}}
-                <div class="metadata-item">
-                    <span>📅</span>
-                    <span>{{date}}</span>
-                </div>
-                {{/if}}
-
-                {{#if author}}
-                <div class="metadata-item">
-                    <span>👤</span>
-                    <span>{{author}}</span>
-                </div>
-                {{/if}}
-
-                {{#if category}}
-                <div class="metadata-item">
-                    <span>📂</span>
-                    <span>{{category}}</span>
-                </div>
-                {{/if}}
-
-                {{#if status}}
-                <div class="metadata-item">
-                    <span class="status status-{{status}}">{{status}}</span>
-                </div>
-                {{/if}}
-
-                {{#if priority}}
-                <div class="metadata-item">
-                    <span class="priority priority-{{priority}}">{{priority}}</span>
-                </div>
-                {{/if}}
+<body class="bg-gray-100 font-sans">
+    <div class="flex min-h-screen">
+        <!-- Sidebar -->
+        <aside id="sidebar"
+            class="fixed inset-y-0 left-0 w-64 bg-white shadow-lg transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out z-20">
+            <div class="p-4 border-b">
+                <h3 class="text-2xl font-bold text-gray-800"><a href="/">{{owner}}</a></h3>
+                <button id="sidebar-toggle" class="md:hidden absolute top-4 right-4 text-gray-600 hover:text-gray-800">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
+                        </path>
+                    </svg>
+                </button>
             </div>
+            <div id="file-tree" class="file-tree p-4"></div>
+            <div id="time" class="absolute bottom-4 left-4 text-sm text-gray-600"></div>
+        </aside>
 
-            {{#if tags.length}}
-            <div class="tags-list">
-                {{#each tags}}
-                <span class="tag">{{this}}</span>
-                {{/each}}
-            </div>
-            {{/if}}
-        </header>
+        <!-- Main Content -->
+        <main class="flex-1 md:ml-64 p-6">
+            <!-- Mobile sidebar toggle button -->
+            <button id="sidebar-toggle" class="md:hidden fixed top-4 left-4 z-30 p-2 bg-gray-800 text-white rounded-md">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16">
+                    </path>
+                </svg>
+            </button>
 
-        <section class="page-content">
-            {{{content}}}
-        </section>
-    </main>
+            <header class="page-header mb-6">
+                <h1 class="text-3xl font-bold text-gray-900 mb-4">{{title}}</h1>
+
+                <div class="metadata flex flex-wrap gap-4 text-sm text-gray-600">
+                    {{#if date}}
+                    <div class="flex items-center gap-1">
+                        <span>📅</span>
+                        <span>{{date}}</span>
+                    </div>
+                    {{/if}}
+
+                    {{#if author}}
+                    <div class="flex items-center gap-1">
+                        <span>👤</span>
+                        <span>{{author}}</span>
+                    </div>
+                    {{/if}}
+
+                    {{#if category}}
+                    <div class="flex items-center gap-1">
+                        <span>📂</span>
+                        <span>{{category}}</span>
+                    </div>
+                    {{/if}}
+
+                    {{#if status}}
+                    <div>
+                        <span class="inline-block px-2 py-1 bg-blue-100 text-blue-800 rounded-full">{{status}}</span>
+                    </div>
+                    {{/if}}
+
+                    {{#if priority}}
+                    <div>
+                        <span class="inline-block px-2 py-1 bg-red-100 text-red-800 rounded-full">{{priority}}</span>
+                    </div>
+                    {{/if}}
+                </div>
+
+                {{#if tags.length}}
+                <div class="tags-list flex flex-wrap gap-2 mt-4">
+                    {{#each tags}}
+                    <span class="inline-block px-3 py-1 bg-gray-200 text-gray-700 rounded-full text-sm">{{this}}</span>
+                    {{/each}}
+                </div>
+                {{/if}}
+            </header>
+
+            <section class="page-content prose max-w-none">
+                {{{content}}}
+            </section>
+        </main>
+    </div>
 </body>
 
 </html>
