@@ -24,54 +24,27 @@ const ensureDistDirectory = () => {
 
 const generateHtmlAndCssPlugin = (): Plugin => {
   const regenerateFiles = () => {
-    ensureDistDirectory();
-    
-    console.log("Running Tailwind CLI to generate CSS...");
-    const tailwindResult = spawnSync("bunx", ["@tailwindcss/cli", "-i", "./src/templates/assets/input.css", "-o", "./dist/assets/style.css"], { 
-      stdio: "inherit",
-      shell: true
-    });
-    
-    if (tailwindResult.status !== 0) {
-      console.error("Error running Tailwind CLI");
-    }
-    
-    console.log("Running main.ts to generate HTML...");
-    const mainResult = spawnSync("bun", ["run", "./src/main.ts"], { 
-      stdio: "inherit",
-      shell: true
-    });
-    
-    if (mainResult.status !== 0) {
-      console.error("Error running main.ts");
-    }
+    const tempDir = resolve(__dirname, "temp");
+    if (!fs.existsSync(tempDir)) fs.mkdirSync(tempDir, { recursive: true });
+
+    spawnSync("bunx", ["@tailwindcss/cli", "-i", "./src/templates/assets/input.css", "-o", "./temp/assets/style.css"], { stdio: "inherit", shell: true });
+    spawnSync("bun", ["run", "./src/main.ts"], { stdio: "inherit", shell: true }); // Ensure main.ts writes to temp/
   };
-  
   return {
     name: "generate-html-and-css",
     buildStart() {
-      console.log("Starting build process...");
       regenerateFiles();
     },
   };
 };
 
 const htmlFiles = () => {
-  ensureDistDirectory();
-  
-  try {
-    const files = globSync("dist/**/*.html");
-    console.log(`Found ${files.length} HTML files in dist directory`);
-    
-    return files.reduce((acc, file) => {
-      const name = path.basename(file, ".html");
-      acc[name] = resolve(__dirname, file);
-      return acc;
-    }, {});
-  } catch (error) {
-    console.warn("Warning: Could not find HTML files in dist directory", error);
-    return {};
-  }
+  const files = globSync("temp/*.html");
+  return files.reduce((acc, file) => {
+    const name = path.basename(file, ".html");
+    acc[name] = resolve(__dirname, file);
+    return acc;
+  }, {});
 };
 
 export default defineConfig({
