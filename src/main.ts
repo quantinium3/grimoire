@@ -21,7 +21,7 @@ const main = async (): Promise<void> => {
         await ensureDir("dist/assets/styles");
         await ensureDir("dist/assets/js");
 
-        cloneContent(config.symlink, "content")
+/*         cloneContent(config.symlink, "content") */
 
         await writeFile(
             "dist/assets/styles/prism.css",
