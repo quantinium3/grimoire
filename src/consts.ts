@@ -15,6 +15,7 @@ export interface Config {
     inputDir: string;
     relativeDir: string;
     owner: string;
+    symlink: string
 }
 
 export interface FileNode {
@@ -23,3 +24,5 @@ export interface FileNode {
     type: "directory" | "file";
     children: FileNode[];
 }
+
+export type MetadataType = "video" | "image" | "tweet";

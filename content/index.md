@@ -43,3 +43,12 @@ title: Hi
 - [Personal Website](https://quantinium.dev)
 - [𝕏](https://x.com/quantinium_dev)
 
+![primeagen](https://www.youtube.com/watch?v=6ylFTML4ono)
+![primeagen](https://www.youtube.com/watch?v=6ylFTML4ono)
+![primeagen](https://www.youtube.com/watch?v=6ylFTML4ono)
+[[quantinium/University/Economics/Module_1]]
+
+[[Sequential Pattern mining]]
+[google](https://www.google.com)
+![primeagen](https://www.youtube.com/watch?v=6ylFTML4ono)
+![prime](https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fi.redd.it%2Ffreeze-frame-of-primeagen-explaining-arrays-being-better-v0-k896x1qpb5zb1.png%3Fs%3Debc9e16a9efc609f67c8ee8bdc482a4abd158b09&f=1&nofb=1&ipt=b6c36ad8111d0d62a2dff62f109d10dbd0ee61d1d0a58fa3f7351af4816fa1be&ipo=images)

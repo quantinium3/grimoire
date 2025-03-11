@@ -2,27 +2,5 @@
     "inputDir": "./content",
     "relativeDir": ".",
     "owner": "Quantinium",
-    "navbar": [
-        {
-            "type": "file",
-            "name": "Home",
-            "path": "index.md"
-        },
-        {
-            "type": "file",
-            "name": "Bookmarks",
-            "path": "Bookmarks.md"
-        },
-        {
-            "type": "directory",
-            "name": "Blog",
-            "path": "Blog"
-        },
-        {
-            "type": "directory",
-            "name": "Daily",
-            "path": "Daily"
-        }
-    ],
     "symlink": "/home/quantinium/personal/obsidian/quantinium/"
 }

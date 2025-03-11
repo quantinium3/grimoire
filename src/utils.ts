@@ -38,8 +38,6 @@ export const copyImages = async (inputDir: string, outputDir: string): Promise<v
                             .on('error', reject)
                             .save(destPath);
                     });
-
-                    console.log(`Processed image: ${destPath}`);
                 } catch (error) {
                     console.error(`Failed to process ${imagePath}:`, error);
                     throw error;

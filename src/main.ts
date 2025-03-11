@@ -1,6 +1,6 @@
 import { readFile, writeFile } from "fs/promises";
 import { buildFileTree } from "./file-tree";
-import { copyImages, getConfig } from "./utils";
+import { cloneContent, copyImages, getConfig } from "./utils";
 import type { Config, FileNode } from "./consts";
 import { processNode } from "./process";
 import { ensureDir } from "fs-extra";
@@ -20,6 +20,8 @@ const main = async (): Promise<void> => {
         await ensureDir("dist");
         await ensureDir("dist/assets/styles");
         await ensureDir("dist/assets/js");
+
+        cloneContent(config.symlink, "content")
 
         await writeFile(
             "dist/assets/styles/prism.css",

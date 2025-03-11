@@ -60,10 +60,15 @@
     "highlightjs": "^9.16.2",
     "html-minifier": "^4.0.0",
     "jimp": "^1.6.0",
+    "rehype-format": "^5.0.1",
     "rehype-highlight": "^7.0.2",
     "rehype-raw": "^7.0.0",
+    "rehype-sanitize": "^6.0.0",
     "rehype-stringify": "^10.0.1",
+    "remark-directive": "^4.0.0",
+    "remark-frontmatter": "^5.0.0",
     "remark-gfm": "^4.0.1",
+    "remark-math": "^6.0.0",
     "remark-rehype": "^11.1.1",
     "tailwindcss": "^4.0.9"
   }

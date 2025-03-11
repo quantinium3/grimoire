@@ -3,7 +3,7 @@ import rehypeRaw from "rehype-raw";
 import rehypeStringify from "rehype-stringify";
 import remarkGfm from "remark-gfm";
 import remarkRehype from "remark-rehype";
-import { rehypeAddCopyButton, remarkObsidianImages } from "./remark";
+import { rehypeAddCopyButton, remarkObsidianEmbeds, remarkPreventImages } from "./remark";
 import remarkParse from "remark-parse";
 import matter from "gray-matter";
 import { unified } from "unified";
@@ -14,6 +14,11 @@ import { minify } from "html-minifier";
 import type { Config, FileNode, Metadata } from "./consts";
 import Handlebars from "handlebars";
 import { ensureDir } from "fs-extra";
+import remarkDirective from "remark-directive";
+import remarkFrontmatter from "remark-frontmatter";
+import remarkMath from "remark-math";
+import rehypeSanitize from "rehype-sanitize";
+import rehypeFormat from "rehype-format";
 
 export const compilePage = async (
     filename: string,
@@ -49,7 +54,6 @@ export const outputHTML = async (outputPath: string, html: string): Promise<void
             minifyCSS: true,
             minifyJS: true,
         }));
-        console.log(`Generated: ${outputPath}`);
     } catch (error) {
         console.error(`Failed to write HTML to ${outputPath}:`, error);
     }
@@ -113,12 +117,18 @@ export const processMarkdown = async (
 
         const htmlContent = await unified()
             .use(remarkParse)
-            .use(remarkObsidianImages)
+            .use(remarkDirective)
+            .use(remarkFrontmatter)
             .use(remarkGfm)
+            .use(remarkMath)
+            .use(remarkPreventImages)
+            .use(remarkObsidianEmbeds)
             .use(remarkRehype, { allowDangerousHtml: true })
             .use(rehypePrism, { showLineNumbers: true })
             .use(rehypeAddCopyButton)
             .use(rehypeRaw)
+            .use(rehypeFormat)
+            .use(rehypeSanitize)
             .use(rehypeStringify)
             .process(content);
 
