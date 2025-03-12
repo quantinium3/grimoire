@@ -5,169 +5,41 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{title}}</title>
-    <link rel="stylesheet" href="/assets/styles.css">
+    <link rel="stylesheet" href="/assets/styles/styles.css">
     <link rel="stylesheet" href="/assets/styles/prism.css">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        .file-tree ul {
-            list-style-type: none;
-            padding-left: 1.2rem;
-        }
-
-        .file-tree li {
-            margin: 0.2rem 0;
-            position: relative;
-            cursor: pointer;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .file-tree .directory::before {
-            content: "▶";
-            margin-right: 0.3rem;
-        }
-
-        .file-tree .directory.open::before {
-            content: "▼";
-        }
-
-        .file-tree .collapsed {
-            display: none;
-        }
-
-        .copy-button[data-copy-state="copied"] {
-            background-color: #2D2D2D;
-        }
-    </style>
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            console.log('DOM loaded'); // Debug
-            const fileTreeData = JSON.parse('{{{file_tree}}}');
-            console.log('File tree data:', fileTreeData); // Debug
-            initializeFileTree(fileTreeData);
-            initializeClock();
-            initializeCopyButton();
-
-            const sidebar = document.getElementById('sidebar');
-            const sidebarToggle = document.getElementById('sidebar-toggle');
-            sidebarToggle.addEventListener('click', () => {
-                sidebar.classList.toggle('-translate-x-full');
-            });
-        });
-
-        function initializeFileTree(fileTreeData) {
-            const fileTreeElement = document.getElementById('file-tree');
-            if (!fileTreeElement) return;
-
-            const expandedStateKey = 'fileTreeExpandedState';
-            const expandedState = new Map(JSON.parse(localStorage.getItem(expandedStateKey)) || []);
-
-            function saveExpandedState() {
-                localStorage.setItem(expandedStateKey, JSON.stringify([...expandedState]));
-            }
-
-            function renderFileTreeNode(node, path = '') {
-                const list = document.createElement('ul');
-                const item = document.createElement('li');
-                item.textContent = node.name.replace(".md", "");
-                item.classList.add(node.type);
-                list.appendChild(item);
-
-                const currentPath = path ? `${path}/${node.name}` : node.name;
-
-                if (node.type === 'directory' && node.children && node.children.length > 0) {
-                    const childList = document.createElement('ul');
-                    const isExpanded = expandedState.get(currentPath) || false;
-                    if (isExpanded) {
-                        item.classList.add('open');
-                    } else {
-                        childList.classList.add('collapsed');
-                    }
-
-                    node.children.forEach(child => {
-                        const childNode = renderFileTreeNode(child, currentPath);
-                        childList.appendChild(childNode);
-                    });
-
-                    item.addEventListener('click', function (e) {
-                        e.stopPropagation();
-                        const isOpen = this.classList.toggle('open');
-                        childList.classList.toggle('collapsed');
-                        expandedState.set(currentPath, isOpen);
-                        saveExpandedState();
-                    });
-
-                    item.appendChild(childList);
-                } else if (node.type === 'file') {
-                    item.addEventListener('click', function (e) {
-                        e.stopPropagation();
-                        const path = node.path.replace(/\.md$/, '.html');
-                        window.location.href = '/' + path;
-                    });
-                }
-
-                return item;
-            }
-
-            const rootList = document.createElement('ul');
-            fileTreeData.forEach(node => {
-                rootList.appendChild(renderFileTreeNode(node));
-            });
-
-            fileTreeElement.appendChild(rootList);
-        }
-    </script>
 </head>
 
-<body class="bg-gray-100 font-sans">
-    <div class="flex min-h-screen">
-        <!-- Sidebar -->
-        <aside id="sidebar"
-            class="fixed inset-y-0 left-0 w-64 bg-white shadow-lg transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out z-20">
-            <div class="p-4 border-b">
-                <h3 class="text-2xl font-bold text-gray-800"><a href="/">{{owner}}</a></h3>
-                <button id="sidebar-toggle" class="md:hidden absolute top-4 right-4 text-gray-600 hover:text-gray-800">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
-                        </path>
-                    </svg>
-                </button>
+<body>
+    <div>
+        <aside id="sidebar">
+            <div>
+                <h3><a href="/">{{owner}}</a></h3>
             </div>
-            <div id="file-tree" class="file-tree p-4"></div>
-            <div id="time" class="absolute bottom-4 left-4 text-sm text-gray-600"></div>
+            <div id="file-tree" class="file-tree"></div>
+            <div id="time"></div>
         </aside>
 
-        <!-- Main Content -->
-        <main class="flex-1 md:ml-64 p-6">
-            <!-- Mobile sidebar toggle button -->
-            <button id="sidebar-toggle" class="md:hidden fixed top-4 left-4 z-30 p-2 bg-gray-800 text-white rounded-md">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16">
-                    </path>
-                </svg>
-            </button>
+        <main>
+            <header class="page-header">
+                <h1>{{title}}</h1>
 
-            <header class="page-header mb-6">
-                <h1 class="text-3xl font-bold text-gray-900 mb-4">{{title}}</h1>
-
-                <div class="metadata flex flex-wrap gap-4 text-sm text-gray-600">
+                <div class="metadata">
                     {{#if date}}
-                    <div class="flex items-center gap-1">
+                    <div>
                         <span>📅</span>
                         <span>{{date}}</span>
                     </div>
                     {{/if}}
 
                     {{#if author}}
-                    <div class="flex items-center gap-1">
+                    <div>
                         <span>👤</span>
                         <span>{{author}}</span>
                     </div>
                     {{/if}}
 
                     {{#if category}}
-                    <div class="flex items-center gap-1">
+                    <div>
                         <span>📂</span>
                         <span>{{category}}</span>
                     </div>
@@ -175,31 +47,176 @@
 
                     {{#if status}}
                     <div>
-                        <span class="inline-block px-2 py-1 bg-blue-100 text-blue-800 rounded-full">{{status}}</span>
+                        <span>{{status}}</span>
                     </div>
                     {{/if}}
 
                     {{#if priority}}
                     <div>
-                        <span class="inline-block px-2 py-1 bg-red-100 text-red-800 rounded-full">{{priority}}</span>
+                        <span>{{priority}}</span>
                     </div>
                     {{/if}}
                 </div>
 
                 {{#if tags.length}}
-                <div class="tags-list flex flex-wrap gap-2 mt-4">
+                <div class="tags-list">
                     {{#each tags}}
-                    <span class="inline-block px-3 py-1 bg-gray-200 text-gray-700 rounded-full text-sm">{{this}}</span>
+                    <span>{{this}}</span>
                     {{/each}}
                 </div>
                 {{/if}}
             </header>
 
-            <section class="page-content prose max-w-none">
+            <section class="page-content">
                 {{{content}}}
             </section>
         </main>
     </div>
 </body>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        console.log('DOM loaded'); // Debug
+        const fileTreeData = JSON.parse('{{{file_tree}}}');
+        console.log('File tree data:', fileTreeData);
+        initializeFileTree(fileTreeData);
+        initializeClock();
+        initializeCopyButton();
+    });
+
+    function initializeFileTree(fileTreeData) {
+        const fileTreeElement = document.getElementById('file-tree');
+        if (!fileTreeElement) return;
+
+        const expandedStateKey = 'fileTreeExpandedState';
+        const expandedState = new Map(JSON.parse(localStorage.getItem(expandedStateKey)) || []);
+
+        function saveExpandedState() {
+            localStorage.setItem(expandedStateKey, JSON.stringify([...expandedState]));
+        }
+
+        function renderFileTreeNode(node, path = '') {
+            const list = document.createElement('ul');
+            const item = document.createElement('li');
+            item.classList.add(node.type);
+            list.appendChild(item);
+
+            const currentPath = path ? `${path}/${node.name}` : node.name;
+
+            if (node.type === 'directory' && node.children.length > 0) {
+                // Create a wrapper div for directory
+                const directoryWrapper = document.createElement('div');
+                directoryWrapper.style.display = 'flex';
+                directoryWrapper.style.alignItems = 'center';
+
+                // Create the arrow element
+                const arrow = document.createElement('svg');
+                arrow.setAttribute('class', 'directory-arrow');
+                arrow.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+                arrow.setAttribute('width', '16');
+                arrow.setAttribute('height', '16');
+                arrow.setAttribute('viewBox', '0 0 24 24');
+
+                // Create the path element inside the SVG
+                const path = document.createElement('path');
+                path.setAttribute('d', 'M7.293 4.707 14.586 12l-7.293 7.293 1.414 1.414L17.414 12 8.707 3.293 7.293 4.707z');
+                path.setAttribute('fill', '#ffffff');
+
+                arrow.appendChild(path);
+                directoryWrapper.appendChild(arrow);
+
+                // Create the directory name span
+                const directoryName = document.createElement('span');
+                directoryName.textContent = node.name.replace(".md", "").replace("_", " ").replace("-", " ");
+                directoryWrapper.appendChild(directoryName);
+
+                item.appendChild(directoryWrapper);
+
+                const childList = document.createElement('ul');
+                const isExpanded = expandedState.get(currentPath) || false;
+
+                if (isExpanded) {
+                    item.classList.add('open');
+                } else {
+                    childList.classList.add('collapsed');
+                }
+
+                node.children.forEach(child => {
+                    const childNode = renderFileTreeNode(child, currentPath);
+                    childList.appendChild(childNode);
+                });
+
+                directoryWrapper.addEventListener('click', function (e) {
+                    e.stopPropagation();
+                    const parentLi = this.parentNode;
+                    const isOpen = parentLi.classList.toggle('open');
+                    const childrenUl = parentLi.querySelector('ul');
+                    childrenUl.classList.toggle('collapsed');
+                    expandedState.set(currentPath, isOpen);
+                    saveExpandedState();
+                });
+
+                item.appendChild(childList);
+            } else if (node.type === 'file') {
+                item.textContent = node.name.replace(".md", "");
+                item.addEventListener('click', function (e) {
+                    e.stopPropagation();
+                    const path = node.path.replace(/\.md$/, '.html');
+                    window.location.href = '/' + path;
+                });
+            }
+
+            return item;
+        }
+
+        const rootList = document.createElement('ul');
+        fileTreeData.forEach(node => {
+            rootList.appendChild(renderFileTreeNode(node));
+        });
+
+        fileTreeElement.appendChild(rootList);
+    }
+    function initializeClock() {
+        const timeElement = document.getElementById('time');
+        if (!timeElement) return;
+
+        function updateClock() {
+            const now = new Date();
+            timeElement.textContent = now.toLocaleTimeString(); // e.g., "12:34:56 PM"
+        }
+
+        updateClock();
+        setInterval(updateClock, 1000); // Update every second
+    }
+
+    function initializeCopyButton() {
+        const codeBlocks = document.querySelectorAll('pre');
+        codeBlocks.forEach(block => {
+            const button = document.createElement('button');
+            button.textContent = 'Copy';
+            button.classList.add('copy-button');
+
+            button.addEventListener('click', () => {
+                const code = block.querySelector('code')?.textContent || block.textContent;
+                navigator.clipboard.writeText(code).then(() => {
+                    button.textContent = 'Copied!';
+                    setTimeout(() => {
+                        button.textContent = 'Copy';
+                    }, 2000);
+                }).catch(err => {
+                    console.error('Failed to copy:', err);
+                    button.textContent = 'Error!';
+                    setTimeout(() => {
+                        button.textContent = 'Copy';
+                    }, 2000);
+                });
+            });
+
+            block.style.position = 'relative';
+
+            block.appendChild(button);
+        });
+    }
+</script>
 
 </html>

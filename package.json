@@ -5,9 +5,7 @@
   "main": "src/index.ts",
   "type": "module",
   "scripts": {
-    "build:css": "bunx tailwindcss -i ./src/styles.css -o ./dist/assets/styles.css",
     "build:ts": "bun run ./src/main.ts",
-    "watch:css": "bunx tailwindcss -i ./src/styles.css -o ./dist/assets/styles.css --watch",
     "watch:ts": "bun run ./src/watch.ts",
     "serve": "bunx browser-sync start --server './dist' --files './dist/*' --no-open",
     "dev": "bun run build:css && bunx vite"
@@ -48,9 +46,6 @@
   },
   "dependencies": {
     "@catppuccin/highlightjs": "^1.0.0",
-    "@tailwindcss/cli": "^4.0.9",
-    "@tailwindcss/typography": "^0.5.16",
-    "@tailwindcss/vite": "^4.0.9",
     "@types/fluent-ffmpeg": "^2.1.27",
     "@types/highlightjs": "^9.12.6",
     "@types/html-minifier": "^4.0.5",
@@ -69,7 +64,6 @@
     "remark-frontmatter": "^5.0.0",
     "remark-gfm": "^4.0.1",
     "remark-math": "^6.0.0",
-    "remark-rehype": "^11.1.1",
-    "tailwindcss": "^4.0.9"
+    "remark-rehype": "^11.1.1"
   }
 }

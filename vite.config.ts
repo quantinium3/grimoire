@@ -1,34 +1,16 @@
 import { defineConfig, Plugin } from "vite";
 import handlebars from "vite-plugin-handlebars";
-import tailwindcss from "@tailwindcss/vite";
 import { spawnSync } from "child_process";
 import { resolve } from "path";
 import { globSync } from "glob";
 import path from "path";
 import fs from "fs";
 
-const ensureDistDirectory = () => {
-  const distDir = resolve(__dirname, "dist");
-  const assetsDir = resolve(__dirname, "dist/assets");
-  
-  if (!fs.existsSync(distDir)) {
-    console.log("Creating dist directory...");
-    fs.mkdirSync(distDir, { recursive: true });
-  }
-  
-  if (!fs.existsSync(assetsDir)) {
-    console.log("Creating dist/assets directory...");
-    fs.mkdirSync(assetsDir, { recursive: true });
-  }
-};
-
 const generateHtmlAndCssPlugin = (): Plugin => {
   const regenerateFiles = () => {
     const tempDir = resolve(__dirname, "temp");
     if (!fs.existsSync(tempDir)) fs.mkdirSync(tempDir, { recursive: true });
-
-    spawnSync("bunx", ["@tailwindcss/cli", "-i", "./src/templates/assets/input.css", "-o", "./temp/assets/style.css"], { stdio: "inherit", shell: true });
-    spawnSync("bun", ["run", "./src/main.ts"], { stdio: "inherit", shell: true }); // Ensure main.ts writes to temp/
+    spawnSync("bun", ["run", "./src/main.ts"], { stdio: "inherit", shell: true });
   };
   return {
     name: "generate-html-and-css",
@@ -48,15 +30,13 @@ const htmlFiles = () => {
 };
 
 export default defineConfig({
-  // Remove root: "./dist" as it's causing confusion with the build output
   build: {
     outDir: resolve(__dirname, "dist"),
-    emptyOutDir: false, // Change to false to prevent deleting our generated files
-    manifest: true,
+    emptyOutDir: false,
     rollupOptions: {
       input: {
         ...htmlFiles(),
-        styles: resolve(__dirname, "src/styles.css"),
+        styles: resolve(__dirname, "src/styles.css"), 
       },
     },
   },
@@ -66,6 +46,5 @@ export default defineConfig({
       reloadOnPartialChange: true,
     }),
     generateHtmlAndCssPlugin(),
-    tailwindcss(),
   ],
 });

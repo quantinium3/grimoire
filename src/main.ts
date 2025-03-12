@@ -21,12 +21,14 @@ const main = async (): Promise<void> => {
         await ensureDir("dist/assets/styles");
         await ensureDir("dist/assets/js");
 
-/*         cloneContent(config.symlink, "content") */
+        /*         cloneContent(config.symlink, "content") */
 
         await writeFile(
             "dist/assets/styles/prism.css",
             await readFile("./node_modules/prismjs/themes/prism-okaidia.css", "utf-8")
         );
+
+        await writeFile('dist/assets/styles/styles.css', await readFile('./src/templates/assets/styles.css'))
 
         await copyImages(config.inputDir, "dist/assets/images");
         await Promise.all(

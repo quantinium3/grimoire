@@ -1,11 +1,12 @@
-<div class="markdown-content prose max-w-none text-gray-800">
+<div class="markdown-content">
     {{{content}}}
 </div>
 
+<!-- Aliases section -->
 {{#if aliases.length}}
 <div class="aliases mt-6">
-    <h3 class="text-lg font-semibold text-gray-900">Also known as:</h3>
-    <ul class="list-disc pl-5 mt-2 text-gray-700">
+    <h3>Also known as:</h3>
+    <ul class="list-disc">
         {{#each aliases}}
         <li>{{this}}</li>
         {{/each}}
@@ -13,11 +14,12 @@
 </div>
 {{/if}}
 
+<!-- Creation/Modification info -->
 {{#if created}}
-<div class="creation-info mt-6 text-sm text-gray-600">
-    <p>Created: {{created}}</p>
+<div class="creation-info">
+    <p><span class="font-medium">Created:</span> {{created}}</p>
     {{#if modified}}
-    <p>Last modified: {{modified}}</p>
+    <p><span class="font-medium">Last modified:</span> {{modified}}</p>
     {{/if}}
 </div>
 {{/if}}

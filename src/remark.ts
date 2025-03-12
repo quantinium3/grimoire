@@ -18,7 +18,6 @@ export const remarkObsidianEmbeds: Plugin<[], Node> = () => {
         const [, alt, url] = match;
 
         const promise = (async () => {
-          // Prioritize YouTube detection
           let embedUrl = null;
           if (url.includes('youtube.com') || url.includes('youtu.be')) {
             if (url.includes('youtube.com/watch')) {
