@@ -373,7 +373,6 @@ pre code {
 }
 
 /*  Copy button */
-
 .copy-button {
     position: absolute;
     top: 8px;
@@ -405,6 +404,30 @@ pre:hover .copy-button {
 }
 
 /* Style for code blocks to ensure proper positioning */
+pre {
+    position: relative;
+    padding: 1rem;
+    margin: 1rem 0;
+    overflow: auto;
+    background-color: var(--ctp-crust);
+    border-radius: 6px;
+}
+
+pre code {
+    display: block;
+    color: #e2e8f0;
+    line-height: 1.5;
+}
+
+/* Show the button on hover */
+pre:hover .copy-button {
+    opacity: 1;
+}
+
+.copy-button:active {
+    background-color: #1a202c;
+}
+
 pre {
     position: relative;
     padding: 1rem;
