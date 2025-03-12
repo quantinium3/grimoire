@@ -54,7 +54,6 @@
     "glob": "^11.0.1",
     "highlightjs": "^9.16.2",
     "html-minifier": "^4.0.0",
-    "jimp": "^1.6.0",
     "rehype-format": "^5.0.1",
     "rehype-highlight": "^7.0.2",
     "rehype-raw": "^7.0.0",
