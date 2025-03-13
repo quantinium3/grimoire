@@ -82,6 +82,7 @@
         initializeFileTree(fileTreeData);
         initializeClock();
         initializeCopyButton();
+        lazyLoadVideos();
     });
 
     function initializeFileTree(fileTreeData) {
@@ -217,6 +218,28 @@
             block.appendChild(button);
         });
     }
+
+    function lazyLoadVideos() {
+        const videos = document.querySelectorAll('.lazy-video');
+
+        const observer = new IntersectionObserver((entries, observer) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const video = entry.target;
+                    const sources = video.querySelectorAll('source');
+
+                    sources.forEach(source => {
+                        source.src = source.dataset.src; // Load video source
+                    });
+
+                    video.load(); // Start loading the video
+                    observer.unobserve(video); // Stop observing once loaded
+                }
+            });
+        });
+
+        videos.forEach(video => observer.observe(video));
+    };
 </script>
 
 </html>

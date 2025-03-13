@@ -5,10 +5,9 @@
   "main": "src/index.ts",
   "type": "module",
   "scripts": {
-    "build:ts": "bun run ./src/main.ts",
-    "watch:ts": "bun run ./src/watch.ts",
-    "serve": "bunx browser-sync start --server './dist' --files './dist/*' --no-open",
-    "dev": "bun run build:css && bunx vite"
+    "clone": "bun run src/clone.ts",
+    "serve": "bunx serve dist/",
+    "build": "bunx vite build"
   },
   "repository": {
     "type": "git",

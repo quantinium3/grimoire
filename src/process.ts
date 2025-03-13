@@ -3,7 +3,7 @@ import rehypeRaw from "rehype-raw";
 import rehypeStringify from "rehype-stringify";
 import remarkGfm from "remark-gfm";
 import remarkRehype from "remark-rehype";
-import { rehypeAddCopyButton, remarkObsidianEmbeds, remarkPreventImages } from "./remark";
+import { rehypeAddCopyButton, remarkPreventImages } from "./remark";
 import remarkParse from "remark-parse";
 import matter from "gray-matter";
 import { unified } from "unified";
@@ -114,6 +114,7 @@ export const processMarkdown = async (
     try {
         const mdContent = await readFile(filepath, "utf-8");
         const { content, data: frontmatter } = matter(mdContent);
+        const data = await replaceObsidianEmbedLinks(content)
 
         const htmlContent = await unified()
             .use(remarkParse)
@@ -122,7 +123,6 @@ export const processMarkdown = async (
             .use(remarkGfm)
             .use(remarkMath)
             .use(remarkPreventImages)
-            .use(remarkObsidianEmbeds)
             .use(remarkRehype, { allowDangerousHtml: true })
             .use(rehypePrism, { showLineNumbers: true })
             .use(rehypeAddCopyButton)
@@ -130,7 +130,7 @@ export const processMarkdown = async (
             .use(rehypeFormat)
             .use(rehypeSanitize)
             .use(rehypeStringify)
-            .process(content);
+            .process(data);
 
         return {
             content: htmlContent.toString(),
@@ -140,6 +140,51 @@ export const processMarkdown = async (
         throw new Error(`Failed to process markdown file ${filepath}: ${err}`);
     }
 };
+
+export const replaceExclaBracketsImages = (content: string): string => {
+    const reg = /!\[\[([^\]]+)\]\]/g;
+
+    const result = content.replace(reg, (match: string, group1: string) => {
+        try {
+            const imageExt = /\.(png|jpg|jpeg|ico|svg|webp|gif)$/i;
+            if (imageExt.test(group1)) {
+                const image = group1.split('.')[0].replace(/ /g, "-") + '.jpeg';
+                return `\n<img src="/assets/images/${image}">\n`;
+            } else {
+                return `![[${group1}]]`;
+            }
+        } catch (err) {
+            console.error(err);
+            return match
+        }
+    });
+
+    return result || content;
+};
+
+export const replaceExclaBracketsVideos = (content: string): string => {
+    const reg = /!\[\[([^\]]+)\]\]/g;
+
+    const result = content.replace(reg, (match: string, group1: string): string => {
+        try {
+            const videoExt = /\.(webm|mp4|mov|avi|mkv)$/i;
+            if (videoExt.test(group1)) {
+                const formattedFileName = group1.replace(/ /g, "-");
+                return `<video controls> <source src="${formattedFileName}" type="video/${path.extname(formattedFileName)}">  Your browser does not support the html video tag.  </video>`
+            }
+            return `![[${group1}]]`;
+        } catch (err) {
+            console.error(`Error processing video replacement for "${group1}":`, err);
+            return match;
+        }
+    });
+
+    return result || content;
+};
+
+export const replaceObsidianEmbedLinks = async (content: string): Promise<string> => {
+    return replaceExclaBracketsVideos(content);
+}
 
 export const processNode = async (
     node: FileNode,

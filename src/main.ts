@@ -1,6 +1,6 @@
 import { readFile, writeFile } from "fs/promises";
 import { buildFileTree } from "./file-tree";
-import { cloneContent, copyImages, getConfig } from "./utils";
+import { copyImages, copyVideos, getConfig } from "./utils";
 import type { Config, FileNode } from "./consts";
 import { processNode } from "./process";
 import { ensureDir } from "fs-extra";
@@ -31,6 +31,7 @@ const main = async (): Promise<void> => {
         await writeFile('dist/assets/styles/styles.css', await readFile('./src/templates/assets/styles.css'))
 
         await copyImages(config.inputDir, "dist/assets/images");
+        await copyVideos(config.inputDir, "dist/assets/videos")
         await Promise.all(
             fileTreeNodes.map(node => processNode(node, config.inputDir, file_tree, config))
         );

@@ -7,6 +7,13 @@ title: Hi
 
 # I'm **quantinium**
 
+<div>
+    <video controls width="250">
+      <source src="/home/quantinium/personal/github/grimoire/dist/assets/videos/video.mp4" type="video/mp4" />
+      Download the
+    </video>
+</div>
+
 - Uni student trying to teach computers.
 - Terminal dweller and daily NixOS driver.
 - I love programming and try to tinker and learn new things everyday.

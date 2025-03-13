@@ -1,13 +1,40 @@
-import { existsSync, rmSync } from "fs";
 import path from "path";
 import { globby } from "globby";
 import type { Config } from "./consts";
 import { readFile } from "fs/promises";
 import { ensureDir } from "fs-extra";
-import { cp } from "fs/promises";
 import Ffmpeg from "fluent-ffmpeg";
+import { cp } from "fs/promises";
 
 Ffmpeg.setFfmpegPath(path.resolve(__dirname, './bin/ffmpeg-git-20240629-amd64-static/ffmpeg'));
+
+export const copyVideos = async (inputDir: string, outputDir: string): Promise<void> => {
+    try {
+        const vidPattern = [
+            `${inputDir}/**/*.{wmv,3gp,mkv,flv,mov,avi,ogg,m4a,mp4,webm}`,
+        ]
+        const videoPaths = await globby(vidPattern, {
+            absolute: true,
+            caseSensitiveMatch: false,
+        })
+
+        await ensureDir(outputDir);
+        await Promise.all(
+            videoPaths.map((vidPath: string) => {
+                try {
+                    const fileName = path.basename(vidPath).replace(/[^\w.-]/g, '-')
+                    cp(vidPath, path.join(outputDir, fileName))
+                } catch(err) {
+                    console.error(err)
+                    throw err;
+                }
+            })
+        )
+    } catch (err) {
+        console.error(err)
+        throw err;
+    }
+}
 
 export const copyImages = async (inputDir: string, outputDir: string): Promise<void> => {
     try {
@@ -61,20 +88,3 @@ export const getConfig = async (): Promise<Config> => {
     }
 };
 
-export const cloneContent = async (symlink: string, dest: string) => {
-    if (existsSync(dest) && dest != '/') {
-        try {
-            rmSync(dest, { recursive: true, force: true });
-        } catch (err) {
-            console.error(err)
-            throw err;
-        }
-    }
-    try {
-        ensureDir(dest)
-        cp(symlink, dest, { recursive: true });
-    } catch (err) {
-        console.error(err);
-        throw err
-    }
-};

@@ -104,7 +104,6 @@ The image highlights three key IEEE LAN standards, each with its own **MAC** and
 ![[Pasted image 20250223014349.png]]
 
 ---
-
 ## **HDLC Frame compared with LLC and MAC frames**
 ---
 ### **1. HDLC Frame**
@@ -136,6 +135,7 @@ The **MAC frame** is used by the **Media Access Control** sublayer of the **Data
 
 ---
 
+![[video.webm]]
 ### **4. Comparison of Frames**
 - **HDLC Frame**: A general-purpose frame used in HDLC protocol, primarily in point-to-point and multipoint communication.
 - **LLC PDU**: Focuses on providing a common interface between the **Network Layer** and the **MAC Layer**, ensuring compatibility across different MAC protocols.
