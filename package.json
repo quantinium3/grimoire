@@ -6,8 +6,7 @@
   "type": "module",
   "scripts": {
     "clone": "bun run src/clone.ts",
-    "serve": "bunx serve dist/",
-    "build": "bunx vite build"
+    "build": "bun run src/main.ts"
   },
   "repository": {
     "type": "git",

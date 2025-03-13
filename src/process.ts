@@ -183,7 +183,7 @@ export const replaceExclaBracketsVideos = (content: string): string => {
 };
 
 export const replaceObsidianEmbedLinks = async (content: string): Promise<string> => {
-    return replaceExclaBracketsVideos(content);
+    return replaceExclaBracketsImages(content);
 }
 
 export const processNode = async (
