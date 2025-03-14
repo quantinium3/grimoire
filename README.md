@@ -10,7 +10,7 @@ Static site generator for Obsidian notes
 - [x] Line numbers and copy button
 - [x] Hot reload
 - [x] Support for Obsidian-style links (e.g., `[[Note Name]]`)
-- [ ] Search functionality across notes
+- [x] Search functionality across notes
 - [ ] Dark mode/light mode toggle
 - [ ] Export to PDF or other formats
 - [ ] Custom themes
