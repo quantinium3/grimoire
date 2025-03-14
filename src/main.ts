@@ -6,6 +6,25 @@ import { processNode } from "./process";
 import { ensureDir } from "fs-extra";
 import { rmSync } from "fs";
 
+const setHashMap = async (tree: FileNode | FileNode[], map: Map<string, string>): Promise<void> => {
+    function traverse(node: FileNode): void {
+        if (node.type === "file") {
+            map.set(node.name.replace('.md', "").trim(), node.path.replace('.md', ".html"));
+        }
+        for (const child of node.children) {
+            traverse(child);
+        }
+    }
+
+    if (Array.isArray(tree)) {
+        for (const node of tree) {
+            traverse(node);
+        }
+    } else {
+        traverse(tree);
+    }
+}
+
 const main = async (): Promise<void> => {
     try {
         const config: Config = await getConfig();
@@ -13,8 +32,10 @@ const main = async (): Promise<void> => {
             console.log("Failed to build file tree: ", err);
             return [];
         });
-
         const file_tree = JSON.stringify(fileTreeNodes);
+
+        const hashPath = new Map<string, string>();
+        await setHashMap(fileTreeNodes, hashPath);
 
         rmSync('dist', { recursive: true, force: true });
         await ensureDir("dist");
@@ -33,7 +54,7 @@ const main = async (): Promise<void> => {
         await copyImages(config.inputDir, "dist/assets/images");
         await copyVideos(config.inputDir, "dist/assets/videos")
         await Promise.all(
-            fileTreeNodes.map(node => processNode(node, config.inputDir, file_tree, config))
+            fileTreeNodes.map(node => processNode(node, config.inputDir, file_tree, config, hashPath))
         );
 
         console.log("Site generation completed successfully!");

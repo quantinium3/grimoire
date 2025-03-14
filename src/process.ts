@@ -24,14 +24,15 @@ export const compilePage = async (
     filename: string,
     filepath: string,
     file_tree: string,
-    config: Config
+    config: Config,
+    hashPath: Map<string, string>
 ): Promise<void> => {
     try {
         if (!filepath.toLowerCase().endsWith('.md')) {
             return;
         }
 
-        const { content, frontmatter } = await processMarkdown(filepath);
+        const { content, frontmatter } = await processMarkdown(filepath, hashPath);
         const html = await compileTemplate("page", frontmatter, content, file_tree.replaceAll("index.md", ""), config);
 
         const relativePath = filepath.includes("content/")
@@ -48,14 +49,20 @@ export const compilePage = async (
 export const outputHTML = async (outputPath: string, html: string): Promise<void> => {
     try {
         await ensureDir(path.dirname(outputPath));
+
         await writeFile(outputPath, minify(html, {
             collapseWhitespace: true,
             removeComments: true,
             minifyCSS: true,
             minifyJS: true,
+            quoteCharacter: '"',
+            conservativeCollapse: true,
+            keepClosingSlash: true,
+            processScripts: ['text/javascript'],
         }));
     } catch (error) {
         console.error(`Failed to write HTML to ${outputPath}:`, error);
+        throw error;
     }
 };
 
@@ -99,7 +106,6 @@ export const compileTemplate = async (
             content: contentHTML,
             file_tree,
             owner: config.owner,
-            // Add script and style for copy functionality
             includesCopyButton: true,
         });
     } catch (err) {
@@ -109,12 +115,12 @@ export const compileTemplate = async (
 };
 
 export const processMarkdown = async (
-    filepath: string
+    filepath: string,
+    hashPath: Map<string, string>
 ): Promise<{ content: string; frontmatter: Partial<Metadata> }> => {
     try {
         const mdContent = await readFile(filepath, "utf-8");
         const { content, data: frontmatter } = matter(mdContent);
-        const data = await replaceObsidianEmbedLinks(content)
 
         const htmlContent = await unified()
             .use(remarkParse)
@@ -123,17 +129,19 @@ export const processMarkdown = async (
             .use(remarkGfm)
             .use(remarkMath)
             .use(remarkPreventImages)
-            .use(remarkRehype, { allowDangerousHtml: true })
+            .use(remarkRehype)
+            .use(rehypeSanitize)
             .use(rehypePrism, { showLineNumbers: true })
             .use(rehypeAddCopyButton)
             .use(rehypeRaw)
             .use(rehypeFormat)
-            .use(rehypeSanitize)
             .use(rehypeStringify)
-            .process(data);
+            .process(content);
+
+        const changedContent = await replaceObsidianEmbeds(htmlContent.toString(), hashPath);
 
         return {
-            content: htmlContent.toString(),
+            content: changedContent,
             frontmatter: frontmatter as Partial<Metadata>,
         };
     } catch (err) {
@@ -141,65 +149,148 @@ export const processMarkdown = async (
     }
 };
 
-export const replaceExclaBracketsImages = (content: string): string => {
-    const reg = /!\[\[([^\]]+)\]\]/g;
+export const replaceObsidianEmbeds = async (content: string, hashPath: Map<string, string>): Promise<string> => {
+    if (!content) return '';
 
-    const result = content.replace(reg, (match: string, group1: string) => {
-        try {
-            const imageExt = /\.(png|jpg|jpeg|ico|svg|webp|gif)$/i;
-            if (imageExt.test(group1)) {
-                const image = group1.split('.')[0].replace(/ /g, "-") + '.jpeg';
-                return `\n<img src="/assets/images/${image}">\n`;
-            } else {
-                return `![[${group1}]]`;
-            }
-        } catch (err) {
-            console.error(err);
-            return match
+    const imageExtRegex = /\.(png|jpg|jpeg|ico|svg|webp|gif)$/i;
+    let result = content;
+
+    // ![[image.jpeg]]
+    result = result.replace(/!\[\[([^\]]+)\]\]/g, (match, fileName) => {
+        if (!fileName) return match;
+
+        if (imageExtRegex.test(fileName)) {
+            const baseName = fileName.split('.')[0].replace(/ /g, "-");
+            return `<img src="/assets/images/${baseName}.jpeg" alt="${baseName}">`;
         }
+
+        return `![[${fileName}]]`;
     });
 
-    return result || content;
-};
+    // ![image](url)
+    for (const match of [...result.matchAll(/!\[([^\]]*)\]\(([^)]+)\)/g)]) {
+        const fullMatch = match[0];
+        const altText = match[1];
+        const url = match[2];
 
-export const replaceExclaBracketsVideos = (content: string): string => {
-    const reg = /!\[\[([^\]]+)\]\]/g;
+        const { replacement } = await processEmbed(fullMatch, altText, url);
+        result = result.replace(fullMatch, replacement);
+    }
 
-    const result = content.replace(reg, (match: string, group1: string): string => {
-        try {
-            const videoExt = /\.(webm|mp4|mov|avi|mkv)$/i;
-            if (videoExt.test(group1)) {
-                const formattedFileName = group1.replace(/ /g, "-");
-                return `<video controls> <source src="${formattedFileName}" type="video/${path.extname(formattedFileName)}">  Your browser does not support the html video tag.  </video>`
-            }
-            return `![[${group1}]]`;
-        } catch (err) {
-            console.error(`Error processing video replacement for "${group1}":`, err);
-            return match;
+    // [[link]] or [[link|display]]
+    result = result.replace(/\[\[([^\]|\n]+)(?:\|([^\]|\n]+))?\]\]/g, (match: string, group1: string, group2: string) => {
+        if (!group1) return match;
+
+        const displayName = group2 || path.basename(group1);
+        const linkedPath = hashPath.get(group1.trim());
+        console.log(`displayName: ${displayName}, linkedPath: ${linkedPath}, group1: ${group1}`);
+
+        if (linkedPath) {
+            const href = encodeURIComponent(linkedPath);
+            return `<a href="${href}" class="internal-link">${displayName}</a>`;
         }
+
+        if (group1.includes('/')) {
+            const segment = '/' + group1.split('/').slice(1).join('/');
+            return `<a href="${segment}" class="internal-link">${path.basename(group1)}</a>`;
+        }
+
+        return `[[${group1}${group2 ? `|${group2}` : ''}]]`;
     });
 
-    return result || content;
+    return result;
 };
 
-export const replaceObsidianEmbedLinks = async (content: string): Promise<string> => {
-    return replaceExclaBracketsImages(content);
+async function processEmbed(fullMatch: string, altText: string, url: string): Promise<{ fullMatch: string, replacement: string }> {
+    try {
+        let validUrl: URL;
+        try {
+            validUrl = new URL(url);
+        } catch (e) {
+            console.log('error: ', e);
+            return { fullMatch, replacement: fullMatch };
+        }
+
+        const contentType = await getContentType(url);
+
+        if (url.includes('youtube.com') || url.includes('youtu.be')) {
+            let videoId;
+
+            if (url.includes('youtube.com')) {
+                const urlParams = validUrl.searchParams;
+                videoId = urlParams.get("v");
+            } else if (url.includes('youtu.be')) {
+                videoId = url.split('/').pop();
+            }
+
+            if (videoId) {
+                return {
+                    fullMatch,
+                    replacement: `<iframe src="https://www.youtube.com/embed/${videoId}" title="${altText || 'YouTube video'}" width="640" height="360" frameborder="0" allowfullscreen></iframe>`
+                };
+            }
+        }
+
+        if (contentType?.split('/')[0] === 'image') {
+            const escapedUrl = validUrl.toString();
+            return {
+                fullMatch,
+                replacement: `<img src="${escapedUrl}" alt="${altText || 'Image'}">`
+            };
+        } else if (contentType?.split('/')[0] === 'video') {
+            const escapedUrl = validUrl.toString();
+            return {
+                fullMatch,
+                replacement: `<video controls><source src="${escapedUrl}" type="video/mp4">${altText || 'Video'}</video>`
+            };
+        } else if (!contentType) {
+            const escapedUrl = validUrl.toString();
+            return {
+                fullMatch,
+                replacement: `<a href="${escapedUrl}">${altText || url}</a>`
+            };
+        }
+
+        return { fullMatch, replacement: fullMatch };
+    } catch (err) {
+        console.error(`Error processing embed ${url}:`, err);
+        return { fullMatch, replacement: fullMatch };
+    }
 }
+
+export const getContentType = async (url: string): Promise<string | null> => {
+    try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 5000);
+
+        const response = await fetch(url, {
+            method: 'HEAD',
+            signal: controller.signal
+        });
+
+        clearTimeout(timeoutId);
+        return response.headers.get('Content-Type');
+    } catch (err) {
+        console.log(`Failed to get content type for ${url}:`, err);
+        return null;
+    }
+};
 
 export const processNode = async (
     node: FileNode,
     inputDir: string,
     file_tree: string,
-    config: Config
+    config: Config,
+    hashPath: Map<string, string>
 ): Promise<void> => {
     if (node.type === "file") {
-        await compilePage(node.name, path.join(inputDir, node.path), file_tree, config);
+        await compilePage(node.name, path.join(inputDir, node.path), file_tree, config, hashPath);
     } else if (node.type === "directory") {
         const dirPath = path.join("dist", node.path);
         await ensureDir(dirPath);
 
         await Promise.all(
-            node.children.map(child => processNode(child, inputDir, file_tree, config))
+            node.children.map(child => processNode(child, inputDir, file_tree, config, hashPath))
         );
     }
 };
