@@ -25,4 +25,10 @@ export interface FileNode {
     children: FileNode[];
 }
 
+export interface SearchIndex {
+    title: string,
+    content: string,
+    url: string,
+}
+
 export type MetadataType = "video" | "image" | "tweet";

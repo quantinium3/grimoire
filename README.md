@@ -4,13 +4,12 @@ Static site generator for Obsidian notes
 ## TODO
 - [x] File tree
 - [x] Make Images work
-- [ ] Add video to iframe creation
 - [ ] Summaries on Hover
 - [ ] Proper Styling
 - [x] Syntax Highlighting 
 - [x] Line numbers and copy button
 - [x] Hot reload
-- [ ] Support for Obsidian-style links (e.g., `[[Note Name]]`)
+- [x] Support for Obsidian-style links (e.g., `[[Note Name]]`)
 - [ ] Search functionality across notes
 - [ ] Dark mode/light mode toggle
 - [ ] Export to PDF or other formats
