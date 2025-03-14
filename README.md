@@ -11,7 +11,7 @@ Static site generator for Obsidian notes
 - [x] Hot reload
 - [x] Support for Obsidian-style links (e.g., `[[Note Name]]`)
 - [x] Search functionality across notes
-- [ ] Dark mode/light mode toggle
+- [x] Dark mode/light mode toggle
 - [ ] Export to PDF or other formats
 - [x] Custom themes
 - [ ] Backlink display (showing notes that link to the current one)
