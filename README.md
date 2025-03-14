@@ -13,7 +13,7 @@ Static site generator for Obsidian notes
 - [x] Search functionality across notes
 - [ ] Dark mode/light mode toggle
 - [ ] Export to PDF or other formats
-- [ ] Custom themes
+- [x] Custom themes
 - [ ] Backlink display (showing notes that link to the current one)
 - [ ] Markdown metadata/frontmatter support (e.g., tags, title, date)
 - [ ] Embedded media support (e.g., YouTube, audio files)
