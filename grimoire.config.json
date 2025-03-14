@@ -2,5 +2,39 @@
     "inputDir": "./content",
     "relativeDir": ".",
     "owner": "Quantinium",
-    "symlink": "/home/quantinium/personal/obsidian/quantinium/"
+    "symlink": "/home/quantinium/personal/obsidian/quantinium/",
+    "mode": "lightmode",
+    "theme": {
+        "fontOrigin": "googleFonts",
+        "cdnCaching": true,
+        "typography": {
+            "header": "Schibsted Grotesk",
+            "body": "IBM Plex Mono",
+            "code": "IBM Plex Mono"
+        },
+        "colors": {
+            "lightMode": {
+                "background": "#eff1f5",
+                "lightbackground": "#dce0e8",
+                "darktext": "#8c8fa1",
+                "darkgray": "#4c4f69",
+                "Heading": "#1e66f5",
+                "links": "#40a02b",
+                "text": "#4c4f69",
+                "highlight": "rgba(30, 102, 245, 0.15)",
+                "textHighlight": "#df8e1c88"
+            },
+            "darkMode": {
+                "background": "#1e1e2e",
+                "lightbackground": "#313244",
+                "darktext": "#6c7086",
+                "darkgray": "#cdd6f4",
+                "Heading": "#89b4fa",
+                "links": "#a6e3a1",
+                "text": "#f5e0dc",
+                "highlight": "rgba(137, 180, 250, 0.15)",
+                "textHighlight": "#f9e2af88"
+            }
+        }
+    }
 }

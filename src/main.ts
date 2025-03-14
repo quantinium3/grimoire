@@ -6,6 +6,7 @@ import { processNode } from "./process";
 import { ensureDir } from "fs-extra";
 import { rmSync } from "fs";
 import { searchIndexJson } from "./search";
+import { generateCSSFile } from "./colors";
 
 
 const main = async (): Promise<void> => {
@@ -30,11 +31,13 @@ const main = async (): Promise<void> => {
             await readFile("./node_modules/prismjs/themes/prism-okaidia.css", "utf-8")
         );
 
+        await generateCSSFile();
         await writeFile('dist/assets/styles/styles.css', await readFile('./src/templates/assets/styles.css'))
 
         await copyImages(config.inputDir, "dist/assets/images");
         await copyVideos(config.inputDir, "dist/assets/videos")
         await searchIndexJson(hashPath)
+
         await Promise.all(
             fileTreeNodes.map(node => processNode(node, config.inputDir, file_tree, config, hashPath))
         );
