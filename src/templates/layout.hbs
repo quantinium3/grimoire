@@ -7,6 +7,7 @@
     <title>{{title}}</title>
     <link rel="stylesheet" href="/assets/styles/styles.css">
     <link rel="stylesheet" href="/assets/styles/prism.css">
+    <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.6.2"></script>
 </head>
 
 <body>
@@ -77,7 +78,7 @@
 </body>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
+    document.addEventListener('DOMContentLoaded', async function () {
         console.log('DOM loaded'); // Debug
         const fileTreeData = JSON.parse('{{{file_tree}}}');
         console.log('File tree data:', fileTreeData);
@@ -85,6 +86,40 @@
         initializeClock();
         initializeCopyButton();
         lazyLoadVideos();
+
+        let searchData;
+
+        fetch('/search-index.json')
+            .then(response => response.json())
+            .then(data => {
+                searchData = data;
+            });
+
+        document.getElementById('search-input').addEventListener('input', function (e) {
+            const query = e.target.value;
+            const options = {
+                keys: ['url', 'content'],
+                threshold: 0.3,
+            };
+            const fuse = new Fuse(searchData, options);
+            const results = fuse.search(query);
+            const resultsContainer = document.getElementById('search-results');
+            resultsContainer.innerHTML = '';
+
+            if (results.length > 0) {
+                results.forEach(result => {
+                    const item = result.item;
+                    const resultElement = document.createElement('div');
+                    const getName = (file) => file.split('/').pop();
+                    resultElement.innerHTML = `
+                    <h3><a href="/${item.url}">${getName(item.url.replace('.html', ""))}</a></h3>
+                `;
+                    resultsContainer.appendChild(resultElement);
+                });
+            } else {
+                resultsContainer.innerHTML = '<p>No results found.</p>';
+            }
+        });
     });
 
     function initializeFileTree(fileTreeData) {
@@ -107,12 +142,10 @@
             const currentPath = path ? `${path}/${node.name}` : node.name;
 
             if (node.type === 'directory' && node.children.length > 0) {
-                // Create a wrapper div for directory
                 const directoryWrapper = document.createElement('div');
                 directoryWrapper.style.display = 'flex';
                 directoryWrapper.style.alignItems = 'center';
 
-                // Create the arrow element
                 const arrow = document.createElement('svg');
                 arrow.setAttribute('class', 'directory-arrow');
                 arrow.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
@@ -120,7 +153,6 @@
                 arrow.setAttribute('height', '16');
                 arrow.setAttribute('viewBox', '0 0 24 24');
 
-                // Create the path element inside the SVG
                 const path = document.createElement('path');
                 path.setAttribute('d', 'M7.293 4.707 14.586 12l-7.293 7.293 1.414 1.414L17.414 12 8.707 3.293 7.293 4.707z');
                 path.setAttribute('fill', '#ffffff');
@@ -128,7 +160,6 @@
                 arrow.appendChild(path);
                 directoryWrapper.appendChild(arrow);
 
-                // Create the directory name span
                 const directoryName = document.createElement('span');
                 directoryName.textContent = node.name.replace(".md", "").replace("_", " ").replace("-", " ");
                 directoryWrapper.appendChild(directoryName);
@@ -185,11 +216,11 @@
 
         function updateClock() {
             const now = new Date();
-            timeElement.textContent = now.toLocaleTimeString(); // e.g., "12:34:56 PM"
+            timeElement.textContent = now.toLocaleTimeString();
         }
 
         updateClock();
-        setInterval(updateClock, 1000); // Update every second
+        setInterval(updateClock, 1000);
     }
 
     function initializeCopyButton() {
@@ -231,11 +262,11 @@
                     const sources = video.querySelectorAll('source');
 
                     sources.forEach(source => {
-                        source.src = source.dataset.src; // Load video source
+                        source.src = source.dataset.src;
                     });
 
-                    video.load(); // Start loading the video
-                    observer.unobserve(video); // Stop observing once loaded
+                    video.load();
+                    observer.unobserve(video);
                 }
             });
         });
@@ -243,44 +274,6 @@
         videos.forEach(video => observer.observe(video));
     };
 
-    let searchIndex;
-    let searchData;
-
-    fetch('/search-index.json')
-        .then(response => response.json())
-        .then(data => {
-            searchData = data;
-            searchIndex = lunr(function () {
-                this.ref('url');
-                this.field('content');
-
-                data.forEach(item => {
-                    this.add(item);
-                });
-            });
-        });
-
-    // Handle search input
-    document.getElementById('search-input').addEventListener('input', function (e) {
-        const query = e.target.value;
-        const results = searchIndex.search(query);
-        const resultsContainer = document.getElementById('search-results');
-        resultsContainer.innerHTML = '';
-
-        if (results.length > 0) {
-            results.forEach(result => {
-                const item = searchData.find(item => item.url === result.ref);
-                const resultElement = document.createElement('div');
-                resultElement.innerHTML = `
-                    <h3><a href="${item.url}">${item.url}</a></h3>
-                    <p>${item.content.substring(0, 150)}...</p>
-                `;
-                resultsContainer.appendChild(resultElement);
-            });
-        } else {
-            resultsContainer.innerHTML = '<p>No results found.</p>';
-        }
-    });
 </script>
 
 </html>
