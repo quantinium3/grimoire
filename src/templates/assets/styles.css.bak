@@ -1,5 +1,5 @@
 /*DO NOT CHANGE ANYTHING IN THIS FILE. THIS FILE IS PREGENERATED AND WILL BE OVERWRITTEN.*/
-:root {
+.light {
     --background: #eff1f5;
     --lightbackground: #dce0e8;
     --darktext: #8c8fa1;
@@ -11,52 +11,24 @@
     --textHighlight: #df8e1c88;
 }
 
-@media (prefers-color-scheme: dark) {
-    :root {
-        --background: #1e1e2e;
-        --lightbackground: #313244;
-        --darktext: #6c7086;
-        --darkgray: #cdd6f4;
-        --Heading: #89b4fa;
-        --links: #a6e3a1;
-        --text: #f5e0dc;
-        --highlight: rgba(137, 180, 250, 0.15);
-        --textHighlight: #f9e2af88;
-    }
+.dark {
+    --background: #1e1e2e;
+    --lightbackground: #313244;
+    --darktext: #6c7086;
+    --darkgray: #cdd6f4;
+    --Heading: #89b4fa;
+    --links: #a6e3a1;
+    --text: #f5e0dc;
+    --highlight: rgba(137, 180, 250, 0.15);
+    --textHighlight: #f9e2af88;
 }
 
 :root {
-    --font-sans: system, 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
     --font-mono: system, 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
     --sidebar-width: 280px;
     --header-height: 60px;
     --content-max-width: 850px;
     --sidebar-transition: transform 0.3s ease-in-out;
-
-    /* Light mode defaults */
-    --background: #eff1f5;
-    --lightbackground: #dce0e8;
-    --darktext: #8c8fa1;
-    --darkgray: #4c4f69;
-    --Heading: #1e66f5;
-    --links: #40a02b;
-    --text: #4c4f69;
-    --highlight: rgba(30, 102, 245, 0.15);
-    --textHighlight: #df8e1c88;
-}
-
-@media (prefers-color-scheme: dark) {
-    :root {
-        --background: #1e1e2e;
-        --lightbackground: #313244;
-        --darktext: #6c7086;
-        --darkgray: #cdd6f4;
-        --Heading: #89b4fa;
-        --links: #a6e3a1;
-        --text: #f5e0dc;
-        --highlight: rgba(137, 180, 250, 0.15);
-        --textHighlight: #f9e2af88;
-    }
 }
 
 * {

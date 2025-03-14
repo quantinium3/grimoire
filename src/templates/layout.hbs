@@ -15,6 +15,9 @@
         <aside id="sidebar">
             <div>
                 <h3><a href="/">{{owner}}</a></h3>
+                <button id="dark-mode-toggle" aria-label="Toggle Dark Mode">
+                    🌓
+                </button>
             </div>
             <div id="file-tree" class="file-tree"></div>
             <div id="time"></div>
@@ -120,7 +123,33 @@
                 resultsContainer.innerHTML = '<p>No results found.</p>';
             }
         });
+
+        initializeDarkModeToggle();
     });
+
+    function initializeDarkModeToggle() {
+        const darkModeToggle = document.getElementById('dark-mode-toggle');
+        const body = document.body;
+
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        body.className = savedTheme;
+
+        updateDarkModeButton();
+
+        darkModeToggle.addEventListener('click', () => {
+            const currentTheme = body.className;
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+
+            body.className = newTheme;
+            localStorage.setItem('theme', newTheme);
+            updateDarkModeButton();
+        });
+
+        function updateDarkModeButton() {
+            const currentTheme = body.className;
+            darkModeToggle.textContent = currentTheme === 'dark' ? '🌞' : '🌒';
+        }
+    }
 
     function initializeFileTree(fileTreeData) {
         const fileTreeElement = document.getElementById('file-tree');
@@ -210,6 +239,7 @@
 
         fileTreeElement.appendChild(rootList);
     }
+
     function initializeClock() {
         const timeElement = document.getElementById('time');
         if (!timeElement) return;
@@ -273,7 +303,6 @@
 
         videos.forEach(video => observer.observe(video));
     };
-
 </script>
 
 </html>
