@@ -1,29 +1,12 @@
 import { readFile, writeFile } from "fs/promises";
 import { buildFileTree } from "./file-tree";
-import { copyImages, copyVideos, getConfig } from "./utils";
+import { copyImages, copyVideos, getConfig, setHashMap } from "./utils";
 import type { Config, FileNode } from "./consts";
 import { processNode } from "./process";
 import { ensureDir } from "fs-extra";
 import { rmSync } from "fs";
+import { searchIndexJson } from "./search";
 
-const setHashMap = async (tree: FileNode | FileNode[], map: Map<string, string>): Promise<void> => {
-    function traverse(node: FileNode): void {
-        if (node.type === "file") {
-            map.set(node.name.replace('.md', "").trim(), node.path.replace('.md', ".html"));
-        }
-        for (const child of node.children) {
-            traverse(child);
-        }
-    }
-
-    if (Array.isArray(tree)) {
-        for (const node of tree) {
-            traverse(node);
-        }
-    } else {
-        traverse(tree);
-    }
-}
 
 const main = async (): Promise<void> => {
     try {
@@ -42,8 +25,6 @@ const main = async (): Promise<void> => {
         await ensureDir("dist/assets/styles");
         await ensureDir("dist/assets/js");
 
-        /*         cloneContent(config.symlink, "content") */
-
         await writeFile(
             "dist/assets/styles/prism.css",
             await readFile("./node_modules/prismjs/themes/prism-okaidia.css", "utf-8")
@@ -53,6 +34,7 @@ const main = async (): Promise<void> => {
 
         await copyImages(config.inputDir, "dist/assets/images");
         await copyVideos(config.inputDir, "dist/assets/videos")
+        await searchIndexJson(hashPath)
         await Promise.all(
             fileTreeNodes.map(node => processNode(node, config.inputDir, file_tree, config, hashPath))
         );

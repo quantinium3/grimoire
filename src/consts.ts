@@ -26,7 +26,6 @@ export interface FileNode {
 }
 
 export interface SearchIndex {
-    title: string,
     content: string,
     url: string,
 }

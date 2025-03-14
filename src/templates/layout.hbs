@@ -22,6 +22,8 @@
         <main>
             <header class="page-header">
                 <h1>{{title}}</h1>
+                <input type="text" id="search-input" placeholder="Search...">
+                <div id="search-results"></div>
 
                 <div class="metadata">
                     {{#if date}}
@@ -240,6 +242,45 @@
 
         videos.forEach(video => observer.observe(video));
     };
+
+    let searchIndex;
+    let searchData;
+
+    fetch('/search-index.json')
+        .then(response => response.json())
+        .then(data => {
+            searchData = data;
+            searchIndex = lunr(function () {
+                this.ref('url');
+                this.field('content');
+
+                data.forEach(item => {
+                    this.add(item);
+                });
+            });
+        });
+
+    // Handle search input
+    document.getElementById('search-input').addEventListener('input', function (e) {
+        const query = e.target.value;
+        const results = searchIndex.search(query);
+        const resultsContainer = document.getElementById('search-results');
+        resultsContainer.innerHTML = '';
+
+        if (results.length > 0) {
+            results.forEach(result => {
+                const item = searchData.find(item => item.url === result.ref);
+                const resultElement = document.createElement('div');
+                resultElement.innerHTML = `
+                    <h3><a href="${item.url}">${item.url}</a></h3>
+                    <p>${item.content.substring(0, 150)}...</p>
+                `;
+                resultsContainer.appendChild(resultElement);
+            });
+        } else {
+            resultsContainer.innerHTML = '<p>No results found.</p>';
+        }
+    });
 </script>
 
 </html>

@@ -1,6 +1,6 @@
 import path from "path";
 import { globby } from "globby";
-import type { Config } from "./consts";
+import type { Config, FileNode } from "./consts";
 import { readFile } from "fs/promises";
 import { ensureDir } from "fs-extra";
 import Ffmpeg from "fluent-ffmpeg";
@@ -24,7 +24,7 @@ export const copyVideos = async (inputDir: string, outputDir: string): Promise<v
                 try {
                     const fileName = path.basename(vidPath).replace(/[^\w.-]/g, '-')
                     cp(vidPath, path.join(outputDir, fileName))
-                } catch(err) {
+                } catch (err) {
                     console.error(err)
                     throw err;
                 }
@@ -88,3 +88,22 @@ export const getConfig = async (): Promise<Config> => {
     }
 };
 
+
+export const setHashMap = async (tree: FileNode | FileNode[], map: Map<string, string>): Promise<void> => {
+    function traverse(node: FileNode): void {
+        if (node.type === "file") {
+            map.set(node.name.replace('.md', "").trim(), node.path.replace('.md', ".html"));
+        }
+        for (const child of node.children) {
+            traverse(child);
+        }
+    }
+
+    if (Array.isArray(tree)) {
+        for (const node of tree) {
+            traverse(node);
+        }
+    } else {
+        traverse(tree);
+    }
+}
