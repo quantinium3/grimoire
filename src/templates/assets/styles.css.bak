@@ -11,7 +11,7 @@
     --textHighlight: #df8e1c88;
 }
 
-.dark {
+.dark{
     --background: #1e1e2e;
     --lightbackground: #313244;
     --darktext: #6c7086;
@@ -203,11 +203,6 @@ pre code {
 #sidebar-toggle svg {
     width: 24px;
     height: 24px;
-    color: var(--darktext);
-}
-
-#sidebar-toggle:hover svg {
-    color: var(--text);
 }
 
 
@@ -245,6 +240,10 @@ pre code {
     color: var(--Heading);
 }
 
+#file-tree li.directory:hover {
+    filter: brightness(150%);
+}
+
 #file-tree li.file {
     color: var(--links);
 }
@@ -253,31 +252,25 @@ pre code {
     text-decoration: underline;
 }
 
-#file-tree .directory-arrow {
-    width: 1rem;
-    height: 1rem;
-    margin-right: 0.5rem;
-    transform: rotate(0);
-    transition: transform 0.2s ease;
-}
-
-
-#file-tree .directory-arrow {
-    width: 1rem;
-    height: 1rem;
-    margin-right: 0.5rem;
-    transform: rotate(0);
-    transition: transform 0.2s ease;
-}
-
 #file-tree li.directory.open>div>.directory-arrow {
     transform: rotate(90deg);
+}
+
+#file-tree li.directory.open>div>.directory-arrow:hover {
+    filter: brightness(125%);
+}
+
+#file-tree .directory-arrow {
+    padding-right: 6px;
 }
 
 .collapsed {
     display: none;
 }
 
+#file-tree .file {
+    margin-left: 1rem;
+}
 
 
 #time {

@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="/assets/styles/styles.css">
     <link rel="stylesheet" href="/assets/styles/prism.css">
     <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.6.2"></script>
+    <script src="https://unpkg.com/@phosphor-icons/web@2.1.1"></script>
 </head>
 
 <body>
@@ -172,25 +173,17 @@
 
             if (node.type === 'directory' && node.children.length > 0) {
                 const directoryWrapper = document.createElement('div');
+                directoryWrapper.classList.add('directory-wrapper');
                 directoryWrapper.style.display = 'flex';
                 directoryWrapper.style.alignItems = 'center';
 
-                const arrow = document.createElement('svg');
-                arrow.setAttribute('class', 'directory-arrow');
-                arrow.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
-                arrow.setAttribute('width', '16');
-                arrow.setAttribute('height', '16');
-                arrow.setAttribute('viewBox', '0 0 24 24');
-
-                const path = document.createElement('path');
-                path.setAttribute('d', 'M7.293 4.707 14.586 12l-7.293 7.293 1.414 1.414L17.414 12 8.707 3.293 7.293 4.707z');
-                path.setAttribute('fill', '#ffffff');
-
-                arrow.appendChild(path);
+                const arrow = document.createElement('i');
+                arrow.setAttribute('class', 'ph ph-caret-right directory-arrow');
                 directoryWrapper.appendChild(arrow);
 
                 const directoryName = document.createElement('span');
-                directoryName.textContent = node.name.replace(".md", "").replace("_", " ").replace("-", " ");
+                directoryName.setAttribute('class', 'dirname');
+                directoryName.textContent = node.name.replaceAll("_", " ").replaceAll("-", " ").replace(".md", "")
                 directoryWrapper.appendChild(directoryName);
 
                 item.appendChild(directoryWrapper);

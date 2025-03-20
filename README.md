@@ -16,7 +16,7 @@ Static site generator for Obsidian notes
 - [x] Custom themes
 - [ ] Backlink display (showing notes that link to the current one)
 - [ ] Markdown metadata/frontmatter support (e.g., tags, title, date)
-- [ ] Embedded media support (e.g., YouTube, audio files)
+- [x] Embedded media support (e.g., YouTube, audio files)
 - [ ] RSS feed generation for blog-like notes
 - [ ] Vim Motions
 - [ ] image as header
