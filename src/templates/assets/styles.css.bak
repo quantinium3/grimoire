@@ -7,12 +7,12 @@
     --Heading: #1e66f5;
     --links: #40a02b;
     --text: #4c4f69;
-    --highlight: rgba(30, 102, 245, 0.15);
+    --highlight: #949CBB;
     --textHighlight: #df8e1c88;
     --comment: #acb0be;
 }
 
-.dark {
+.dark{
     --background: #1e1e2e;
     --lightbackground: #313244;
     --darktext: #6c7086;
@@ -20,7 +20,7 @@
     --Heading: #89b4fa;
     --links: #a6e3a1;
     --text: #c6d0f5;
-    --highlight: rgba(137, 180, 250, 0.15);
+    --highlight: #949CBB;
     --textHighlight: #f9e2af88;
     --comment: #acb0be;
 }
@@ -543,4 +543,8 @@ img {
     width: 100%;
     border-radius: var(--radius-lg);
     padding: 1rem 2rem;
+}
+ 
+mark {
+    color: var(--highlight);
 }

@@ -197,7 +197,11 @@ export const replaceObsidianEmbeds = async (content: string, hashPath: Map<strin
         return `[[${group1}${group2 ? `|${group2}` : ''}]]`;
     });
 
-    return result;
+
+    result = result.replace(/==([^=]*)==/g, (match: string, group1: string) => {
+        return `<mark>${group1}</mark>`;
+    });
+    return result
 };
 
 async function processEmbed(fullMatch: string, altText: string, url: string): Promise<{ fullMatch: string, replacement: string }> {
