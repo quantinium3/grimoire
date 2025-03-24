@@ -77,18 +77,14 @@ body {
     transition: transform 0.3s ease-in-out;
     max-width: var(--sidebar-width);
     transform: translateX(0);
+    width: 100%;
     flex-wrap: wrap;
-    hyphens: auto;
-    white-space: normal;
-    overflow-wrap: break-word;
-    word-break: break-word;
     border-right: 2px solid black;
 }
 
 .sidebar.hidden {
     transform: translateX(-100%);
 }
-
 
 
 .hidden {
@@ -152,6 +148,11 @@ body {
     padding: 1rem 0;
 }
 
+.hero-title {
+    display: flex;
+    gap: 2rem;
+}
+
 .hero h3 a {
     font-size: var(--text-4xl);
     color: var(--h1-color);
@@ -175,6 +176,7 @@ body {
     color: var(--heading);
     display: flex;
     justify-content: center;
+    flex-wrap: wrap;
 }
 
 .page-header #search-input {
@@ -275,7 +277,6 @@ pre {
 
     .sidebar {
         position: absolute;
-        min-width: fit-content;
     }
 
     .site {
@@ -426,3 +427,8 @@ pre[class*="language-"] {
     background: #fb4934;
 }
 
+img {
+    width: 100%;
+    border-radius: var(--radius-lg);
+    padding: 1rem 2rem;
+}
