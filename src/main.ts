@@ -24,15 +24,11 @@ const main = async (): Promise<void> => {
         rmSync('dist', { recursive: true, force: true });
         await ensureDir("dist");
         await ensureDir("dist/assets/styles");
-        await ensureDir("dist/assets/js");
-
-        await writeFile(
-            "dist/assets/styles/prism.css",
-            await readFile("./node_modules/prismjs/themes/prism-okaidia.css", "utf-8")
-        );
+        await ensureDir("dist/assets/scripts");
 
         await generateCSSFile();
         await writeFile('dist/assets/styles/styles.css', await readFile('./src/templates/assets/styles.css'))
+        await writeFile('dist/assets/scripts/script.js', await readFile('./src/templates/assets/script.js'))
 
         await copyImages(config.inputDir, "dist/assets/images");
         await copyVideos(config.inputDir, "dist/assets/videos")

@@ -54,7 +54,6 @@ export const outputHTML = async (outputPath: string, html: string): Promise<void
             collapseWhitespace: true,
             removeComments: true,
             minifyCSS: true,
-            minifyJS: true,
             quoteCharacter: '"',
             conservativeCollapse: true,
             keepClosingSlash: true,

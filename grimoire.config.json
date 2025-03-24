@@ -22,7 +22,8 @@
                 "links": "#40a02b",
                 "text": "#4c4f69",
                 "highlight": "rgba(30, 102, 245, 0.15)",
-                "textHighlight": "#df8e1c88"
+                "textHighlight": "#df8e1c88",
+                "comment": "#acb0be"
             },
             "darkMode": {
                 "background": "#1e1e2e",
@@ -31,9 +32,10 @@
                 "darkgray": "#cdd6f4",
                 "Heading": "#89b4fa",
                 "links": "#a6e3a1",
-                "text": "#f5e0dc",
+                "text": "#c6d0f5",
                 "highlight": "rgba(137, 180, 250, 0.15)",
-                "textHighlight": "#f9e2af88"
+                "textHighlight": "#f9e2af88",
+                "comment": "#acb0be"
             }
         }
     }

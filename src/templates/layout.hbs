@@ -6,29 +6,45 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{title}}</title>
     <link rel="stylesheet" href="/assets/styles/styles.css">
-    <link rel="stylesheet" href="/assets/styles/prism.css">
+
     <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.6.2"></script>
     <script src="https://unpkg.com/@phosphor-icons/web@2.1.1"></script>
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/regular/style.css"
+    />
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/fill/style.css"
+    />
 </head>
 
 <body>
-    <div>
-        <aside id="sidebar">
-            <div>
+    <div class="site">
+        <div id="sidebar" class="sidebar">
+            <div class="hero">
                 <h3><a href="/">{{owner}}</a></h3>
-                <button id="dark-mode-toggle" aria-label="Toggle Dark Mode">
-                    🌓
-                </button>
+                <img src="/assets/images/996c67f3f27651ca61e531ee76b63e4a.jpg" />
+                <div id="time"></div>
             </div>
             <div id="file-tree" class="file-tree"></div>
-            <div id="time"></div>
-        </aside>
+        </div>
 
-        <main>
+        <div class="divider" draggable="true"></div>
+
+        <div class="content">
+            <div class="header-buttons">
+                <button class="toggle-navbar" onClick="toggleNav()"><i class="ph ph-list"></i></button>
+                <button class="toggle-theme" onClick="toggleTheme()" id="theme-menu"><i class="ph ph-paint-roller"></i></button>
+                <div class="dropdown-content" id="menu-items"></div>
+                <button class="search-button" onClick="openSearch()"><i class="ph ph-magnifying-glass"></i></button>
+            </div>
             <header class="page-header">
-                <h1>{{title}}</h1>
                 <input type="text" id="search-input" placeholder="Search...">
                 <div id="search-results"></div>
+                <h1>{{title}}</h1>
 
                 <div class="metadata">
                     {{#if date}}
@@ -77,225 +93,227 @@
             <section class="page-content">
                 {{{content}}}
             </section>
-        </main>
+        </div>
     </div>
-</body>
 
-<script>
-    document.addEventListener('DOMContentLoaded', async function () {
-        console.log('DOM loaded'); // Debug
-        const fileTreeData = JSON.parse('{{{file_tree}}}');
-        console.log('File tree data:', fileTreeData);
-        initializeFileTree(fileTreeData);
-        initializeClock();
-        initializeCopyButton();
-        lazyLoadVideos();
+    <script>
+        document.addEventListener('DOMContentLoaded', async function () {
+            console.log('DOM loaded');
+            const fileTreeData = JSON.parse('{{{file_tree}}}');
+            console.log('File tree data:', fileTreeData);
+            initializeFileTree(fileTreeData);
+            initializeClock();
+            initializeCopyButton();
+            lazyLoadVideos();
+            toggleTheme();
 
-        let searchData;
+            let searchData;
 
-        fetch('/search-index.json')
-            .then(response => response.json())
-            .then(data => {
-                searchData = data;
-            });
-
-        document.getElementById('search-input').addEventListener('input', function (e) {
-            const query = e.target.value;
-            const options = {
-                keys: ['url', 'content'],
-                threshold: 0.3,
-            };
-            const fuse = new Fuse(searchData, options);
-            const results = fuse.search(query);
-            const resultsContainer = document.getElementById('search-results');
-            resultsContainer.innerHTML = '';
-
-            if (results.length > 0) {
-                results.forEach(result => {
-                    const item = result.item;
-                    const resultElement = document.createElement('div');
-                    const getName = (file) => file.split('/').pop();
-                    resultElement.innerHTML = `
-                    <h3><a href="/${item.url}">${getName(item.url.replace('.html', ""))}</a></h3>
-                `;
-                    resultsContainer.appendChild(resultElement);
+            fetch('/search-index.json')
+                .then(response => response.json())
+                .then(data => {
+                    searchData = data;
                 });
-            } else {
-                resultsContainer.innerHTML = '<p>No results found.</p>';
-            }
-        });
 
-        initializeDarkModeToggle();
-    });
+            document.getElementById('search-input').addEventListener('input', function (e) {
+                const query = e.target.value;
+                const options = {
+                    keys: ['url', 'content'],
+                    threshold: 0.3,
+                };
+                const fuse = new Fuse(searchData, options);
+                const results = fuse.search(query);
+                const resultsContainer = document.getElementById('search-results');
+                resultsContainer.innerHTML = '';
 
-    function initializeDarkModeToggle() {
-        const darkModeToggle = document.getElementById('dark-mode-toggle');
-        const body = document.body;
-
-        const savedTheme = localStorage.getItem('theme') || 'light';
-        body.className = savedTheme;
-
-        updateDarkModeButton();
-
-        darkModeToggle.addEventListener('click', () => {
-            const currentTheme = body.className;
-            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-
-            body.className = newTheme;
-            localStorage.setItem('theme', newTheme);
-            updateDarkModeButton();
-        });
-
-        function updateDarkModeButton() {
-            const currentTheme = body.className;
-            darkModeToggle.textContent = currentTheme === 'dark' ? '🌞' : '🌒';
-        }
-    }
-
-    function initializeFileTree(fileTreeData) {
-        const fileTreeElement = document.getElementById('file-tree');
-        if (!fileTreeElement) return;
-
-        const expandedStateKey = 'fileTreeExpandedState';
-        const expandedState = new Map(JSON.parse(localStorage.getItem(expandedStateKey)) || []);
-
-        function saveExpandedState() {
-            localStorage.setItem(expandedStateKey, JSON.stringify([...expandedState]));
-        }
-
-        function renderFileTreeNode(node, path = '') {
-            const list = document.createElement('ul');
-            const item = document.createElement('li');
-            item.classList.add(node.type);
-            list.appendChild(item);
-
-            const currentPath = path ? `${path}/${node.name}` : node.name;
-
-            if (node.type === 'directory' && node.children.length > 0) {
-                const directoryWrapper = document.createElement('div');
-                directoryWrapper.classList.add('directory-wrapper');
-                directoryWrapper.style.display = 'flex';
-                directoryWrapper.style.alignItems = 'center';
-
-                const arrow = document.createElement('i');
-                arrow.setAttribute('class', 'ph ph-caret-right directory-arrow');
-                directoryWrapper.appendChild(arrow);
-
-                const directoryName = document.createElement('span');
-                directoryName.setAttribute('class', 'dirname');
-                directoryName.textContent = node.name.replaceAll("_", " ").replaceAll("-", " ").replace(".md", "")
-                directoryWrapper.appendChild(directoryName);
-
-                item.appendChild(directoryWrapper);
-
-                const childList = document.createElement('ul');
-                const isExpanded = expandedState.get(currentPath) || false;
-
-                if (isExpanded) {
-                    item.classList.add('open');
+                if (results.length > 0) {
+                    results.forEach(result => {
+                        const item = result.item;
+                        const resultElement = document.createElement('div');
+                        const getName = (file) => file.split('/').pop();
+                        resultElement.innerHTML = `
+                        <h3><a href="/${item.url}">${getName(item.url.replace('.html', ""))}</a></h3>
+                    `;
+                        resultsContainer.appendChild(resultElement);
+                    });
                 } else {
-                    childList.classList.add('collapsed');
+                    resultsContainer.innerHTML = '<p>No results found.</p>';
                 }
+            });
+        });
 
-                node.children.forEach(child => {
-                    const childNode = renderFileTreeNode(child, currentPath);
-                    childList.appendChild(childNode);
-                });
+        function initializeFileTree(fileTreeData) {
+            const fileTreeElement = document.getElementById('file-tree');
+            if (!fileTreeElement) return;
 
-                directoryWrapper.addEventListener('click', function (e) {
-                    e.stopPropagation();
-                    const parentLi = this.parentNode;
-                    const isOpen = parentLi.classList.toggle('open');
-                    const childrenUl = parentLi.querySelector('ul');
-                    childrenUl.classList.toggle('collapsed');
-                    expandedState.set(currentPath, isOpen);
-                    saveExpandedState();
-                });
+            const expandedStateKey = 'fileTreeExpandedState';
+            const expandedState = new Map(JSON.parse(localStorage.getItem(expandedStateKey)) || []);
 
-                item.appendChild(childList);
-            } else if (node.type === 'file') {
-                item.textContent = node.name.replace(".md", "");
-                item.addEventListener('click', function (e) {
-                    e.stopPropagation();
-                    const path = node.path.replace(/\.md$/, '.html');
-                    window.location.href = '/' + path;
-                });
+            function saveExpandedState() {
+                localStorage.setItem(expandedStateKey, JSON.stringify([...expandedState]));
             }
 
-            return item;
-        }
+            function renderFileTreeNode(node, path = '') {
+                const list = document.createElement('ul');
+                const item = document.createElement('li');
+                item.classList.add(node.type);
+                list.appendChild(item);
 
-        const rootList = document.createElement('ul');
-        fileTreeData.forEach(node => {
-            rootList.appendChild(renderFileTreeNode(node));
-        });
+                const currentPath = path ? `${path}/${node.name}` : node.name;
 
-        fileTreeElement.appendChild(rootList);
-    }
+                if (node.type === 'directory' && node.children.length > 0) {
+                    const directoryWrapper = document.createElement('div');
+                    directoryWrapper.classList.add('directory-wrapper');
+                    directoryWrapper.style.display = 'flex';
+                    directoryWrapper.style.alignItems = 'center';
 
-    function initializeClock() {
-        const timeElement = document.getElementById('time');
-        if (!timeElement) return;
+                    const arrow = document.createElement('i');
+                    arrow.setAttribute('class', 'ph ph-caret-right directory-arrow');
+                    directoryWrapper.appendChild(arrow);
 
-        function updateClock() {
-            const now = new Date();
-            timeElement.textContent = now.toLocaleTimeString();
-        }
+                    const directoryName = document.createElement('span');
+                    directoryName.setAttribute('class', 'dirname');
+                    directoryName.textContent = node.name.replaceAll("_", " ").replaceAll("-", " ").replace(".md", "")
+                    directoryWrapper.appendChild(directoryName);
 
-        updateClock();
-        setInterval(updateClock, 1000);
-    }
+                    item.appendChild(directoryWrapper);
 
-    function initializeCopyButton() {
-        const codeBlocks = document.querySelectorAll('pre');
-        codeBlocks.forEach(block => {
-            const button = document.createElement('button');
-            button.textContent = 'Copy';
-            button.classList.add('copy-button');
+                    const childList = document.createElement('ul');
+                    const isExpanded = expandedState.get(currentPath) || false;
 
-            button.addEventListener('click', () => {
-                const code = block.querySelector('code')?.textContent || block.textContent;
-                navigator.clipboard.writeText(code).then(() => {
-                    button.textContent = 'Copied!';
-                    setTimeout(() => {
-                        button.textContent = 'Copy';
-                    }, 2000);
-                }).catch(err => {
-                    console.error('Failed to copy:', err);
-                    button.textContent = 'Error!';
-                    setTimeout(() => {
-                        button.textContent = 'Copy';
-                    }, 2000);
-                });
-            });
+                    if (isExpanded) {
+                        item.classList.add('open');
+                    } else {
+                        childList.classList.add('collapsed');
+                    }
 
-            block.style.position = 'relative';
-
-            block.appendChild(button);
-        });
-    }
-
-    function lazyLoadVideos() {
-        const videos = document.querySelectorAll('.lazy-video');
-
-        const observer = new IntersectionObserver((entries, observer) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    const video = entry.target;
-                    const sources = video.querySelectorAll('source');
-
-                    sources.forEach(source => {
-                        source.src = source.dataset.src;
+                    node.children.forEach(child => {
+                        const childNode = renderFileTreeNode(child, currentPath);
+                        childList.appendChild(childNode);
                     });
 
-                    video.load();
-                    observer.unobserve(video);
-                }
-            });
-        });
+                    directoryWrapper.addEventListener('click', function (e) {
+                        e.stopPropagation();
+                        const parentLi = this.parentNode;
+                        const isOpen = parentLi.classList.toggle('open');
+                        const childrenUl = parentLi.querySelector('ul');
+                        childrenUl.classList.toggle('collapsed');
+                        expandedState.set(currentPath, isOpen);
+                        saveExpandedState();
+                    });
 
-        videos.forEach(video => observer.observe(video));
-    };
-</script>
+                    item.appendChild(childList);
+                } else if (node.type === 'file') {
+                    item.textContent = node.name.replace(".md", "");
+                    item.addEventListener('click', function (e) {
+                        e.stopPropagation();
+                        const path = node.path.replace(/\.md$/, '.html');
+                        window.location.href = '/' + path;
+                    });
+                }
+
+                return item;
+            }
+
+            const rootList = document.createElement('ul');
+            fileTreeData.forEach(node => {
+                rootList.appendChild(renderFileTreeNode(node));
+            });
+
+            fileTreeElement.appendChild(rootList);
+        }
+
+        function initializeClock() {
+            const timeElement = document.getElementById('time');
+            if (!timeElement) return;
+
+            function updateClock() {
+                const now = new Date();
+                timeElement.textContent = now.toLocaleTimeString();
+            }
+
+            updateClock();
+            setInterval(updateClock, 1000);
+        }
+
+        function initializeCopyButton() {
+            const codeBlocks = document.querySelectorAll('pre');
+            codeBlocks.forEach(block => {
+                const button = document.createElement('button');
+                button.textContent = 'Copy';
+                button.classList.add('copy-button');
+
+                button.addEventListener('click', () => {
+                    const code = block.querySelector('code')?.textContent || block.textContent;
+                    navigator.clipboard.writeText(code).then(() => {
+                        button.textContent = 'Copied!';
+                        setTimeout(() => {
+                            button.textContent = 'Copy';
+                        }, 2000);
+                    }).catch(err => {
+                        console.error('Failed to copy:', err);
+                        button.textContent = 'Error!';
+                        setTimeout(() => {
+                            button.textContent = 'Copy';
+                        }, 2000);
+                    });
+                });
+
+                block.style.position = 'relative';
+
+                block.appendChild(button);
+            });
+        }
+
+        function lazyLoadVideos() {
+            const videos = document.querySelectorAll('.lazy-video');
+
+            const observer = new IntersectionObserver((entries, observer) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const video = entry.target;
+                        const sources = video.querySelectorAll('source');
+
+                        sources.forEach(source => {
+                            source.src = source.dataset.src;
+                        });
+
+                        video.load();
+                        observer.unobserve(video);
+                    }
+                });
+            });
+
+            videos.forEach(video => observer.observe(video));
+        }
+
+    function toggleTheme() {
+        const body = document.body;
+        if (body.classList.contains('dark')) {
+            body.classList.remove('dark');
+            body.classList.add('light');
+            localStorage.setItem('theme', 'light');
+        } 
+        else {
+            body.classList.remove('light');
+            body.classList.add('dark');
+            localStorage.setItem('theme', 'dark');
+        }
+    }
+
+        function openSearch() {
+            const searchInput = document.getElementById('search-input');
+            searchInput.style.display = 'block';
+            searchInput.focus();
+        }
+        
+        function toggleNav() {
+            const sidebar = document.querySelector('.sidebar');
+            sidebar.classList.toggle("hidden");
+        }
+
+    </script>
+
+</body>
 
 </html>
