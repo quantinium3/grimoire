@@ -12,7 +12,7 @@
     --comment: #acb0be;
 }
 
-.dark{
+.dark {
     --background: #1e1e2e;
     --lightbackground: #313244;
     --darktext: #6c7086;
@@ -44,6 +44,31 @@
     --radius-lg: 0.5rem;
 
     --h1-color: #D20F39;
+    --ctp-base: #1E1E2E;
+    --ctp-mantle: #181825;
+    --ctp-crust: #11111B;
+
+    /* Main Colors */
+    --ctp-text: #CDD6F4;
+    --ctp-surface0: #313244;
+    --ctp-surface1: #45475A;
+    --ctp-surface2: #585B70;
+
+    /* Accent Colors */
+    --ctp-rosewater: #F5E0DC;
+    --ctp-flamingo: #F2CDCD;
+    --ctp-pink: #F5C2E7;
+    --ctp-mauve: #8839ef;
+    --ctp-red: #F38BA8;
+    --ctp-maroon: #EBA0AC;
+    --ctp-peach: #FAB387;
+    --ctp-yellow: #F9E2AF;
+    --ctp-green: #A6E3A1;
+    --ctp-teal: #94E2D5;
+    --ctp-sky: #89DCEB;
+    --ctp-sapphire: #74C7EC;
+    --ctp-blue: #89B4FA;
+    --ctp-lavender: #B4BEFE;
 }
 
 * {
@@ -59,6 +84,73 @@ body {
     line-height: 1.5;
     width: 100%;
 }
+
+.page.content div,
+.page-content p,
+.page-content h1,
+.page-content h2,
+.page-content h3,
+.page-content h4,
+.page-content h5,
+.page-content h6,
+.page-content ul,
+.page-content ol,
+.page-content blockquote {
+    padding-bottom: 1rem;
+}
+
+.page-content ul {
+    margin-left: 1rem
+}
+
+.page-content ol {
+    margin-left: 2rem;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    color: var(--Heading);
+}
+
+
+a {
+    color: var(--ctp-mauve);
+    text-decoration: none;
+}
+
+a:hover {
+    color: var(--ctp-rosewater);
+}
+
+blockquote {
+    border-left: 4px solid var(--ctp-maroon);
+    color: var(--ctp-subtext1);
+    background-color: var(--ctp-surface1);
+    padding: 10px;
+    font-style: italic;
+}
+
+strong {
+    color: var(--ctp-red);
+}
+
+em {
+    color: var(--ctp-mauve);
+}
+
+ul {
+    list-style-type: disc;
+}
+
+ol {
+    list-style-type: decimal;
+    color: var(--ctp-blue);
+}
+
 
 .site {
     display: flex;
@@ -116,6 +208,7 @@ body {
 
 .dirname {
     padding-left: 0.5rem;
+    color: var(--Heading);
 }
 
 #file-tree li.file {
@@ -146,6 +239,10 @@ body {
     background: var(--background);
     border-bottom: 2px solid var(--lightbackground);
     padding: 1rem 0;
+}
+
+.hero-toggle-navbar {
+    display: none;
 }
 
 .hero-title {
@@ -306,7 +403,22 @@ pre {
     .tags-list {
         margin-top: 1rem;
     }
+
+    .hero-toggle-navbar {
+        position: absolute;
+        top: 16px;
+        right: 16px;
+        display: block;
+        aspect-ratio: 1/1;
+        margin: 0.75rem 0;
+        padding: 0 0.5rem;
+        color: var(--text);
+        background: var(--background);
+        border: 1.5px solid var(--text);
+        font-size: var(--text-sm);
+    }
 }
+
 
 :not(pre)>code[class*="language-"],
 pre[class*="language-"] {
