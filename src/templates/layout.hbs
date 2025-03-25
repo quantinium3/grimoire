@@ -292,24 +292,23 @@
             videos.forEach(video => observer.observe(video));
         }
 
-    function toggleTheme() {
-        const body = document.body;
-        if (body.classList.contains('dark')) {
-            body.classList.remove('dark');
-            body.classList.add('light');
-            localStorage.setItem('theme', 'light');
-        } 
-        else {
-            body.classList.remove('light');
-            body.classList.add('dark');
-            localStorage.setItem('theme', 'dark');
+        function toggleTheme() {
+            const body = document.body;
+            if (body.classList.contains('dark')) {
+                body.classList.remove('dark');
+                body.classList.add('light');
+                localStorage.setItem('theme', 'light');
+            } 
+            else {
+                body.classList.remove('light');
+                body.classList.add('dark');
+                localStorage.setItem('theme', 'dark');
+            }
         }
-    }
 
         function openSearch() {
-            const searchInput = document.getElementById('search-div');
-            searchInput.style.display = 'block';
-            searchInput.focus();
+            const searchDiv = document.querySelector('.search-div');
+            searchDiv.classList.remove('hidden');
         }
         
         function toggleNav() {
