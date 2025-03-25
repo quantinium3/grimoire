@@ -85,6 +85,17 @@ body {
     width: 100%;
 }
 
+img {
+    width: 100%;
+    border-radius: var(--radius-lg);
+    padding: 1rem 2rem;
+}
+
+mark {
+    background: var(--lightbackground);
+    color: var(--text);
+}
+
 .page.content div,
 .page-content p,
 .page-content h1,
@@ -148,7 +159,6 @@ ul {
 
 ol {
     list-style-type: decimal;
-    color: var(--ctp-blue);
 }
 
 
@@ -537,14 +547,4 @@ pre[class*="language-"] {
 
 .token.deleted {
     background: #fb4934;
-}
-
-img {
-    width: 100%;
-    border-radius: var(--radius-lg);
-    padding: 1rem 2rem;
-}
- 
-mark {
-    color: var(--highlight);
-}
+    }
