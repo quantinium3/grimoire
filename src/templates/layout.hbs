@@ -45,8 +45,10 @@
                 <button class="search-button" onClick="openSearch()"><i class="ph ph-magnifying-glass"></i></button>
             </div>
             <header class="page-header">
-                <input type="text" id="search-input" placeholder="Search...">
-                <div id="search-results"></div>
+                <div class="hidden search-div">
+                    <input type="text" id="search-input" placeholder="Search...">
+                    <div id="search-results"></div>
+                </div>
                 <h1>{{title}}</h1>
 
                 <div class="metadata">
@@ -305,7 +307,7 @@
     }
 
         function openSearch() {
-            const searchInput = document.getElementById('search-input');
+            const searchInput = document.getElementById('search-div');
             searchInput.style.display = 'block';
             searchInput.focus();
         }
