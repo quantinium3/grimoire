@@ -393,6 +393,7 @@ pre {
     background: var(--background);
     border: 1px solid var(--text);
     border-radius: var(--radius-lg);
+    color: var(--text);
 }
 
 .search-bar {
@@ -464,6 +465,7 @@ pre {
         min-width: fit-content;
         background: var(--background);
         z-index: 20;
+        border: none;
     }
 
     .site {
@@ -485,6 +487,10 @@ pre {
 
     .hero {
         display: none;
+    }
+
+    .page-header h1 {
+        font-size: var(--text-2xl);
     }
 }
 
@@ -606,3 +612,4 @@ pre[class*="language-"] {
 .token.deleted {
     background: #fb4934;
 }
+

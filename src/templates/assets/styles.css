@@ -488,6 +488,10 @@ pre {
     .hero {
         display: none;
     }
+
+    .page-header h1 {
+        font-size: var(--text-2xl);
+    }
 }
 
 :not(pre)>code[class*="language-"],
@@ -608,3 +612,4 @@ pre[class*="language-"] {
 .token.deleted {
     background: #fb4934;
 }
+
