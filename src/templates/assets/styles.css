@@ -175,7 +175,7 @@ td {
     padding: 0.5rem;
 }
 
-code {
+li code {
     background: var(--lightbackground);
     padding: 0.1rem 0.5rem;
     border-radius: var(--radius-lg);
