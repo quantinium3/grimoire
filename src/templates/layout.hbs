@@ -22,13 +22,28 @@
 </head>
 
 <body>
+    <div class="topbar">
+        <div class="topbar-left">
+            <button class="topbar-hero-toggle-navbar" onclick="toggleNav()"><i class="ph ph-list"></i></button>
+            <h3><a href="/">{{owner}}</a></h3>
+        </div>
+        <div class="header-buttons topbar-right">
+            <button class="search-button" onClick="openSearch()"><i class="ph ph-magnifying-glass"></i></button>
+            <button class="toggle-theme" onClick="applyTheme(true)" id="theme-menu"><i class="ph ph-paint-roller"></i></button>
+        </div>
+    </div>
+
+    <div class="bg hidden"></div>
+    <div class="search-bar hidden">
+        <div class="search-input">
+            <input type="text" id="search-input" placeholder="Search...">
+            <div id="search-results"></div>
+        </div>
+    </div>
+
     <div class="site">
         <div id="sidebar" class="sidebar">
             <div class="hero">
-                <div class="hero-title">
-                    <button class="hero-toggle-navbar" onClick="toggleNav()"><i class="ph ph-list"></i></button>
-                    <h3><a href="/">{{owner}}</a></h3>
-                </div>
                 <img src="/assets/images/996c67f3f27651ca61e531ee76b63e4a.jpeg" />
                 <div id="time"></div>
             </div>
@@ -38,17 +53,7 @@
         <div class="divider" draggable="true"></div>
 
         <div class="content">
-            <div class="header-buttons">
-                <button class="toggle-navbar" onClick="toggleNav()"><i class="ph ph-list"></i></button>
-                <button class="toggle-theme" onClick="toggleTheme()" id="theme-menu"><i class="ph ph-paint-roller"></i></button>
-                <div class="dropdown-content" id="menu-items"></div>
-                <button class="search-button" onClick="openSearch()"><i class="ph ph-magnifying-glass"></i></button>
-            </div>
             <header class="page-header">
-                <div class="hidden search-div">
-                    <input type="text" id="search-input" placeholder="Search...">
-                    <div id="search-results"></div>
-                </div>
                 <h1>{{title}}</h1>
 
                 <div class="metadata">
@@ -110,7 +115,7 @@
             initializeClock();
             initializeCopyButton();
             lazyLoadVideos();
-            toggleTheme();
+            applyTheme();
 
             let searchData;
 
@@ -358,30 +363,56 @@
             videos.forEach(video => observer.observe(video));
         }
 
-        function toggleTheme() {
+        function applyTheme(toggle = false) {
+            let theme = localStorage.getItem('theme');
+            
+            if (!theme) {
+                theme = 'dark';
+                localStorage.setItem('theme', 'dark');
+            }
+            
+            if (toggle) {
+                theme = theme === 'dark' ? 'light' : 'dark';
+                localStorage.setItem('theme', theme);
+            }
+
             const body = document.body;
-            if (body.classList.contains('dark')) {
-                body.classList.remove('dark');
-                body.classList.add('light');
-                localStorage.setItem('theme', 'light');
-            } 
-            else {
+            
+            if (theme === 'dark') {
                 body.classList.remove('light');
                 body.classList.add('dark');
-                localStorage.setItem('theme', 'dark');
+            } else if (theme === 'light') {
+                body.classList.remove('dark');
+                body.classList.add('light');
             }
         }
 
-        function openSearch() {
-            const searchDiv = document.querySelector('.search-div');
-            searchDiv.classList.remove('hidden');
-        }
-        
         function toggleNav() {
             const sidebar = document.querySelector('.sidebar');
             sidebar.classList.toggle("hidden");
         }
 
+        function openSearch() {
+            const bgDiv = document.querySelector('.bg');
+            const searchBarDiv = document.querySelector('.search-bar');
+            
+            bgDiv.classList.remove('hidden');
+            searchBarDiv.classList.remove('hidden');
+        }
+
+        document.addEventListener('click', function(event) {
+            const bgDiv = document.querySelector('.bg');
+            const searchBarDiv = document.querySelector('.search-bar');
+            const searchButton = document.querySelector('.search-button');
+            const searchInput = document.querySelector('.search-input');
+
+            if (!searchBarDiv.classList.contains('hidden') && 
+                !searchButton.contains(event.target) &&
+                !searchInput.contains(event.target)) {
+                bgDiv.classList.add('hidden');
+                searchBarDiv.classList.add('hidden');
+            }
+        });
     </script>
 
 </body>
