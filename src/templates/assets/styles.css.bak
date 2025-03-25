@@ -107,7 +107,7 @@ mark {
 .page-content ul,
 .page-content ol,
 .page-content blockquote {
-    padding-bottom: 1rem;
+    padding: 1rem 0;
 }
 
 .page-content ul {
@@ -161,6 +161,25 @@ ol {
     list-style-type: decimal;
 }
 
+table, td , th{
+    border: 2px solid var(--lightbackground);
+}
+
+th {
+    font-size: var(--text-xl);
+    color: var(--Heading);
+}
+
+
+td {
+    padding: 0.5rem;
+}
+
+code {
+    background: var(--lightbackground);
+    padding: 0.1rem 0.5rem;
+    border-radius: var(--radius-lg);
+}
 
 .site {
     display: flex;
@@ -547,4 +566,4 @@ pre[class*="language-"] {
 
 .token.deleted {
     background: #fb4934;
-    }
+}

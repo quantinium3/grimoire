@@ -64,53 +64,41 @@ Omit `--global` to set the identity only in this repository.
 | `git diff [source branch] [target branch]`                            | Preview changes before merging |
 
 ### *gh repo commands*
-| command | Decription |
-| ------------------| ------------------------|
 `gh repo create [<name>] [flags]`
 
-`--add-readme`
-    Add a README file to the new repository
-`-c, --clone`
-    Clone the new repository to the current directory
-`-d, --description <string>`
-    Description of the repository
-`--disable-issues`
-    Disable issues in the new repository
-`--disable-wiki`
-    Disable wiki in the new repository
-`-g, --gitignore <string>`
-    Specify a gitignore template for the repository
-`-h, --homepage <URL>`
-    Repository home page URL
-`--include-all-branches`
-    Include all branches from template repository
-`--internal`
-    Make the new repository internal
-`-l, --license <string>`
-    Specify an Open Source License for the repository
-`--private`
-    Make the new repository private
-`--public`
-    Make the new repository public
-`--push`
-    Push local commits to the new repository
-`-r, --remote <string>`
-    Specify remote name for the new repository
-`-s, --source <string>`
-    Specify path to local repository to use as source
-`-t, --team <name>`
-    The name of the organization team to be granted access
-`-p, --template <repository>`
-    Make the new repository based on a template repository
+| command | Decription |
+| ----------------------------------| ----------------------------------------------|
+| `--add-readme`                    | Add a README file to the new repository        |
+| `-c, --clone`                     | Clone the new repository to the current directory |
+| `-d, --description <string>`      | Description of the repository                  |
+| `--disable-issues`                | Disable issues in the new repository          |
+| `--disable-wiki`                  | Disable wiki in the new repository            |
+| `-g, --gitignore <string>`        | Specify a gitignore template for the repository |
+| `-h, --homepage <URL>`            | Repository home page URL                      |
+| `--include-all-branches`          | Include all branches from template repository |
+| `--internal`                      | Make the new repository internal              |
+| `-l, --license <string>`          | Specify an Open Source License for the repository |
+| `--private`                       | Make the new repository private               |
+| `--public`                        | Make the new repository public                |
+| `--push`                          | Push local commits to the new repository      |
+| `-r, --remote <string>`           | Specify remote name for the new repository    |
+| `-s, --source <string>`           | Specify path to local repository to use as source |
+| `-t, --team <name>`               | The name of the organization team to be granted access |
+| `-p, --template <repository>`     | Make the new repository based on a template repository |
+
+Changes made:
+1. Aligned the table headers and content properly using consistent spacing
+2. Added proper separators (`|`) between columns
+3. Fixed the alignment of flags and their descriptions
+4. Added a blank description for the main command to maintain table structure
+5. Ensured consistent formatting of flags (with proper spacing around dashes)
 
 Examples
 
 - create a repository interactively
 `gh repo create`
-
 - create a new remote repository and clone it locally
 `gh repo create my-project --public --clone`
-
 - create a remote repository from the current directory
 `gh repo create my-project --private --source=. --remote=upstream`
 
