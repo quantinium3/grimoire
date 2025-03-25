@@ -119,32 +119,98 @@
                 .then(data => {
                     searchData = data;
                 });
+        document.getElementById('search-input').addEventListener('input', function (e) {
+            const query = e.target.value;
+            const options = {
+                keys: ['url', 'content'],
+                threshold: 0.3,
+                includeMatches: true, // This will provide match information
+            };
+            const fuse = new Fuse(searchData, options);
+            const results = fuse.search(query);
+            const resultsContainer = document.getElementById('search-results');
+            resultsContainer.innerHTML = '';
 
-            document.getElementById('search-input').addEventListener('input', function (e) {
-                const query = e.target.value;
-                const options = {
-                    keys: ['url', 'content'],
-                    threshold: 0.3,
-                };
-                const fuse = new Fuse(searchData, options);
-                const results = fuse.search(query);
-                const resultsContainer = document.getElementById('search-results');
-                resultsContainer.innerHTML = '';
+            if (results.length > 0) {
+                results.forEach(result => {
+                    const item = result.item;
+                    const resultElement = document.createElement('div');
+                    const getName = (file) => file.split('/').pop();
 
-                if (results.length > 0) {
-                    results.forEach(result => {
-                        const item = result.item;
-                        const resultElement = document.createElement('div');
-                        const getName = (file) => file.split('/').pop();
-                        resultElement.innerHTML = `
-                        <h3><a href="/${item.url}">${getName(item.url.replace('.html', ""))}</a></h3>
-                    `;
-                        resultsContainer.appendChild(resultElement);
-                    });
-                } else {
-                    resultsContainer.innerHTML = '<p>No results found.</p>';
-                }
-            });
+                    // Create the result title/link
+                    const titleLink = document.createElement('h3');
+                    const link = document.createElement('a');
+                    link.href = `/${item.url}`;
+                    link.textContent = getName(item.url.replace('.html', ""));
+                    titleLink.appendChild(link);
+
+                    // Create content preview with highlights
+                    const contentPreview = document.createElement('div');
+                    contentPreview.classList.add('search-content-preview');
+                    
+                    // Find and highlight matches in content
+                    if (result.matches) {
+                        result.matches.forEach(match => {
+                            if (match.key === 'content') {
+                                const originalText = item.content;
+                                const indices = match.indices;
+                                
+                                // Create highlighted text
+                                let highlightedText = '';
+                                let lastIndex = 0;
+                                
+                                indices.forEach(([start, end]) => {
+                                    // Add text before the match
+                                    highlightedText += originalText.slice(Math.max(0, start - 50), start);
+                                    
+                                    // Add highlighted match
+                                    highlightedText += `<mark>${originalText.slice(start, end + 1)}</mark>`;
+                                    
+                                    // Add text after the match
+                                    highlightedText += originalText.slice(end + 1, end + 50);
+                                });
+                                
+                                const previewElement = document.createElement('p');
+                                previewElement.innerHTML = '...' + highlightedText + '...';
+                                contentPreview.appendChild(previewElement);
+                            }
+                        });
+                    }
+
+                    // Assemble the result element
+                    resultElement.appendChild(titleLink);
+                    resultElement.appendChild(contentPreview);
+                    
+                    resultsContainer.appendChild(resultElement);
+                });
+            } else {
+                resultsContainer.innerHTML = '<p>No results found.</p>';
+            }
+        });
+
+// Add CSS for search results
+//const searchStyle = document.createElement('style');
+//searchStyle.textContent = `
+//    .search-content-preview {
+//        font-size: 0.9em;
+//        color: #666;
+//        margin-top: 5px;
+//    }
+//    .search-content-preview mark {
+//        background-color: yellow;
+//        font-weight: bold;
+//        padding: 0 2px;
+//    }
+//    #search-results {
+//        max-height: 300px;
+//        overflow-y: auto;
+//        border: 1px solid #ddd;
+//        padding: 10px;
+//        margin-top: 10px;
+//    }
+//`;
+//document.head.appendChild(searchStyle);
+
         });
 
         function initializeFileTree(fileTreeData) {
