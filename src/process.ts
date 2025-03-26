@@ -114,6 +114,20 @@ export const compileTemplate = async (
     }
 };
 
+const customSanitizeSchema = {
+    tagNames: [
+        'div', 'span', 'p', 'strong', 'em', 'code', 'pre',
+        'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'img', 'a', 'mark',
+        // Add these to be more permissive
+        'section', 'article', 'main', 'header', 'footer'
+    ],
+    attributes: {
+        '*': ['className', 'style', 'id', 'src', 'alt', 'href', 'color'],
+        'div': ['style', 'class'],
+        'span': ['style', 'class']
+    },
+};
+
 export const processMarkdown = async (
     filepath: string,
     hashPath: Map<string, string>
@@ -123,19 +137,18 @@ export const processMarkdown = async (
         const { content, data: frontmatter } = matter(mdContent);
 
         const htmlContent = await unified()
-            .use(remarkParse)
-            .use(remarkDirective)
-            .use(remarkFrontmatter)
-            .use(remarkGfm)
-            .use(remarkMath)
-            .use(remarkPreventImages)
-            .use(remarkRehype)
-            .use(rehypeSanitize)
-            .use(rehypePrism, { showLineNumbers: true })
-            .use(rehypeAddCopyButton)
-            .use(rehypeRaw)
-            .use(rehypeFormat)
-            .use(rehypeStringify)
+            .use(remarkParse)           // Parse markdown
+            .use(remarkDirective)       // Handle directives
+            .use(remarkFrontmatter)     // Handle frontmatter (e.g., YAML)
+            .use(remarkGfm)             // GitHub-flavored markdown
+            .use(remarkMath)            // Math support
+            .use(remarkRehype, { allowDangerousHtml: true })
+            .use(rehypeRaw)             // Parse raw HTML into the AST
+            .use(rehypeSanitize, customSanitizeSchema)        // Sanitize the HTML after parsing raw content
+            .use(rehypePrism, { showLineNumbers: true, ignoreMissing: true })
+            .use(rehypeAddCopyButton)   // Add copy buttons to code blocks
+            .use(rehypeFormat)          // Format the HTML output
+            .use(rehypeStringify)       // Convert to HTML string
             .process(content);
 
         const changedContent = await replaceObsidianEmbeds(htmlContent.toString(), hashPath);
