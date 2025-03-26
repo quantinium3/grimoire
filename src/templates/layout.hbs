@@ -119,6 +119,9 @@
 
             let searchData;
 
+            checkSidebarVisibility();
+            window.addEventListener('resize', checkSidebarVisibility);
+
             fetch('/search-index.json')
                 .then(response => response.json())
                 .then(data => {
@@ -413,6 +416,15 @@
                 searchBarDiv.classList.add('hidden');
             }
         });
+        function checkSidebarVisibility() {
+            if (sidebar) {
+                if (window.innerWidth > 1200) {
+                    sidebar.classList.remove('hidden');
+                } else {
+                    sidebar.classList.add('hidden');
+                }
+            }
+        }
     </script>
 
 </body>
