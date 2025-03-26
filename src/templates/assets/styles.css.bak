@@ -320,16 +320,19 @@ li code {
     background-color: var(--highlight)
 }
 
-/* COPY BUTTON */
+.code-block-wrapper {
+    position: relative; /* Makes wrapper the context for absolute positioning */
+}
+
 .copy-button {
     position: absolute;
-    top: 8px;
-    right: 8px;
+    top: 8px; /* Matches pre’s padding offset */
+    right: 8px; /* Aligns with pre’s right edge */
     color: var(--text);
     border: none;
     border-radius: var(--radius-lg);
-    padding: 0.5rem 0.75rem;
-    font-size: var(--text-sm);
+    padding: 0.25rem 0.75rem;
+    font-size: var(--text-xs);
     cursor: pointer;
     transition: opacity 0.2s ease-in-out, background-color 0.2s ease-in-out;
     z-index: 5;
@@ -342,7 +345,7 @@ li code {
 }
 
 pre {
-    position: relative;
+    position: relative; /* Already set, no change needed */
     padding: 1rem;
     margin: 1rem 0;
     overflow: auto;
@@ -446,6 +449,12 @@ pre {
 @media all and (max-width: 500px) {
     li {
         margin-left: 2rem;
+    }
+}
+
+@media all and (min-width: 1200px) {
+    .topbar-hero-toggle-navbar {
+        display: none
     }
 }
 
@@ -622,3 +631,4 @@ pre[class*="language-"] {
 .paragraph-spacing+.paragraph-spacing {
     margin-top: 1rem;
 }
+

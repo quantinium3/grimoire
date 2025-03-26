@@ -452,6 +452,12 @@ pre {
     }
 }
 
+@media all and (min-width: 1200px) {
+    .topbar-hero-toggle-navbar {
+        display: none
+    }
+}
+
 @media all and (max-width: 1200px) {
     li {
         margin-left: 2rem;
@@ -625,3 +631,4 @@ pre[class*="language-"] {
 .paragraph-spacing+.paragraph-spacing {
     margin-top: 1rem;
 }
+
