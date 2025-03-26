@@ -97,7 +97,6 @@ mark {
 }
 
 .page.content div,
-.page-content p,
 .page-content h1,
 .page-content h2,
 .page-content h3,
@@ -190,19 +189,26 @@ li code {
 .content {
     width: 100%;
     position: relative;
-    padding: 2rem 3rem;
+    padding: 0 3rem 2rem 3rem;
 }
 
 /* SIDEBAR */
 .sidebar {
-    background-color: var(--background);
+    background-color: color-mix(in srgb, var(--background), black 15%);
     z-index: 10;
     transition: transform 0.3s ease-in-out;
     max-width: var(--sidebar-width);
     transform: translateX(0);
     width: 100%;
     flex-wrap: wrap;
-    border-right: 2px solid var(--text);
+}
+
+.dark .sidebar {
+    background-color: color-mix(in srgb, var(--background), white 3%);
+}
+
+.light .sidebar {
+    background-color: color-mix(in srgb, var(--background), black 3%);
 }
 
 .sidebar.hidden {
@@ -267,7 +273,7 @@ li code {
     display: flex;
     flex-direction: column;
     align-items: center;
-    background: var(--background);
+    background-color: color-mix(in srgb, var(--background), black 15%);
     border-bottom: 2px solid var(--lightbackground);
     padding: 1rem 0;
 }
@@ -314,16 +320,19 @@ li code {
     background-color: var(--highlight)
 }
 
-/* COPY BUTTON */
+.code-block-wrapper {
+    position: relative; /* Makes wrapper the context for absolute positioning */
+}
+
 .copy-button {
     position: absolute;
-    top: 8px;
-    right: 8px;
+    top: 8px; /* Matches pre’s padding offset */
+    right: 8px; /* Aligns with pre’s right edge */
     color: var(--text);
     border: none;
     border-radius: var(--radius-lg);
-    padding: 0.5rem 0.75rem;
-    font-size: var(--text-sm);
+    padding: 0.25rem 0.75rem;
+    font-size: var(--text-xs);
     cursor: pointer;
     transition: opacity 0.2s ease-in-out, background-color 0.2s ease-in-out;
     z-index: 5;
@@ -336,7 +345,7 @@ li code {
 }
 
 pre {
-    position: relative;
+    position: relative; /* Already set, no change needed */
     padding: 1rem;
     margin: 1rem 0;
     overflow: auto;
@@ -450,7 +459,7 @@ pre {
 
     .sidebar {
         position: absolute;
-        background: var(--background);
+        background-color: color-mix(in srgb, var(--background), black 15%);
         z-index: 20;
     }
 
@@ -463,7 +472,7 @@ pre {
     .sidebar {
         position: absolute;
         min-width: fit-content;
-        background: var(--background);
+        background-color: color-mix(in srgb, var(--background), black 15%);
         z-index: 20;
         border: none;
     }
@@ -613,3 +622,6 @@ pre[class*="language-"] {
     background: #fb4934;
 }
 
+.paragraph-spacing+.paragraph-spacing {
+    margin-top: 1rem;
+}

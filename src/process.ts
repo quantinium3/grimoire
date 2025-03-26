@@ -139,9 +139,10 @@ export const processMarkdown = async (
             .process(content);
 
         const changedContent = await replaceObsidianEmbeds(htmlContent.toString(), hashPath);
+        const newContent = changedContent.replace(/<p>/g, '<p class="paragraph-spacing">');
 
         return {
-            content: changedContent,
+            content: newContent,
             frontmatter: frontmatter as Partial<Metadata>,
         };
     } catch (err) {

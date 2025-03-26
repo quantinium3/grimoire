@@ -97,7 +97,6 @@ mark {
 }
 
 .page.content div,
-.page-content p,
 .page-content h1,
 .page-content h2,
 .page-content h3,
@@ -190,19 +189,26 @@ li code {
 .content {
     width: 100%;
     position: relative;
-    padding: 2rem 3rem;
+    padding: 0 3rem 2rem 3rem;
 }
 
 /* SIDEBAR */
 .sidebar {
-    background-color: var(--background);
+    background-color: color-mix(in srgb, var(--background), black 15%);
     z-index: 10;
     transition: transform 0.3s ease-in-out;
     max-width: var(--sidebar-width);
     transform: translateX(0);
     width: 100%;
     flex-wrap: wrap;
-    border-right: 2px solid var(--text);
+}
+
+.dark .sidebar {
+    background-color: color-mix(in srgb, var(--background), white 3%);
+}
+
+.light .sidebar {
+    background-color: color-mix(in srgb, var(--background), black 3%);
 }
 
 .sidebar.hidden {
@@ -267,7 +273,7 @@ li code {
     display: flex;
     flex-direction: column;
     align-items: center;
-    background: var(--background);
+    background-color: color-mix(in srgb, var(--background), black 15%);
     border-bottom: 2px solid var(--lightbackground);
     padding: 1rem 0;
 }
@@ -450,7 +456,7 @@ pre {
 
     .sidebar {
         position: absolute;
-        background: var(--background);
+        background-color: color-mix(in srgb, var(--background), black 15%);
         z-index: 20;
     }
 
@@ -463,7 +469,7 @@ pre {
     .sidebar {
         position: absolute;
         min-width: fit-content;
-        background: var(--background);
+        background-color: color-mix(in srgb, var(--background), black 15%);
         z-index: 20;
         border: none;
     }
@@ -613,3 +619,6 @@ pre[class*="language-"] {
     background: #fb4934;
 }
 
+.paragraph-spacing+.paragraph-spacing {
+    margin-top: 1rem;
+}
