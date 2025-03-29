@@ -111,7 +111,7 @@ export const compileTemplate = async (
             fileTree: file_tree,
             owner: config.owner,
             includesCopyButton: true,
-            profilePicturePath: config.profilePicturePath || "/assets/images/pfp.jpeg",
+            profilePicturePath: config.profilePicturePath || "/assets/images/defaultpfp.jpeg",
             tableOfContents: toc
         });
     } catch (err) {

@@ -30,6 +30,7 @@ const main = async (): Promise<void> => {
         await writeFile('dist/assets/styles/styles.css', await readFile('./src/templates/assets/styles.css'))
 
         await copyImages(config.inputDir, "dist/assets/images");
+        await copyImages("./public", "dist/assets/images");
         await copyVideos(config.inputDir, "dist/assets/videos")
         await searchIndexJson(hashPath)
 
