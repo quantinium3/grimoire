@@ -8,7 +8,9 @@
     <link rel="stylesheet" href="/assets/styles/styles.css" />
 
     <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.6.2"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" integrity="sha512-GsLlZN/3F2ErC5ifS5QtgpiJtWd43JWSuIgh7mbzZ8zBps+dvLusV+eNQATqgA/HdeKFVgA5v3S/cIrLF7QnIg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"
+        integrity="sha512-GsLlZN/3F2ErC5ifS5QtgpiJtWd43JWSuIgh7mbzZ8zBps+dvLusV+eNQATqgA/HdeKFVgA5v3S/cIrLF7QnIg=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <link rel="stylesheet" type="text/css"
         href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/regular/style.css" />
     <link rel="stylesheet" type="text/css"
@@ -69,6 +71,8 @@
             </div>
         </div>
     </div>
+
+    <div class="keybinding"><ul></ul></div>
     <script>
         document.addEventListener('DOMContentLoaded', async function () {
             try {
@@ -79,7 +83,40 @@
             }
             toggleTheme();
             initializeCopyButton();
+            toggleKeyHints()
+            keybindingInitialize();
         })
+
+        function keybindingInitialize() {
+            const keybindingList = document.querySelector('.keybinding ul');
+            if (!keybindingList) return;
+            keybindingList.innerHTML = '';
+
+            const shortcuts = [
+                {key: 'j', desc: 'Scroll down'},
+                {key: 'k', desc: 'Scroll up'},
+                {key: 'gg/Home', desc: 'Scroll to top'},
+                {key: 'Shift+G/End', desc: 'Scroll to bottom'},
+                {key: 'Ctrl+D', desc: 'Scroll half screen down'},
+                {key: 'Ctrl+U', desc: 'Scroll half screen up'},
+                {key: 'Shift+T', desc: 'Toggle theme'},
+                {key: '/', desc: 'Open search'},
+                {key: 'Esc', desc: 'Clear focus/close help'},
+                {key: 'Shift+H', desc: 'Toggle this help'}
+            ];
+
+            shortcuts.forEach(shortcut => {
+                const li = document.createElement('li');
+                li.textContent = `${shortcut.key} - ${shortcut.desc}`;
+                keybindingList.appendChild(li);
+            });
+
+            document.head.appendChild(style);
+            keybinding.classList.add('hidden');
+            const title = document.createElement('h4');
+            title.textContent = 'Keyboard Shortcuts';
+            keybindingList.parentNode.insertBefore(title, keybindingList);
+        }
 
         function printPage() {
             var el = document.querySelector('.content-container')
@@ -226,6 +263,102 @@
                 });
                 block.appendChild(button);
             });
+        }
+
+        document.addEventListener('keydown', function (e) {
+            if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.isContentEditable) {
+                return;
+            }
+
+            const key = e.key.toLowerCase();
+            const scrollAmt = 50;
+
+            if (!window.lastGPress) {
+                window.lastGPress = {count: 0, time: 0};
+            }
+
+            switch (key) {
+                case 'j':
+                    e.preventDefault();
+                    window.scrollBy(0, scrollAmt);
+                    break;
+                case 'k':
+                    e.preventDefault();
+                    window.scrollBy(0, -scrollAmt);
+                    break;
+                case 'g':
+                    if (e.shiftKey) {
+                        e.preventDefault();
+                        window.scrollTo(0, document.body.scrollHeight);
+                    } else {
+                        const now = Date.now();
+                        if (now - window.lastGPress.time < 500 && window.lastGPress.count === 1) {
+                            e.preventDefault();
+                            window.scrollTo(0, 0);
+                            window.lastGPress.count = 0;
+                        } else {
+                            window.lastGPress.count = 1;
+                            window.lastGPress.time = now;
+                        }
+                    }
+                    break;
+                case 'u':
+                    if (e.ctrlKey) {
+                        e.preventDefault();
+                        window.scrollBy(0, -window.innerHeight / 2);
+                    }
+                    break;
+                case 'd':
+                    if (e.ctrlKey) {
+                        e.preventDefault();
+                        window.scrollBy(0, window.innerHeight / 2);
+                    }
+                    break;
+                case 'r':
+                    if (e.ctrlKey) {
+                        e.preventDefault();
+                        window.location.reload();
+                    }
+                    break;
+                case '/':
+                    e.preventDefault();
+                    openSearch();
+                    break;
+                case 'escape':
+                    if (document.activeElement) document.activeElement.blur();
+                    const keybinding = document.querySelector('.keybinding');
+                    if (keybinding && !keybinding.classList.contains('hidden')) {
+                        keybinding.classList.add('hidden');
+                    }
+                    break;
+                case 'home':
+                    e.preventDefault();
+                    window.scrollTo(0, 0);
+                    break;
+                case 'end':
+                    e.preventDefault();
+                    window.scrollTo(0, document.body.scrollHeight);
+                    break;
+                case 'h':
+                    if (e.shiftKey) {
+                        e.preventDefault();
+                        toggleKeyHints();
+                    }
+                    break;
+                case 't':
+                    if (e.shiftKey) {
+                        e.preventDefault();
+                        toggleTheme(true);
+                    }
+                    break;
+            }
+        });
+
+        function toggleKeyHints() {
+            const keybinding = document.querySelector('.keybinding');
+            if (keybinding) {
+                keybinding.classList.toggle('hidden');
+            }
         }
     </script>
 </body>

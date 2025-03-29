@@ -38,7 +38,6 @@
     "unified": "^11.0.5"
   },
   "dependencies": {
-    "@catppuccin/highlightjs": "^1.0.0",
     "@types/html-minifier": "^4.0.5",
     "fuse.js": "^7.1.0",
     "glob": "^11.0.1",

@@ -662,3 +662,44 @@ pre[class*="language-"] {
     padding: 0.1em;
     border-radius: 0.3em;
 }
+
+
+
+.keybinding {
+    position: fixed;
+    bottom: 1rem;
+    right: 1rem;
+    border: 2px solid var(--lightbackground);
+    background-color: var(--background);
+    color: var(--text);
+    border-radius: var(--radius-lg);
+    padding: 10px;
+    z-index: 20;
+    max-width: 290px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.keybinding.hidden {
+    display: none;
+}
+
+.keybinding h3 {
+    margin-top: 0;
+    text-align: center;
+    margin-bottom: 12px;
+}
+
+.keybinding ul {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+}
+
+.keybinding li {
+    padding: 3px 0;
+    display: flex;
+    justify-content: space-between;
+    font-size: var(--text-sm);
+    font-weight: bold;
+    list-style: disc;
+}
