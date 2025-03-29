@@ -415,6 +415,7 @@ table {
 }
 
 .search-button,
+.pdf-button,
 .theme-toggle {
     padding: 0.25rem;
     color: var(--text);
