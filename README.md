@@ -18,6 +18,6 @@ Static site generator for Obsidian notes
 - [ ] Markdown metadata/frontmatter support (e.g., tags, title, date)
 - [x] Embedded media support (e.g., YouTube, audio files)
 - [ ] RSS feed generation for blog-like notes
-- [ ] Vim Motions
+- [x] Vim Motions
 - [ ] image as header
 - [x] table of contents
