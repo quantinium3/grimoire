@@ -15,7 +15,8 @@ export interface Config {
     inputDir: string;
     relativeDir: string;
     owner: string;
-    symlink: string
+    symlink: string;
+    profilePicturePath: string;
 }
 
 export interface FileNode {

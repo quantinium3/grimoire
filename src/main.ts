@@ -28,7 +28,6 @@ const main = async (): Promise<void> => {
 
         await generateCSSFile();
         await writeFile('dist/assets/styles/styles.css', await readFile('./src/templates/assets/styles.css'))
-        await writeFile('dist/assets/scripts/script.js', await readFile('./src/templates/assets/script.js'))
 
         await copyImages(config.inputDir, "dist/assets/images");
         await copyVideos(config.inputDir, "dist/assets/videos")
@@ -46,3 +45,7 @@ const main = async (): Promise<void> => {
 
 
 main().catch(console.error);
+
+const preprocess = async() => {
+
+}

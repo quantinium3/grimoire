@@ -2,13 +2,12 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{title}}</title>
-    <link rel="stylesheet" href="/assets/styles/styles.css">
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <link rel="stylesheet" href="/assets/styles/styles.css" />
 
     <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.6.2"></script>
-    <script src="https://unpkg.com/@phosphor-icons/web@2.1.1"></script>
     <link rel="stylesheet" type="text/css"
         href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/regular/style.css" />
     <link rel="stylesheet" type="text/css"
@@ -16,217 +15,64 @@
 </head>
 
 <body>
-    <div class="topbar">
-        <div class="topbar-left">
-            <button class="topbar-hero-toggle-navbar" onclick="toggleNav()"><i class="ph ph-list"></i></button>
-            <h3><a href="/">{{owner}}</a></h3>
+    <div class="container">
+        <div class="sidebar">
+            <div class="sidebar-inner">
+                <h1 class="owner"><a href="/">{{owner}}</a></h1>
+                <div class="sidebar-theme-toggle">
+                    <button class="theme-toggle" onclick="toggleTheme(true)" aria-label="Toggle Theme">
+                        <i class="ph ph-sun"></i>
+                    </button>
+                    <button class="search-button" onclick="openSearch()" aria-label="Open Search">
+                        <i class="ph ph-magnifying-glass"></i>
+                    </button>
+                </div>
+                <div id="file-tree" class="file-tree"></div>
+                <div class="divider" draggable="true"></div>
+            </div>
         </div>
-        <div class="header-buttons topbar-right">
-            <button class="search-button" onClick="openSearch()"><i class="ph ph-magnifying-glass"></i></button>
-            <button class="toggle-theme" onClick="applyTheme(true)" id="theme-menu"><i
-                    class="ph ph-paint-roller"></i></button>
-        </div>
-    </div>
-
-    <div class="bg hidden"></div>
-    <div class="search-bar hidden">
-        <div class="search-input">
-            <input type="text" id="search-input" placeholder="Search...">
-            <div id="search-results"></div>
-        </div>
-    </div>
-
-    <div class="site">
-        <div id="sidebar" class="sidebar hidden">
-            <div id="file-tree" class="file-tree"></div>
-        </div>
-
-        <div class="divider" draggable="true"></div>
-
         <div class="content">
-            <header class="page-header">
-                <h1>{{title}}</h1>
-
-                <div class="metadata">
-                    {{#if date}}
-                    <div>
-                        <span>📅</span>
-                        <span>{{date}}</span>
-                    </div>
-                    {{/if}}
-
-                    {{#if author}}
-                    <div>
-                        <span>👤</span>
-                        <span>{{author}}</span>
-                    </div>
-                    {{/if}}
-
-                    {{#if category}}
-                    <div>
-                        <span>📂</span>
-                        <span>{{category}}</span>
-                    </div>
-                    {{/if}}
-
-                    {{#if status}}
-                    <div>
-                        <span>{{status}}</span>
-                    </div>
-                    {{/if}}
-
-                    {{#if priority}}
-                    <div>
-                        <span>{{priority}}</span>
-                    </div>
-                    {{/if}}
+            <nav class="top-navbar">
+                <div class="top-navbar-left">
+                    <button class="sidebar-toggle" onclick="toggleNav()" aria-label="Toggle Sidebar">
+                        <i class="ph ph-list"></i>
+                    </button>
+                    <img class="profile-picture" src="{{profilePicturePath}}" alt="profile-picture" />
+                    <a href="/">{{owner}}</a>
                 </div>
-
-                {{#if tags.length}}
-                <div class="tags-list">
-                    {{#each tags}}
-                    <span>{{this}}</span>
-                    {{/each}}
+                <div class="top-navbar-right">
+                    <button class="search-button" onclick="openSearch()" aria-label="Open Search">
+                        <i class="ph ph-magnifying-glass"></i>
+                    </button>
+                    <button class="theme-toggle" onclick="toggleTheme(true)" aria-label="Toggle Theme">
+                        <i class="ph ph-sun"></i>
+                    </button>
                 </div>
-                {{/if}}
-            </header>
-
-            <section class="page-content">
-                {{{content}}}
-            </section>
+            </nav>
+            <div class="content-container">
+                <div class="content-container-inner">
+                    {{{content}}}
+                </div>
+            </div>
+                <div class="container-right">
+                    <h3 class="table-of-content">Table of Contents</h3>
+                    <div class="container-right-inner">
+                        {{{tableOfContents}}}
+                    </div>
+                </div>
         </div>
     </div>
-
     <script>
         document.addEventListener('DOMContentLoaded', async function () {
-            console.log('DOM loaded');
-            const fileTreeData = JSON.parse('{{{file_tree}}}');
-            console.log('File tree data:', fileTreeData);
-            initializeFileTree(fileTreeData);
-            //initializeCopyButton();
-            lazyLoadVideos();
-            applyTheme();
-
-            let searchData;
-            const sidebar = document.getElementById('sidebar');
-            const divider = document.querySelector('.divider');
-
-            divider.addEventListener('mousedown', function (e) {
-                const initialX = e.clientX;
-                const initialWidth = sidebar.offsetWidth;
-
-                function onMouseMove(e) {
-                    const deltaX = e.clientX - initialX;
-                    let newWidth = initialWidth + deltaX;
-                    const minWidth = 200;
-                    const maxWidth = 500;
-                    newWidth = Math.max(minWidth, Math.min(maxWidth, newWidth));
-                    sidebar.style.width = newWidth + 'px';
-                }
-
-                function onMouseUp() {
-                    document.removeEventListener('mousemove', onMouseMove);
-                    document.removeEventListener('mouseup', onMouseUp);
-                }
-
-                document.addEventListener('mousemove', onMouseMove);
-                document.addEventListener('mouseup', onMouseUp);
-            });
-
-            checkSidebarVisibility();
-            window.addEventListener('resize', checkSidebarVisibility);
-
-            fetch('/search-index.json')
-                .then(response => response.json())
-                .then(data => {
-                    searchData = data;
-                });
-
-            document.getElementById('search-input').addEventListener('input', function (e) {
-                const query = e.target.value;
-                const options = {
-                    keys: ['url', 'content'],
-                    threshold: 0.3,
-                    includeMatches: true,
-                };
-                const fuse = new Fuse(searchData, options);
-                const results = fuse.search(query);
-                const resultsContainer = document.getElementById('search-results');
-                resultsContainer.innerHTML = '';
-
-                if (results.length > 0) {
-                    results.forEach(result => {
-                        const item = result.item;
-                        const resultElement = document.createElement('div');
-                        const getName = (file) => file.split('/').pop();
-
-                        const titleLink = document.createElement('h3');
-                        const link = document.createElement('a');
-                        link.href = `/${item.url}`;
-                        link.textContent = getName(item.url.replace('.html', ""));
-                        titleLink.appendChild(link);
-
-                        const contentPreview = document.createElement('div');
-                        contentPreview.classList.add('search-content-preview');
-
-                        if (result.matches) {
-                            result.matches.forEach(match => {
-                                if (match.key === 'content') {
-                                    const originalText = item.content;
-                                    const indices = match.indices;
-
-                                    let highlightedText = '';
-                                    let lastIndex = 0;
-
-                                    indices.forEach(([start, end]) => {
-                                        highlightedText += originalText.slice(Math.max(0, start - 50), start);
-
-                                        highlightedText += `<mark>${originalText.slice(start, end + 1)}</mark>`;
-
-                                        highlightedText += originalText.slice(end + 1, end + 50);
-                                    });
-
-                                    const previewElement = document.createElement('p');
-                                    previewElement.innerHTML = '...' + highlightedText + '...';
-                                    contentPreview.appendChild(previewElement);
-                                }
-                            });
-                        }
-
-                        resultElement.appendChild(titleLink);
-                        resultElement.appendChild(contentPreview);
-
-                        resultsContainer.appendChild(resultElement);
-                    });
-                } else {
-                    resultsContainer.innerHTML = '<p>No results found.</p>';
-                }
-            });
-
-            // Add CSS for search results
-            //const searchStyle = document.createElement('style');
-            //searchStyle.textContent = `
-            //    .search-content-preview {
-            //        font-size: 0.9em;
-            //        color: #666;
-            //        margin-top: 5px;
-            //    }
-            //    .search-content-preview mark {
-            //        background-color: yellow;
-            //        font-weight: bold;
-            //        padding: 0 2px;
-            //    }
-            //    #search-results {
-            //        max-height: 300px;
-            //        overflow-y: auto;
-            //        border: 1px solid #ddd;
-            //        padding: 10px;
-            //        margin-top: 10px;
-            //    }
-            //`;
-            //document.head.appendChild(searchStyle);
-
-        });
+            try {
+                const fileTreeData = JSON.parse('{{{fileTree}}}')
+                initializeFileTree(fileTreeData)
+            } catch (error) {
+                console.error('Error parsing file tree:', error);
+            }
+            toggleTheme();
+            initializeCopyButton();
+        })
 
         function initializeFileTree(fileTreeData) {
             const fileTreeElement = document.getElementById('file-tree');
@@ -310,56 +156,17 @@
         }
 
 
-        //function initializeCopyButton() {
-        //    const codeBlocks = document.querySelectorAll('pre');
-        //    codeBlocks.forEach(block => {
-        //        const button = document.createElement('button');
-        //        button.textContent = 'Copy';
-        //        button.classList.add('copy-button');
-
-        //        button.addEventListener('click', () => {
-        //            const code = block.querySelector('code')?.textContent || block.textContent;
-        //            navigator.clipboard.writeText(code).then(() => {
-        //                button.textContent = 'Copied!';
-        //                setTimeout(() => {
-        //                    button.textContent = 'Copy';
-        //                }, 2000);
-        //            }).catch(err => {
-        //                console.error('Failed to copy:', err);
-        //                button.textContent = 'Error!';
-        //                setTimeout(() => {
-        //                    button.textContent = 'Copy';
-        //                }, 2000);
-        //            });
-        //        });
-
-        //        block.appendChild(button);
-        //    });
-        //}
-
-        function lazyLoadVideos() {
-            const videos = document.querySelectorAll('.lazy-video');
-
-            const observer = new IntersectionObserver((entries, observer) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        const video = entry.target;
-                        const sources = video.querySelectorAll('source');
-
-                        sources.forEach(source => {
-                            source.src = source.dataset.src;
-                        });
-
-                        video.load();
-                        observer.unobserve(video);
-                    }
-                });
-            });
-
-            videos.forEach(video => observer.observe(video));
+        function toggleNav() {
+            const sidebar = document.querySelector('.sidebar');
+            sidebar.classList.toggle('open');
         }
 
-        function applyTheme(toggle = false) {
+        function openSearch() {
+            // Placeholder for search functionality
+            console.log('Search functionality not implemented');
+        }
+
+        function toggleTheme(toggle = false) {
             let theme = localStorage.getItem('theme');
 
             if (!theme) {
@@ -383,43 +190,32 @@
             }
         }
 
-        function toggleNav() {
-            const sidebar = document.querySelector('.sidebar');
-            sidebar.classList.toggle("hidden");
-        }
+        function initializeCopyButton() {
+            const codeBlocks = document.querySelectorAll('.content-container-inner pre');
+            codeBlocks.forEach(block => {
+                const button = document.createElement('button');
+                button.textContent = 'Copy';
+                button.classList.add('copy-button');
 
-        function openSearch() {
-            const bgDiv = document.querySelector('.bg');
-            const searchBarDiv = document.querySelector('.search-bar');
-
-            bgDiv.classList.remove('hidden');
-            searchBarDiv.classList.remove('hidden');
-        }
-
-        document.addEventListener('click', function (event) {
-            const bgDiv = document.querySelector('.bg');
-            const searchBarDiv = document.querySelector('.search-bar');
-            const searchButton = document.querySelector('.search-button');
-            const searchInput = document.querySelector('.search-input');
-
-            if (!searchBarDiv.classList.contains('hidden') &&
-                !searchButton.contains(event.target) &&
-                !searchInput.contains(event.target)) {
-                bgDiv.classList.add('hidden');
-                searchBarDiv.classList.add('hidden');
-            }
-        });
-        function checkSidebarVisibility() {
-            if (sidebar) {
-                if (window.innerWidth > 1200) {
-                    sidebar.classList.remove('hidden');
-                } else {
-                    sidebar.classList.add('hidden');
-                }
-            }
+                button.addEventListener('click', () => {
+                    const code = block.querySelector('code')?.textContent || block.textContent;
+                    navigator.clipboard.writeText(code).then(() => {
+                        button.textContent = 'Copied!';
+                        setTimeout(() => {
+                            button.textContent = 'Copy';
+                        }, 2000);
+                    }).catch(err => {
+                        console.error('Failed to copy:', err);
+                        button.textContent = 'Error!';
+                        setTimeout(() => {
+                            button.textContent = 'Copy';
+                        }, 2000);
+                    });
+                });
+                block.appendChild(button);
+            });
         }
     </script>
-
 </body>
 
 </html>

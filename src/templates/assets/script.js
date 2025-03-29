@@ -1,43 +1,52 @@
-// Create and append the Fuse.js script dynamically
-const script = document.createElement('script');
-script.src = 'https://cdn.jsdelivr.net/npm/fuse.js@7.1.0';
-document.head.appendChild(script);
-
 document.addEventListener('DOMContentLoaded', async function() {
-    console.log('DOM loaded'); // Debug
+    console.log('DOM loaded');
     const fileTreeData = JSON.parse('{{{file_tree}}}');
     console.log('File tree data:', fileTreeData);
     initializeFileTree(fileTreeData);
-    initializeClock();
-    initializeCopyButton();
     lazyLoadVideos();
-    initializeSidebar();
+    applyTheme();
 
-    let searchData;
+    /* let searchData;
+    const sidebar = document.getElementById('sidebar');
+    const divider = document.querySelector('.divider');
 
-    // Fetch search index
+    divider.addEventListener('mousedown', function(e) {
+        const initialX = e.clientX;
+        const initialWidth = sidebar.offsetWidth;
+
+        function onMouseMove(e) {
+            const deltaX = e.clientX - initialX;
+            let newWidth = initialWidth + deltaX;
+            const minWidth = 200;
+            const maxWidth = 500;
+            newWidth = Math.max(minWidth, Math.min(maxWidth, newWidth));
+            sidebar.style.width = newWidth + 'px';
+        }
+
+        function onMouseUp() {
+            document.removeEventListener('mousemove', onMouseMove);
+            document.removeEventListener('mouseup', onMouseUp);
+        }
+
+        document.addEventListener('mousemove', onMouseMove);
+        document.addEventListener('mouseup', onMouseUp);
+    });
+
+    checkSidebarVisibility();
+    window.addEventListener('resize', checkSidebarVisibility);
+
     fetch('/search-index.json')
         .then(response => response.json())
         .then(data => {
             searchData = data;
-        })
-        .catch(err => console.error('Failed to load search index:', err));
+        });
 
-    // Search functionality
     document.getElementById('search-input').addEventListener('input', function(e) {
         const query = e.target.value;
-
-        // Check if Fuse is loaded and searchData is available
-        if (typeof Fuse === 'undefined' || !searchData) {
-            console.error('Fuse.js not loaded yet or search data unavailable');
-            const resultsContainer = document.getElementById('search-results');
-            resultsContainer.innerHTML = '<p>Loading search functionality, please wait...</p>';
-            return;
-        }
-
         const options = {
             keys: ['url', 'content'],
             threshold: 0.3,
+            includeMatches: true,
         };
         const fuse = new Fuse(searchData, options);
         const results = fuse.search(query);
@@ -49,125 +58,74 @@ document.addEventListener('DOMContentLoaded', async function() {
                 const item = result.item;
                 const resultElement = document.createElement('div');
                 const getName = (file) => file.split('/').pop();
-                resultElement.innerHTML = `
-                    <h3><a href="/${item.url}">${getName(item.url.replace('.html', ''))}</a></h3>
-                `;
+
+                const titleLink = document.createElement('h3');
+                const link = document.createElement('a');
+                link.href = `/${item.url}`;
+                link.textContent = getName(item.url.replace('.html', ""));
+                titleLink.appendChild(link);
+
+                const contentPreview = document.createElement('div');
+                contentPreview.classList.add('search-content-preview');
+
+                if (result.matches) {
+                    result.matches.forEach(match => {
+                        if (match.key === 'content') {
+                            const originalText = item.content;
+                            const indices = match.indices;
+
+                            let highlightedText = '';
+                            let lastIndex = 0;
+
+                            indices.forEach(([start, end]) => {
+                                highlightedText += originalText.slice(Math.max(0, start - 50), start);
+
+                                highlightedText += `<mark>${originalText.slice(start, end + 1)}</mark>`;
+
+                                highlightedText += originalText.slice(end + 1, end + 50);
+                            });
+
+                            const previewElement = document.createElement('p');
+                            previewElement.innerHTML = '...' + highlightedText + '...';
+                            contentPreview.appendChild(previewElement);
+                        }
+                    });
+                }
+
+                resultElement.appendChild(titleLink);
+                resultElement.appendChild(contentPreview);
+
                 resultsContainer.appendChild(resultElement);
             });
         } else {
             resultsContainer.innerHTML = '<p>No results found.</p>';
         }
-    });
+    }); */
 
-    initializeDarkModeToggle();
+    // Add CSS for search results
+    //const searchStyle = document.createElement('style');
+    //searchStyle.textContent = `
+    //    .search-content-preview {
+    //        font-size: 0.9em;
+    //        color: #666;
+    //        margin-top: 5px;
+    //    }
+    //    .search-content-preview mark {
+    //        background-color: yellow;
+    //        font-weight: bold;
+    //        padding: 0 2px;
+    //    }
+    //    #search-results {
+    //        max-height: 300px;
+    //        overflow-y: auto;
+    //        border: 1px solid #ddd;
+    //        padding: 10px;
+    //        margin-top: 10px;
+    //    }
+    //`;
+    //document.head.appendChild(searchStyle);
+
 });
-
-// Add a load handler for the script to log when Fuse.js is ready (optional for debugging)
-script.onload = () => console.log('Fuse.js loaded successfully');
-script.onerror = () => console.error('Failed to load Fuse.js');
-
-// Rest of your functions (initializeSidebar, initializeDarkModeToggle, etc.) remain unchanged
-// ... [include the rest of your code here]
-
-function initializeSidebar() {
-    const sidebar = document.getElementById('sidebar');
-    const main = document.getElementById('main');
-    const sidebarToggle = document.getElementById('sidebar-toggle');
-    const resizeHandle = document.getElementById('resize-handle');
-
-    // Get saved sidebar state
-    const sidebarState = localStorage.getItem('sidebarState');
-    const sidebarWidth = localStorage.getItem('sidebarWidth');
-
-    // Apply saved state if available
-    if (sidebarState === 'collapsed') {
-        sidebar.classList.add('collapsed');
-        main.classList.add('full-width');
-    }
-
-    if (sidebarWidth) {
-        sidebar.style.width = sidebarWidth + 'px';
-        main.style.marginLeft = sidebarWidth + 'px';
-    }
-
-    // Toggle sidebar visibility
-    sidebarToggle.addEventListener('click', () => {
-        const isCollapsed = sidebar.classList.toggle('collapsed');
-        main.classList.toggle('full-width');
-
-        // Save state
-        localStorage.setItem('sidebarState', isCollapsed ? 'collapsed' : 'expanded');
-    });
-
-    // Resize functionality
-    let isResizing = false;
-    let initialX;
-    let initialWidth;
-
-    resizeHandle.addEventListener('mousedown', (e) => {
-        isResizing = true;
-        initialX = e.clientX;
-        initialWidth = parseInt(sidebar.offsetWidth);
-
-        // Add event listeners for mouse movement and release
-        document.addEventListener('mousemove', handleMouseMove);
-        document.addEventListener('mouseup', handleMouseUp);
-
-        // Prevent text selection during resize
-        document.body.style.userSelect = 'none';
-    });
-
-    function handleMouseMove(e) {
-        if (!isResizing) return;
-
-        const newWidth = initialWidth + (e.clientX - initialX);
-
-        // Set min and max width constraints
-        const minWidth = 150;
-        const maxWidth = window.innerWidth * 0.6;
-
-        if (newWidth >= minWidth && newWidth <= maxWidth) {
-            sidebar.style.width = newWidth + 'px';
-            main.style.marginLeft = newWidth + 'px';
-        }
-    }
-
-    function handleMouseUp() {
-        if (!isResizing) return;
-
-        isResizing = false;
-        document.removeEventListener('mousemove', handleMouseMove);
-        document.removeEventListener('mouseup', handleMouseUp);
-        document.body.style.userSelect = '';
-
-        // Save the new width
-        localStorage.setItem('sidebarWidth', sidebar.offsetWidth);
-    }
-}
-
-function initializeDarkModeToggle() {
-    const darkModeToggle = document.getElementById('dark-mode-toggle');
-    const body = document.body;
-
-    const savedTheme = localStorage.getItem('theme') || 'light';
-    body.className = savedTheme;
-
-    updateDarkModeButton();
-
-    darkModeToggle.addEventListener('click', () => {
-        const currentTheme = body.className;
-        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-
-        body.className = newTheme;
-        localStorage.setItem('theme', newTheme);
-        updateDarkModeButton();
-    });
-
-    function updateDarkModeButton() {
-        const currentTheme = body.className;
-        darkModeToggle.textContent = currentTheme === 'dark' ? '🌞' : '🌒';
-    }
-}
 
 function initializeFileTree(fileTreeData) {
     const fileTreeElement = document.getElementById('file-tree');
@@ -250,47 +208,33 @@ function initializeFileTree(fileTreeData) {
     fileTreeElement.appendChild(rootList);
 }
 
-function initializeClock() {
-    const timeElement = document.getElementById('time');
-    if (!timeElement) return;
 
-    function updateClock() {
-        const now = new Date();
-        timeElement.textContent = now.toLocaleTimeString();
-    }
+//function initializeCopyButton() {
+//    const codeBlocks = document.querySelectorAll('pre');
+//    codeBlocks.forEach(block => {
+//        const button = document.createElement('button');
+//        button.textContent = 'Copy';
+//        button.classList.add('copy-button');
 
-    updateClock();
-    setInterval(updateClock, 1000);
-}
+//        button.addEventListener('click', () => {
+//            const code = block.querySelector('code')?.textContent || block.textContent;
+//            navigator.clipboard.writeText(code).then(() => {
+//                button.textContent = 'Copied!';
+//                setTimeout(() => {
+//                    button.textContent = 'Copy';
+//                }, 2000);
+//            }).catch(err => {
+//                console.error('Failed to copy:', err);
+//                button.textContent = 'Error!';
+//                setTimeout(() => {
+//                    button.textContent = 'Copy';
+//                }, 2000);
+//            });
+//        });
 
-function initializeCopyButton() {
-    const codeBlocks = document.querySelectorAll('pre');
-    codeBlocks.forEach(block => {
-        const button = document.createElement('button');
-        button.textContent = 'Copy';
-        button.classList.add('copy-button');
-
-        button.addEventListener('click', () => {
-            const code = block.querySelector('code')?.textContent || block.textContent;
-            navigator.clipboard.writeText(code).then(() => {
-                button.textContent = 'Copied!';
-                setTimeout(() => {
-                    button.textContent = 'Copy';
-                }, 2000);
-            }).catch(err => {
-                console.error('Failed to copy:', err);
-                button.textContent = 'Error!';
-                setTimeout(() => {
-                    button.textContent = 'Copy';
-                }, 2000);
-            });
-        });
-
-        block.style.position = 'relative';
-
-        block.appendChild(button);
-    });
-}
+//        block.appendChild(button);
+//    });
+//}
 
 function lazyLoadVideos() {
     const videos = document.querySelectorAll('.lazy-video');
@@ -312,4 +256,64 @@ function lazyLoadVideos() {
     });
 
     videos.forEach(video => observer.observe(video));
+}
+
+function applyTheme(toggle = false) {
+    let theme = localStorage.getItem('theme');
+
+    if (!theme) {
+        theme = 'dark';
+        localStorage.setItem('theme', 'dark');
+    }
+
+    if (toggle) {
+        theme = theme === 'dark' ? 'light' : 'dark';
+        localStorage.setItem('theme', theme);
+    }
+
+    const body = document.body;
+
+    if (theme === 'dark') {
+        body.classList.remove('light');
+        body.classList.add('dark');
+    } else if (theme === 'light') {
+        body.classList.remove('dark');
+        body.classList.add('light');
+    }
+}
+
+function toggleNav() {
+    const sidebar = document.querySelector('.sidebar');
+    sidebar.classList.toggle("hidden");
+}
+
+function openSearch() {
+    const bgDiv = document.querySelector('.bg');
+    const searchBarDiv = document.querySelector('.search-bar');
+
+    bgDiv.classList.remove('hidden');
+    searchBarDiv.classList.remove('hidden');
+}
+
+document.addEventListener('click', function(event) {
+    const bgDiv = document.querySelector('.bg');
+    const searchBarDiv = document.querySelector('.search-bar');
+    const searchButton = document.querySelector('.search-button');
+    const searchInput = document.querySelector('.search-input');
+
+    if (!searchBarDiv.classList.contains('hidden') &&
+        !searchButton.contains(event.target) &&
+        !searchInput.contains(event.target)) {
+        bgDiv.classList.add('hidden');
+        searchBarDiv.classList.add('hidden');
+    }
+});
+function checkSidebarVisibility() {
+    if (sidebar) {
+        if (window.innerWidth > 1200) {
+            sidebar.classList.remove('hidden');
+        } else {
+            sidebar.classList.add('hidden');
+        }
+    }
 }

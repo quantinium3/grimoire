@@ -5,6 +5,7 @@ import { readFile } from "fs/promises";
 import { ensureDir } from "fs-extra";
 import Ffmpeg from "fluent-ffmpeg";
 import { cp } from "fs/promises";
+import sharp from "sharp";
 
 Ffmpeg.setFfmpegPath(path.resolve(__dirname, './bin/ffmpeg-git-20240629-amd64-static/ffmpeg'));
 
@@ -51,24 +52,10 @@ export const copyImages = async (inputDir: string, outputDir: string): Promise<v
 
         await Promise.all(
             imagePaths.map(async (imagePath: string) => {
-                try {
-                    const fileName = path.basename(imagePath)
-                        .replace(/[^\w.-]/g, '-')
-                    const baseName = fileName.split('.')[0];
-                    const destPath = path.join(outputDir, `${baseName}.jpeg`);
-
-                    await new Promise((resolve, reject) => {
-                        Ffmpeg(imagePath)
-                            .outputOptions(['-vf scale=-2:360'])
-                            .outputOptions(['-q:v 2'])
-                            .on('end', resolve)
-                            .on('error', reject)
-                            .save(destPath);
-                    });
-                } catch (error) {
-                    console.error(`Failed to process ${imagePath}:`, error);
-                    throw error;
-                }
+                const fileName = path.basename(imagePath)
+                    .replace(/[^\w.-]/g, '-')
+                const destPath = path.join(outputDir, `${fileName}`);
+                cp(imagePath, destPath);
             })
         );
     } catch (err) {

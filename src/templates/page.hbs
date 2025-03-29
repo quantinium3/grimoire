@@ -1,25 +1,27 @@
-<div class="markdown-content">
-    {{{content}}}
-</div>
-
-<!-- Aliases section -->
-{{#if aliases.length}}
-<div class="aliases mt-6">
-    <h3>Also known as:</h3>
-    <ul class="list-disc">
-        {{#each aliases}}
-        <li>{{this}}</li>
+<div class="page-content">
+    <h1>{{title}}</h1>
+    
+    {{#if date}}
+    <div class="page-metadata">
+        <span class="date">Published: {{date}}</span>
+    </div>
+    {{/if}}
+    
+    {{#if tags.length}}
+    <div class="page-tags">
+        {{#each tags}}
+        <span class="tag">{{this}}</span>
         {{/each}}
-    </ul>
-</div>
-{{/if}}
-
-<!-- Creation/Modification info -->
-{{#if created}}
-<div class="creation-info">
-    <p><span class="font-medium">Created:</span> {{created}}</p>
-    {{#if modified}}
-    <p><span class="font-medium">Last modified:</span> {{modified}}</p>
+    </div>
+    {{/if}}
+    
+    <article class="markdown-content">
+        {{{content}}}
+    </article>
+    
+    {{#if author}}
+    <div class="page-author">
+        Author: {{author}}
+    </div>
     {{/if}}
 </div>
-{{/if}}

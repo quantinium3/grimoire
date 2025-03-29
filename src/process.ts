@@ -3,22 +3,20 @@ import rehypeRaw from "rehype-raw";
 import rehypeStringify from "rehype-stringify";
 import remarkGfm from "remark-gfm";
 import remarkRehype from "remark-rehype";
-import { rehypeAddCopyButton, remarkPreventImages } from "./remark";
+import rehypeMathjax from 'rehype-mathjax'
 import remarkParse from "remark-parse";
 import matter from "gray-matter";
 import { unified } from "unified";
 import { readFile } from "fs/promises";
-import path from "path";
+import path, { extname } from "path";
 import { writeFile } from "fs/promises";
 import { minify } from "html-minifier";
 import type { Config, FileNode, Metadata } from "./consts";
 import Handlebars from "handlebars";
 import { ensureDir } from "fs-extra";
-import remarkDirective from "remark-directive";
 import remarkFrontmatter from "remark-frontmatter";
 import remarkMath from "remark-math";
-import rehypeSanitize from "rehype-sanitize";
-import rehypeFormat from "rehype-format";
+import { visit } from "unist-util-visit";
 
 export const compilePage = async (
     filename: string,
@@ -32,8 +30,8 @@ export const compilePage = async (
             return;
         }
 
-        const { content, frontmatter } = await processMarkdown(filepath, hashPath);
-        const html = await compileTemplate("page", frontmatter, content, file_tree.replaceAll("index.md", ""), config);
+        const { content, frontmatter, toc } = await processMarkdown(filepath, hashPath);
+        const html = await compileTemplate("page", frontmatter, content, file_tree.replaceAll("index.md", ""), config, filename, toc);
 
         const relativePath = filepath.includes("content/")
             ? filepath.substring(filepath.indexOf("content/") + 8)
@@ -66,18 +64,21 @@ export const outputHTML = async (outputPath: string, html: string): Promise<void
     }
 };
 
-
 export const compileTemplate = async (
     templateName: string,
     metadata: Partial<Metadata>,
     content: string,
     file_tree: string,
     config: Config,
+    filename: string,
+    toc: string
 ): Promise<string> => {
     try {
+        const actualTemplateName = filename === 'index.md' ? 'index' : (templateName || 'page');
+
         const [pageTemplate, layoutTemplate] = await Promise.all([
-            readFile(`./src/templates/${templateName}.hbs`, "utf-8").catch(() => {
-                throw new Error(`Template ${templateName}.hbs not found`);
+            readFile(`./src/templates/${actualTemplateName}.hbs`, "utf-8").catch(() => {
+                throw new Error(`Template ${actualTemplateName}.hbs not found`);
             }),
             readFile(`./src/templates/layout.hbs`, "utf-8").catch(() => {
                 throw new Error(`Layout template not found`);
@@ -89,7 +90,10 @@ export const compileTemplate = async (
         });
 
         const pageCompiled = Handlebars.compile(pageTemplate);
-        const contentHTML = pageCompiled({ content });
+        const contentHTML = pageCompiled({
+            ...metadata,
+            content
+        });
 
         const layoutCompiled = Handlebars.compile(layoutTemplate);
         return layoutCompiled({
@@ -104,9 +108,11 @@ export const compileTemplate = async (
             created: metadata.created || "",
             modified: metadata.modified || "",
             content: contentHTML,
-            file_tree,
+            fileTree: file_tree,
             owner: config.owner,
             includesCopyButton: true,
+            profilePicturePath: config.profilePicturePath || "/assets/images/pfp.jpeg",
+            tableOfContents: toc
         });
     } catch (err) {
         console.error(`Error compiling template ${templateName}:`, err);
@@ -114,56 +120,110 @@ export const compileTemplate = async (
     }
 };
 
-const customSanitizeSchema = {
-    tagNames: [
-        'div', 'span', 'p', 'strong', 'em', 'code', 'pre',
-        'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'img', 'a', 'mark',
-        // Add these to be more permissive
-        'section', 'article', 'main', 'header', 'footer'
-    ],
-    attributes: {
-        '*': ['className', 'style', 'id', 'src', 'alt', 'href', 'color'],
-        'div': ['style', 'class'],
-        'span': ['style', 'class']
-    },
-};
-
 export const processMarkdown = async (
     filepath: string,
     hashPath: Map<string, string>
-): Promise<{ content: string; frontmatter: Partial<Metadata> }> => {
+): Promise<{ content: string; frontmatter: Partial<Metadata>, toc: string }> => {
     try {
         const mdContent = await readFile(filepath, "utf-8");
         const { content, data: frontmatter } = matter(mdContent);
+        const processor = unified()
+            .use(remarkParse)
+            .use(remarkFrontmatter, ['yaml', 'toml'])
+            .use(remarkGfm)
+            .use(remarkMath)
+            .use(remarkRehype, { 
+                allowDangerousHtml: true,
+                handlers: {
+                    // Custom handlers if needed
+                }
+            })
+            .use(rehypeRaw)
+            .use(rehypeMathjax)
+            .use(rehypePrism, { 
+                showLineNumbers: true, 
+                ignoreMissing: true,
+                defaultLanguage: 'text'
+            })
+            .use(rehypeStringify)
 
-        const htmlContent = await unified()
-            .use(remarkParse)           // Parse markdown
-            .use(remarkDirective)       // Handle directives
-            .use(remarkFrontmatter)     // Handle frontmatter (e.g., YAML)
-            .use(remarkGfm)             // GitHub-flavored markdown
-            .use(remarkMath)            // Math support
-            .use(remarkRehype, { allowDangerousHtml: true })
-            .use(rehypeRaw)             // Parse raw HTML into the AST
-            .use(rehypeSanitize, customSanitizeSchema)        // Sanitize the HTML after parsing raw content
-            .use(rehypePrism, { showLineNumbers: true, ignoreMissing: true })
-            .use(rehypeAddCopyButton)   // Add copy buttons to code blocks
-            .use(rehypeFormat)          // Format the HTML output
-            .use(rehypeStringify)       // Convert to HTML string
-            .process(content);
+        const parsed = processor.parse(content);
+        const processedContent = await processor.run(parsed);
+        
+        const TOC = generateToc(processedContent);
 
-        const changedContent = await replaceObsidianEmbeds(htmlContent.toString(), hashPath);
-        const newContent = changedContent.replace(/<p>/g, '<p class="paragraph-spacing">');
+        const htmlContent = processor.stringify(processedContent);
+        
+        const changedContent = await replaceObsidianEmbeds(
+            htmlContent.toString(), 
+            hashPath || new Map()
+        );
+
+        const newContent = changedContent.replace(/<p(?![\s\w-="'>])/g, '<p class="paragraph-spacing"');
 
         return {
             content: newContent,
             frontmatter: frontmatter as Partial<Metadata>,
+            toc: TOC,
         };
     } catch (err) {
-        throw new Error(`Failed to process markdown file ${filepath}: ${err}`);
+        // More detailed error logging
+        console.error(`Markdown Processing Error in ${filepath}:`, err);
+        throw new Error(`Failed to process markdown file ${filepath}: ${err instanceof Error ? err.message : String(err)}`);
     }
 };
 
-export const replaceObsidianEmbeds = async (content: string, hashPath: Map<string, string>): Promise<string> => {
+const generateToc = (tree: any): string => {
+    const toc: { text: string; id: string; level: number }[] = [];
+
+    visit(tree, "element", (node) => {
+        if (node.tagName && /^h[1-6]$/.test(node.tagName)) {
+            const level = parseInt(node.tagName[1], 10);
+            const text = node.children
+                .map((child: any) => (child.value || child.children?.[0]?.value || ""))
+                .join("")
+            const id = text.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "");
+            toc.push({ text, id, level });
+            node.properties = node.properties || {};
+            node.properties.id = id;
+        }
+    })
+    return generateTocHtml(toc);
+}
+
+const generateTocHtml = (toc: { text: string; id: string; level: number }[]): string => {
+    if (!toc.length) return "";
+
+    let html = '<nav class="toc"><ul>';
+    let currentLevel = 1;
+
+    for (let i = 0; i < toc.length; i++) {
+        const { text, id, level } = toc[i];
+        while (currentLevel > level) {
+            html += '</ul>';
+            currentLevel--;
+        }
+        while (currentLevel < level) {
+            html += '<ul>';
+            currentLevel++;
+        }
+
+        html += `<li class="toc-level-${level}"><a href="#${id}">${text}</a>`;
+        if (i + 1 < toc.length && toc[i + 1].level > level) {
+            continue;
+        }
+        html += '</li>';
+    }
+    while (currentLevel > 0) {
+        html += currentLevel === 1 ? '</ul>' : '</ul></li>';
+        currentLevel--;
+    }
+
+    html += '</nav>';
+    return html;
+};
+
+const replaceObsidianEmbeds = async (content: string, hashPath: Map<string, string>): Promise<string> => {
     if (!content) return '';
 
     const imageExtRegex = /\.(png|jpg|jpeg|ico|svg|webp|gif)$/i;
@@ -175,7 +235,7 @@ export const replaceObsidianEmbeds = async (content: string, hashPath: Map<strin
 
         if (imageExtRegex.test(fileName)) {
             const baseName = fileName.split('.')[0].replace(/ /g, "-");
-            return `<img src="/assets/images/${baseName}.jpeg" alt="${baseName}">`;
+            return `<img src="/assets/images/${baseName}${extname(fileName)}" alt="${baseName}">`;
         }
 
         return `![[${fileName}]]`;

@@ -14,28 +14,24 @@
         },
         "colors": {
             "lightMode": {
-                "background": "#eff1f5",
-                "lightbackground": "#dce0e8",
-                "darktext": "#8c8fa1",
-                "darkgray": "#4c4f69",
-                "Heading": "#1e66f5",
-                "links": "#40a02b",
-                "text": "#4c4f69",
-                "highlight": "#949CBB",
-                "textHighlight": "#df8e1c88",
-                "comment": "#acb0be"
+                "background": "#EFF1F5",
+                "lightbackground": "#DCE0E8",
+                "darktext": "#8C8FA1",
+                "Heading": "#DF8E1D",
+                "links": "#1E66F5",
+                "links-hover": "#04A5E5",
+                "text": "#4C4F69",
+                "comment": "#7C7F93"
             },
             "darkMode": {
-                "background": "#1e1e2e",
-                "lightbackground": "#313244",
-                "darktext": "#6c7086",
-                "darkgray": "#cdd6f4",
-                "Heading": "#89b4fa",
-                "links": "#a6e3a1",
-                "text": "#c6d0f5",
-                "highlight": "#949CBB",
-                "textHighlight": "#f9e2af88",
-                "comment": "#acb0be"
+                "background": "#1E1E2E",
+                "lightbackground": "#414559",
+                "darktext": "#7F849C",
+                "Heading": "#F9E2AF",
+                "links-hover": "#89DCEB",
+                "links": "#89B4FA",
+                "text": "#CDD6F4",
+                "comment": "#9399B2"
             }
         }
     }

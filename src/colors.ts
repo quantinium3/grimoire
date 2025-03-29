@@ -16,7 +16,7 @@ export const generateCSSFile = async () => {
     css += "}\n";
 
     const precss: string = await readFile("./src/templates/assets/styles.css", "utf-8")
-    const newcss = precss.split('\n').slice(26).join('\n')
+    const newcss = precss.split('\n').slice(22).join('\n')
     css += newcss;
     writeFile(path.join("src", "templates/assets/styles.css.bak"), precss);
     writeFile(path.join("src", "templates/assets/styles.css"), css);
