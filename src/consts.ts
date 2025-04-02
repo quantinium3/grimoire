@@ -1,22 +1,29 @@
-export interface Metadata {
-    title: string;
-    date: string;
-    tags: string[];
-    author: string;
-    category: string;
-    status: "Draft" | "In Progress" | "Complete";
-    priority: "Low" | "Medium" | "High";
-    aliases: string[];
-    created: string;
-    modified: string;
-}
-
 export interface Config {
     inputDir: string;
-    relativeDir: string;
     owner: string;
-    symlink: string;
-    profilePicturePath: string;
+    contentDir: string;
+    pfpURL: string;
+    baseURL: string;
+    ignorePatterns: ['private']
+    metadataImage: string
+    pageTitle: string
+    theme: {
+        colors: {
+            lightMode: Theme
+            darkMode: Theme
+        }
+    }
+}
+
+interface Theme {
+    background: string;
+    lightbackground: string;
+    darktext: string;
+    heading: string;
+    links: string;
+    linkshover: string;
+    text: string;
+    comment: string;
 }
 
 export interface FileNode {
@@ -27,8 +34,25 @@ export interface FileNode {
 }
 
 export interface SearchIndex {
-    content: string,
-    url: string,
+    content: string;
+    url: string;
 }
 
-export type MetadataType = "video" | "image" | "tweet";
+export interface Metadata {
+    title: string;
+    date: string;
+    tags: string[];
+    author: string;
+    category: string;
+    status: "Draft" | "In Progress" | "Complete"
+    priority: "Low" | "Medium" | "High"
+    createdAt: string;
+    updatedAt: string;
+    description: string;
+}
+
+export interface tableOfContentsEntry {
+    text: string,
+    id: string,
+    level: number
+}

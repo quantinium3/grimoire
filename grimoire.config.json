@@ -1,18 +1,13 @@
 {
     "inputDir": "./content",
-    "relativeDir": ".",
     "owner": "Quantinium",
-    "symlink": "/home/quantinium/personal/obsidian/quantinium/",
-    "profilePicturePath": "pfp.svg",
-    "mode": "lightmode",
+    "contentDir": "/home/quantinium/personal/obsidian/quantinium/",
+    "pfpURL": "./src/static/pfp.svg",
+    "baseURL": "https://quantinium.pages.dev",
+    "ignorePatterns": [".obsidian"],
+    "metadataImage": "./src/static/metadataImage.png",
+    "pageTitle": "Grimoire",
     "theme": {
-        "fontOrigin": "googleFonts",
-        "cdnCaching": true,
-        "typography": {
-            "header": "Schibsted Grotesk",
-            "body": "IBM Plex Mono",
-            "code": "IBM Plex Mono"
-        },
         "colors": {
             "lightMode": {
                 "background": "#EFF1F5",

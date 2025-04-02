@@ -1,3 +1,8 @@
+import type { Config, FileNode, Metadata} from "./consts";
+import { ensureDir } from "fs-extra"
+import { readFile } from "fs/promises";
+import path, { basename, extname } from "path";
+import matter from "gray-matter";
 import rehypePrism from "rehype-prism-plus";
 import rehypeRaw from "rehype-raw";
 import rehypeStringify from "rehype-stringify";
@@ -5,46 +10,100 @@ import remarkGfm from "remark-gfm";
 import remarkRehype from "remark-rehype";
 import rehypeMathjax from 'rehype-mathjax'
 import remarkParse from "remark-parse";
-import matter from "gray-matter";
+import Handlebars from "handlebars";
+import remarkMath from "remark-math";
 import { unified } from "unified";
-import { readFile } from "fs/promises";
-import path, { extname } from "path";
+import { visit } from 'unist-util-visit';
+import { createCanvas, loadImage } from "canvas";
+import { createWriteStream } from "fs";
 import { writeFile } from "fs/promises";
 import { minify } from "html-minifier";
-import type { Config, FileNode, Metadata } from "./consts";
-import Handlebars from "handlebars";
-import { ensureDir } from "fs-extra";
-import remarkFrontmatter from "remark-frontmatter";
-import remarkMath from "remark-math";
-import { visit } from "unist-util-visit";
 
-export const compilePage = async (
-    filename: string,
-    filepath: string,
-    file_tree: string,
+export const processNode = async (
+    node: FileNode,
+    fileTree: string,
     config: Config,
-    hashPath: Map<string, string>
+    fileMap: Map<string, string>,
 ): Promise<void> => {
-    try {
-        if (!filepath.toLowerCase().endsWith('.md')) {
-            return;
-        }
-
-        const { content, frontmatter, toc } = await processMarkdown(filepath, hashPath);
-        const html = await compileTemplate("page", frontmatter, content, file_tree.replaceAll("index.md", ""), config, filename, toc);
-
-        const relativePath = filepath.includes("content/")
-            ? filepath.substring(filepath.indexOf("content/") + 8)
-            : filepath;
-
-        const outputPath = path.join("dist", relativePath.replace(".md", ".html"));
-        await outputHTML(outputPath, html);
-    } catch (err) {
-        console.error(`Error compiling page ${filename}:`, err);
+    if (node.type === "file") {
+        await compilePage(node, config, fileTree, fileMap);
+    } else if (node.type === "directory") {
+        await ensureDir(path.join('dist', node.path))
+        await Promise.all(
+            node.children.map(child => processNode(child, fileTree, config, fileMap))
+        )
     }
-};
+}
 
-export const outputHTML = async (outputPath: string, html: string): Promise<void> => {
+const compilePage = async (
+    node: FileNode,
+    config: Config,
+    fileTree: string,
+    fileMap: Map<string, string>
+): Promise<void> => {
+    if (!node.name.endsWith('.md')) {
+        return;
+    }
+
+    try {
+        const inputPath = path.join(config.inputDir, node.path)
+        const { content, frontMatter, tableOfContents } = await processMarkdown(inputPath, fileMap);
+
+        const metatags = await generateMetatags(frontMatter, config, node.path, content)
+        const html = await compileTemplate(node, fileTree, frontMatter, content, tableOfContents, config, metatags)
+
+        await outputHtml(path.join('dist', node.path.replace('.md', '.html')), html)
+    } catch (err) {
+        console.error("Error while compiling page: ${node.path}: ", err)
+        throw err;
+    }
+}
+
+const compileTemplate = async (
+    node: FileNode,
+    fileTree: string,
+    metadata: Partial<Metadata>,
+    content: string,
+    toc: string,
+    config: Config,
+    metaTags: string,
+): Promise<string> => {
+    try {
+        const templateName = node.path === "index.nd" ? 'index' : 'page'
+
+        const [pageTemplate, layoutTemplate] = await Promise.all([
+            readFile(`./src/templates/${templateName}.hbs`, "utf-8"),
+            readFile(`./src/templates/layout.hbs`, "utf-8")
+        ])
+
+        Handlebars.registerHelper("safeProp", function(obj, prop) {
+            return obj && obj[prop] ? obj[prop] : "";
+        });
+
+        const pageCompiled = Handlebars.compile(pageTemplate);
+        const contentHtml = pageCompiled({
+            ...metadata,
+            content
+        });
+
+        const layoutCompiled = Handlebars.compile(layoutTemplate);
+        return layoutCompiled({
+            title: metadata.title || basename(node.path),
+            ...metadata,
+            content: contentHtml,
+            fileTree,
+            owner: config.owner,
+            profilePicturePath: basename(config.pfpURL),
+            tableOfContents: toc,
+            metaTags,
+        })
+    } catch (err) {
+        console.error("Error compiling template: ${node.path}: ", err)
+        throw err;
+    }
+}
+
+const outputHtml = async (outputPath: string, html: string): Promise<void> => {
     try {
         await ensureDir(path.dirname(outputPath));
 
@@ -62,116 +121,191 @@ export const outputHTML = async (outputPath: string, html: string): Promise<void
         console.error(`Failed to write HTML to ${outputPath}:`, error);
         throw error;
     }
-};
+}
 
-export const compileTemplate = async (
-    templateName: string,
-    metadata: Partial<Metadata>,
-    content: string,
-    file_tree: string,
-    config: Config,
-    filename: string,
-    toc: string
-): Promise<string> => {
+const generateMetatags = async (metadata: Partial<Metadata>, config: Config, filePath: string, content: string): Promise<string> => {
+    const tags: string[] = [];
+    const title = metadata.title || path.parse(basename(filePath)).name;
+
+    tags.push(`<meta property="og:site_name" content="${config.owner}" />`);
+    tags.push(`<meta property="og:title" content="${escapeHtml(title)}" />`);
+    tags.push(`<meta property="og:type" content="website" />`);
+    tags.push(`<meta name="twitter:card" content="summary_large_image" />`);
+    tags.push(`<meta name="twitter:title" content="${escapeHtml(title)}" />`);
+    tags.push(`<meta name="og:url" content="${config.baseURL}/${filePath}" />`);
+    tags.push(`<meta name="twitter:url" content="${config.baseURL}/${filePath}" />`);
+    tags.push(`<meta name="generator" content="grimoire" />`);
+
+    if (metadata.description) {
+        tags.push(`<meta name="description" content="${metadata.description}" />`);
+        tags.push(`<meta property="og:description" content="${metadata.description}" />`);
+        tags.push(`<meta name="twitter:description" content="${metadata.description}" />`);
+    }
+
+    if(config.baseURL) {
+        tags.push(`<meta name="twitter:domain" content="${config.baseURL}" />`);
+    }
+
+    if (metadata.author) {
+        tags.push(`<meta name="author" content="${escapeHtml(metadata.author)}" />`);
+    }
+
+    tags.push(`<meta property="og:type" content="article" />`);
+
+    if (metadata.date) {
+        tags.push(`<meta property="article:published_time" content="${new Date(metadata.date).toISOString()}" />`);
+    }
+
+    if (metadata.updatedAt) {
+        tags.push(`<meta property="article:modified_time" content="${new Date(metadata.updatedAt).toISOString()}" />`);
+    }
+
+    if (metadata.tags?.length) {
+        tags.push(`<meta name="keywords" content="${escapeHtml(metadata.tags.join(', '))}" />`);
+    }
+
+    if (metadata.category) {
+        tags.push(`<meta property="article:section" content="${escapeHtml(metadata.category)}" />`);
+    }
+
+    if (config.baseURL && filePath) {
+        const canonicalURL = new URL(filePath.replace('.md', '.html'), config.baseURL).toString();
+
+        tags.push(`<link rel="canonical" href="${escapeHtml(canonicalURL)}" />`);
+        tags.push(`<meta property="og:url" content="${escapeHtml(canonicalURL)}" />`);
+    }
+
+    const imageURL = await generateImage(config.metadataImage, config.pfpURL, config.pageTitle, filePath)
+
+    if (imageURL) {
+        const absURL = `${config.baseURL}/static/${imageURL}`
+        tags.push(`<meta property="og:image:type" content="image/png" />`);
+        tags.push(`<meta property="og:image:alt" content="${title}" />`);
+        tags.push(`<meta property="og:image:url" content="${escapeHtml(absURL)}" />`);
+        tags.push(`<meta property="og:image" content="${escapeHtml(absURL)}" />`);
+        tags.push(`<meta property="og:image:width" content="1200" />`);
+        tags.push(`<meta property="og:image:height" content="630" />`);
+        tags.push(`<meta name="twitter:image" content="${escapeHtml(absURL)}" />`);
+    }
+
+    return tags.join('\n  ')
+
+}
+
+const generateImage = async (imagePath: string, pfpPath: string, title: string, filePath: string): Promise<string> => {
+    const outputDir = path.join('dist', 'static');
+    await ensureDir(outputDir);
+
+    const outputFileName = `${basename(filePath).toLowerCase().replace(/ /g, '-')}${Math.floor(Math.random() * 1000000) + 1}-og.png`
+    const outputPath = path.join(outputDir, outputFileName)
+
+    // TODO: WRITE THE LOGIC IF THE PFP IS A URL RATHER THAN PATH;
     try {
-        const actualTemplateName = filename === 'index.md' ? 'index' : (templateName || 'page');
-
-        const [pageTemplate, layoutTemplate] = await Promise.all([
-            readFile(`./src/templates/${actualTemplateName}.hbs`, "utf-8").catch(() => {
-                throw new Error(`Template ${actualTemplateName}.hbs not found`);
-            }),
-            readFile(`./src/templates/layout.hbs`, "utf-8").catch(() => {
-                throw new Error(`Layout template not found`);
-            }),
+        const [baseImage, pfpImage] = await Promise.all([
+            loadImage(imagePath), loadImage(pfpPath)
         ]);
 
-        Handlebars.registerHelper("safeProp", function(obj, prop) {
-            return obj && obj[prop] ? obj[prop] : "";
-        });
+        const width = 1200;
+        const height = 630;
 
-        const pageCompiled = Handlebars.compile(pageTemplate);
-        const contentHTML = pageCompiled({
-            ...metadata,
-            content
-        });
+        const canvas = createCanvas(width, height);
+        const ctx = canvas.getContext('2d')
 
-        const layoutCompiled = Handlebars.compile(layoutTemplate);
-        return layoutCompiled({
-            title: metadata.title || "Untitled",
-            date: metadata.date || "",
-            tags: metadata.tags || [],
-            author: metadata.author || "",
-            category: metadata.category || "",
-            status: metadata.status || "",
-            priority: metadata.priority || "",
-            aliases: metadata.aliases || [],
-            created: metadata.created || "",
-            modified: metadata.modified || "",
-            content: contentHTML,
-            fileTree: file_tree,
-            owner: config.owner,
-            includesCopyButton: true,
-            profilePicturePath: config.profilePicturePath || "/assets/images/defaultpfp.jpeg",
-            tableOfContents: toc
+        ctx.drawImage(baseImage, 0, 0, width, height);
+
+        ctx.font = "bold 100px monospace";
+        ctx.fillStyle = "#eff1f5";
+        ctx.textAlign = "left";
+        const text = title;
+        const textX = 100;
+        const textY = height / 2;
+        ctx.fillText(text, textX, textY);
+
+        // Draw title text
+        ctx.font = "50px monospace";
+        const p = '/' + filePath;
+        const pX = 150;
+        const pY = height * 0.67;
+        ctx.fillText(p, pX, pY);
+
+        const pfpSize = 100;
+        const padding = 30;
+        const pfpX = width - pfpSize - padding;
+        const pfpY = padding;
+        const r = pfpSize / 2;
+        const centerX = pfpX + r;
+        const centerY = pfpY + r;
+
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, r, 0, Math.PI * 2, false);
+        ctx.closePath();
+        ctx.clip();
+        ctx.drawImage(pfpImage, pfpX, pfpY, pfpSize, pfpSize);
+        ctx.restore();
+
+        const out = createWriteStream(outputPath);
+        const stream = canvas.createPNGStream();
+        stream.pipe(out);
+
+        return new Promise((resolve, reject) => {
+            out.on('finish', () => {
+                console.log(`Metadata PNG created: ${outputPath}`);
+                resolve(outputFileName);
+            });
+            out.on('error', (err) => {
+                console.error("Error writing file:", err);
+                reject(err);
+            });
         });
     } catch (err) {
-        console.error(`Error compiling template ${templateName}:`, err);
+        console.error("Failed to generate metadata image: ", err)
         throw err;
     }
-};
+}
 
-export const processMarkdown = async (
-    filepath: string,
-    hashPath: Map<string, string>
-): Promise<{ content: string; frontmatter: Partial<Metadata>, toc: string }> => {
+const processMarkdown = async (
+    filePath: string,
+    fileMap: Map<string, string>
+): Promise<{ content: string, frontMatter: Partial<Metadata>, tableOfContents: string }> => {
     try {
-        const mdContent = await readFile(filepath, "utf-8");
-        const { content, data: frontmatter } = matter(mdContent);
+        const { content, data: frontmatter } = matter(await readFile(filePath, "utf-8"));
         const processor = unified()
             .use(remarkParse)
-            .use(remarkFrontmatter, ['yaml', 'toml'])
             .use(remarkGfm)
             .use(remarkMath)
-            .use(remarkRehype, { 
+            .use(remarkRehype, {
                 allowDangerousHtml: true,
-                handlers: {
-                    // Custom handlers if needed
-                }
             })
             .use(rehypeRaw)
             .use(rehypeMathjax)
-            .use(rehypePrism, { 
-                showLineNumbers: true, 
+            .use(rehypePrism, {
+                showLineNumbers: true,
                 ignoreMissing: true,
                 defaultLanguage: 'text'
             })
             .use(rehypeStringify)
 
-        const parsed = processor.parse(content);
-        const processedContent = await processor.run(parsed);
-        
+        const processedContent = await processor.run(processor.parse(content));
         const TOC = generateToc(processedContent);
 
-        const htmlContent = processor.stringify(processedContent);
-        
-        const changedContent = await replaceObsidianEmbeds(
-            htmlContent.toString(), 
-            hashPath || new Map()
-        );
+        const html = await replaceObsidianEmbeds(
+            processor.stringify(processedContent),
+            fileMap
+        )
 
-        const newContent = changedContent.replace(/<p(?![\s\w-="'>])/g, '<p class="paragraph-spacing"');
+        const newHtml = html.replace(/<p(?![\s\w-="'>])/g, '<p class="paragraph-spacing"');
 
         return {
-            content: newContent,
-            frontmatter: frontmatter as Partial<Metadata>,
-            toc: TOC,
-        };
+            content: newHtml,
+            frontMatter: frontmatter as Partial<Metadata>,
+            tableOfContents: TOC,
+        }
     } catch (err) {
-        // More detailed error logging
-        console.error(`Markdown Processing Error in ${filepath}:`, err);
-        throw new Error(`Failed to process markdown file ${filepath}: ${err instanceof Error ? err.message : String(err)}`);
+        console.error("Failed to process markdown: ", err)
+        throw err;
     }
-};
+}
 
 const generateToc = (tree: any): string => {
     const toc: { text: string; id: string; level: number }[] = [];
@@ -235,7 +369,7 @@ const replaceObsidianEmbeds = async (content: string, hashPath: Map<string, stri
 
         if (imageExtRegex.test(fileName)) {
             const baseName = fileName.split('.')[0].replace(/ /g, "-");
-            return `<img src="/assets/images/${baseName}${extname(fileName)}" alt="${baseName}">`;
+            return `<img src="/static/${baseName}${extname(fileName)}" alt="${baseName}">`;
         }
 
         return `![[${fileName}]]`;
@@ -273,13 +407,13 @@ const replaceObsidianEmbeds = async (content: string, hashPath: Map<string, stri
     });
 
 
-    result = result.replace(/==([^=]*)==/g, (match: string, group1: string) => {
+    result = result.replace(/==([^=]*)==/g, (_match: string, group1: string) => {
         return `<mark>${group1}</mark>`;
     });
     return result
 };
 
-async function processEmbed(fullMatch: string, altText: string, url: string): Promise<{ fullMatch: string, replacement: string }> {
+const processEmbed = async (fullMatch: string, altText: string, url: string): Promise<{ fullMatch: string, replacement: string }> => {
     try {
         let validUrl: URL;
         try {
@@ -336,39 +470,24 @@ async function processEmbed(fullMatch: string, altText: string, url: string): Pr
     }
 }
 
-export const getContentType = async (url: string): Promise<string | null> => {
+const getContentType = async (url: string): Promise<string | null> => {
     try {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 5000);
-
         const response = await fetch(url, {
             method: 'HEAD',
-            signal: controller.signal
         });
 
-        clearTimeout(timeoutId);
-        return response.headers.get('Content-Type');
-    } catch (err) {
-        console.log(`Failed to get content type for ${url}:`, err);
+        return response.headers.get('Content-Type') ?? null;
+    } catch (error) {
+        console.error(`Failed to fetch content type for ${url}:`, error);
         return null;
     }
 };
 
-export const processNode = async (
-    node: FileNode,
-    inputDir: string,
-    file_tree: string,
-    config: Config,
-    hashPath: Map<string, string>
-): Promise<void> => {
-    if (node.type === "file") {
-        await compilePage(node.name, path.join(inputDir, node.path), file_tree, config, hashPath);
-    } else if (node.type === "directory") {
-        const dirPath = path.join("dist", node.path);
-        await ensureDir(dirPath);
-
-        await Promise.all(
-            node.children.map(child => processNode(child, inputDir, file_tree, config, hashPath))
-        );
-    }
+const escapeHtml = (unsafe: string): string => {
+    return unsafe
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
 };
