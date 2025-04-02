@@ -3,7 +3,7 @@
     "owner": "Quantinium",
     "contentDir": "/home/quantinium/personal/obsidian/quantinium/",
     "pfpURL": "./src/static/pfp.svg",
-    "baseURL": "https://quantinium.pages.dev",
+    "baseURL": "https://grimoire.pages.dev",
     "ignorePatterns": [".obsidian"],
     "metadataImage": "./src/static/metadataImage.png",
     "pageTitle": "Grimoire",
