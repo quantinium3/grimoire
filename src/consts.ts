@@ -4,6 +4,7 @@ export interface Config {
     contentDir: string;
     pfpURL: string;
     baseURL: string;
+    remoteURL: string;
     ignorePatterns: ['private']
     metadataImage: string
     pageTitle: string

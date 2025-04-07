@@ -4,6 +4,7 @@
   "contentDir": "/home/quantinium/personal/obsidian/quantinium",
   "pfpURL": "./src/static/pfp.svg",
   "baseURL": "https://grimoire.quantinium.dev/",
+  "remoteURL": "",
   "ignorePatterns": [
     ".obsidian"
   ],

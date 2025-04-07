@@ -22,10 +22,12 @@ const setupGrimoire = async () => {
     const owner = await ask("Enter Owner's Name: ")
     const contentDir = await ask("Enter the absolute path of the contentDir: ")
     const baseURL = await ask("Enter the baseURL of your website: ");
+    const remoteURL = await ask("Enter the remote url of your github repo: ")
 
     config.owner = owner;
     config.contentDir = contentDir;
     config.baseURL = baseURL;
+    config.remoteURL = remoteURL;
 
     await writeFile(configPath, JSON.stringify(config, null, 2))
     console.log("Updated Config")
