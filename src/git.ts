@@ -18,7 +18,6 @@ const syncRepo = async () => {
     const config: Config = JSON.parse(await readFile(path.resolve(CONFIG_NAME), "utf-8"));
     runGitCommand('add .')
     runGitCommand(`commit -m "${new Date().toISOString().slice(0, 16).replace('T', ' ')}"`)
-    runGitCommand('push origin main')
 
     if (!config.remoteURL) {
         console.log("Please run `bun run setup` to setup the variables")
