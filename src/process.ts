@@ -49,7 +49,7 @@ const compilePage = async (
         const inputPath = path.join(config.inputDir, node.path)
         const { content, frontMatter, tableOfContents } = await processMarkdown(inputPath, fileMap);
 
-        const metatags = await generateMetatags(frontMatter, config, node.path, content)
+        const metatags = await generateMetatags(frontMatter, config, node.path)
         const html = await compileTemplate(node, fileTree, frontMatter, content, tableOfContents, config, metatags)
 
         await outputHtml(path.join('dist', node.path.replace('.md', '.html')), html)
@@ -123,10 +123,11 @@ const outputHtml = async (outputPath: string, html: string): Promise<void> => {
     }
 }
 
-const generateMetatags = async (metadata: Partial<Metadata>, config: Config, filePath: string, content: string): Promise<string> => {
+const generateMetatags = async (metadata: Partial<Metadata>, config: Config, filePath: string): Promise<string> => {
     const tags: string[] = [];
     const title = metadata.title || path.parse(basename(filePath)).name;
 
+    tags.push(`<link rel="icon" href="/static/${path.basename(config.pfpURL)}" />`);
     tags.push(`<meta property="og:site_name" content="${config.owner}" />`);
     tags.push(`<meta property="og:title" content="${escapeHtml(title)}" />`);
     tags.push(`<meta property="og:type" content="website" />`);
