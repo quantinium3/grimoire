@@ -56,3 +56,4 @@ export interface tableOfContentsEntry {
     id: string,
     level: number
 }
+export const CONFIG_NAME = "grimoire.config.json"

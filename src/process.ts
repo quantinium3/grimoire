@@ -133,8 +133,8 @@ const generateMetatags = async (metadata: Partial<Metadata>, config: Config, fil
     tags.push(`<meta property="og:type" content="website" />`);
     tags.push(`<meta name="twitter:card" content="summary_large_image" />`);
     tags.push(`<meta name="twitter:title" content="${escapeHtml(title)}" />`);
-    tags.push(`<meta name="og:url" content="${config.baseURL}/${filePath}" />`);
-    tags.push(`<meta name="twitter:url" content="${config.baseURL}/${filePath}" />`);
+    tags.push(`<meta name="og:url" content="${new URL(filePath, config.baseURL)}" />`);
+    tags.push(`<meta name="twitter:url" content="${new URL(filePath, config.baseURL)}" />`);
     tags.push(`<meta name="generator" content="grimoire" />`);
 
     if (metadata.description) {
@@ -144,7 +144,7 @@ const generateMetatags = async (metadata: Partial<Metadata>, config: Config, fil
     }
 
     if(config.baseURL) {
-        tags.push(`<meta name="twitter:domain" content="${config.baseURL}" />`);
+        tags.push(`<meta name="twitter:domain" content="${new URL(config.baseURL)}" />`);
     }
 
     if (metadata.author) {
@@ -179,7 +179,7 @@ const generateMetatags = async (metadata: Partial<Metadata>, config: Config, fil
     const imageURL = await generateImage(config.metadataImage, config.pfpURL, config.pageTitle, filePath)
 
     if (imageURL) {
-        const absURL = `${config.baseURL}/static/${imageURL}`
+        const absURL = new URL(`/static/${imageURL}`, config.baseURL).toString();
         tags.push(`<meta property="og:image:type" content="image/png" />`);
         tags.push(`<meta property="og:image:alt" content="${title}" />`);
         tags.push(`<meta property="og:image:url" content="${escapeHtml(absURL)}" />`);

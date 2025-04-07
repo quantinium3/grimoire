@@ -1,34 +1,36 @@
 {
-    "inputDir": "./content",
-    "owner": "Quantinium",
-    "contentDir": "/home/quantinium/personal/obsidian/quantinium/",
-    "pfpURL": "./src/static/pfp.svg",
-    "baseURL": "https://grimoire.pages.dev",
-    "ignorePatterns": [".obsidian"],
-    "metadataImage": "./src/static/metadataImage.png",
-    "pageTitle": "Grimoire",
-    "theme": {
-        "colors": {
-            "lightMode": {
-                "background": "#FFFFFF",
-                "lightbackground": "#EFF2F5",
-                "darktext": "#59636E",
-                "Heading": "#D79921",
-                "links": "#4493F8",
-                "links-hover": "#0969DA",
-                "text": "#1F2328",
-                "comment": "#808891"
-            },
-            "darkMode": {
-                "background": "#0d1117",
-                "lightbackground": "#262C36",
-                "darktext": "#727981",
-                "Heading": "#D79921",
-                "links-hover": "#0969DA",
-                "links": "#4493F8",
-                "text": "#F0F6FC",
-                "comment": "#9198A1"
-            }
-        }
+  "inputDir": "./content",
+  "owner": "Quantinium",
+  "contentDir": "/home/quantinium/personal/obsidian/quantinium",
+  "pfpURL": "./src/static/pfp.svg",
+  "baseURL": "https://grimoire.quantinium.dev/",
+  "ignorePatterns": [
+    ".obsidian"
+  ],
+  "metadataImage": "./src/static/metadataImage.png",
+  "pageTitle": "Grimoire",
+  "theme": {
+    "colors": {
+      "lightMode": {
+        "background": "#FFFFFF",
+        "lightbackground": "#EFF2F5",
+        "darktext": "#59636E",
+        "Heading": "#D79921",
+        "links": "#4493F8",
+        "links-hover": "#0969DA",
+        "text": "#1F2328",
+        "comment": "#808891"
+      },
+      "darkMode": {
+        "background": "#0d1117",
+        "lightbackground": "#262C36",
+        "darktext": "#727981",
+        "Heading": "#D79921",
+        "links-hover": "#0969DA",
+        "links": "#4493F8",
+        "text": "#F0F6FC",
+        "comment": "#9198A1"
+      }
     }
+  }
 }
