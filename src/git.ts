@@ -1,7 +1,4 @@
 import { execSync } from "node:child_process";
-import { CONFIG_NAME, type Config } from "./consts";
-import path from "path";
-import { readFile } from "node:fs/promises";
 
 const runGitCommand = (cmd: string) => {
     try {
@@ -15,17 +12,8 @@ const runGitCommand = (cmd: string) => {
 }
 
 const syncRepo = async () => {
-    const config: Config = JSON.parse(await readFile(path.resolve(CONFIG_NAME), "utf-8"));
     runGitCommand('add .')
     runGitCommand(`commit -m "${new Date().toISOString().slice(0, 16).replace('T', ' ')}"`)
-
-    if (!config.remoteURL) {
-        console.log("Please run `bun run setup` to setup the variables")
-    }
-
-    const remoteURL = config.remoteURL;
-    runGitCommand('remote remove origin')
-    runGitCommand(`remote add origin ${remoteURL}`);
     runGitCommand('push origin main')
 }
 
