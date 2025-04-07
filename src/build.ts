@@ -7,6 +7,11 @@ import { ensureDir } from "fs-extra";
 import { cp } from "fs/promises";
 import { globby } from "globby";
 import { processNode } from "./process";
+import cliProgress from 'cli-progress';
+
+const bar = new cliProgress.SingleBar({
+    format: 'Processing [{bar}] {percentage}% | {value}/{total} directory',
+}, cliProgress.Presets.shades_classic);
 
 const buildFileTree = async (base: string, relative: string, config: Config): Promise<FileNode[]> => {
     const nodes: FileNode[] = [];
@@ -188,9 +193,13 @@ const build = async (): Promise<void> => {
         await preProcess(config);
         await searchIndexJson(fileMap)
 
-        await Promise.all(
-            fileTreeNode.map(node => processNode(node, file_tree, config, fileMap))
-        )
+        bar.start(fileTreeNode.length, 0);
+        for (const node of fileTreeNode) {
+            await processNode(node, file_tree, config, fileMap);
+            bar.increment();
+        }
+
+        bar.stop();
     } catch (err) {
         console.error("Error while building: ", err)
     }

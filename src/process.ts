@@ -250,7 +250,6 @@ const generateImage = async (imagePath: string, pfpPath: string, title: string, 
 
         return new Promise((resolve, reject) => {
             out.on('finish', () => {
-                console.log(`Metadata PNG created: ${outputPath}`);
                 resolve(outputFileName);
             });
             out.on('error', (err) => {
@@ -391,7 +390,6 @@ const replaceObsidianEmbeds = async (content: string, hashPath: Map<string, stri
 
         const displayName = group2 || path.basename(group1);
         const linkedPath = hashPath.get(group1.trim());
-        console.log(`displayName: ${displayName}, linkedPath: ${linkedPath}, group1: ${group1}`);
 
         if (linkedPath) {
             const href = encodeURIComponent(linkedPath);

@@ -10,24 +10,24 @@
     "theme": {
         "colors": {
             "lightMode": {
-                "background": "#EFF1F5",
-                "lightbackground": "#DCE0E8",
-                "darktext": "#8C8FA1",
+                "background": "#FFFFFF",
+                "lightbackground": "#EFF2F5",
+                "darktext": "#59636E",
                 "Heading": "#DF8E1D",
-                "links": "#1E66F5",
-                "links-hover": "#04A5E5",
-                "text": "#4C4F69",
-                "comment": "#7C7F93"
+                "links": "#4493F8",
+                "links-hover": "#0969DA",
+                "text": "#1F2328",
+                "comment": "#808891"
             },
             "darkMode": {
-                "background": "#1E1E2E",
-                "lightbackground": "#414559",
-                "darktext": "#7F849C",
-                "Heading": "#F9E2AF",
-                "links-hover": "#89DCEB",
-                "links": "#89B4FA",
-                "text": "#CDD6F4",
-                "comment": "#9399B2"
+                "background": "#0d1117",
+                "lightbackground": "#262C36",
+                "darktext": "#727981",
+                "Heading": "#C38000",
+                "links-hover": "#0969DA",
+                "links": "#4493F8",
+                "text": "#F0F6FC",
+                "comment": "#9198A1"
             }
         }
     }

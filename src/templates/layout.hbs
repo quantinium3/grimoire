@@ -7,7 +7,7 @@
     <title>{{title}}</title>
     <link rel="stylesheet" href="/static/styles.css" />
     {{{metaTags}}}
-    <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.6.2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.1.0"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"
         integrity="sha512-GsLlZN/3F2ErC5ifS5QtgpiJtWd43JWSuIgh7mbzZ8zBps+dvLusV+eNQATqgA/HdeKFVgA5v3S/cIrLF7QnIg=="
         crossorigin="anonymous" referrerpolicy="no-referrer"></script>
@@ -72,7 +72,18 @@
         </div>
     </div>
 
-    <div class="keybinding"><ul></ul></div>
+    <div class="keybinding">
+        <ul></ul>
+    </div>
+
+    <div class="search-dialog" id="search-dialog">
+        <div class="search-dialog-content">
+            <input type="text" id="search-input" placeholder="search..." autocomplete="off" />
+            <button class="close-search" onclick="closeSearch()" aria-label="Close Search"><i
+                    class="ph ph-x"></i></button>
+            <div id="search-results" class="search-results"></div>
+        </div>
+    </div>
     <script>
         document.addEventListener('DOMContentLoaded', async function () {
             try {
@@ -85,6 +96,15 @@
             initializeCopyButton();
             toggleKeyHints()
             keybindingInitialize();
+            await initializeSearch()
+
+            const searchInput = document.getElementById('search-input');
+            searchInput.addEventListener('input', handleSearch);
+            searchInput.addEventListener('keydown', function (e) {
+                if (e.key === 'Escape') {
+                    closeSearch();
+                }
+            });
         })
 
         function keybindingInitialize() {
@@ -119,7 +139,7 @@
         }
 
         function printPage() {
-            var el = document.querySelector('.content-container')
+            const el = document.querySelector('.content-container')
             html2pdf(el)
         }
 
@@ -211,8 +231,14 @@
         }
 
         function openSearch() {
-            // Placeholder for search functionality
-            console.log('Search functionality not implemented');
+            const searchDialog = document.querySelector('.search-dialog');
+            searchDialog.classList.add('open');
+
+            // Focus the search input after a short delay (for animation)
+            setTimeout(() => {
+                const searchInput = document.getElementById('search-input');
+                searchInput.focus();
+            }, 100);
         }
 
         function toggleTheme(toggle = false) {
@@ -358,6 +384,143 @@
             const keybinding = document.querySelector('.keybinding');
             if (keybinding) {
                 keybinding.classList.toggle('hidden');
+            }
+        }
+
+        function extractNameFromUrl(url) {
+            if (!url) return 'Untitled';
+
+            // Extract the last part of the URL path
+            const parts = url.split('/').filter(Boolean);
+            const lastPart = parts[parts.length - 1] || '';
+
+            // Remove file extension and replace dashes/underscores with spaces
+            return lastPart
+                .replace(/\.html$|\.md$/, '')
+                .replace(/[-_]/g, ' ')
+                .replace(/\b\w/g, char => char.toUpperCase()); // Capitalize first letter of each word
+        }
+
+        function closeSearch() {
+            const searchDialog = document.getElementById('search-dialog');
+            if (searchDialog) {
+                searchDialog.classList.remove('open');
+
+                // Clear the search input and results
+                const searchInput = document.getElementById('search-input');
+                if (searchInput) {
+                    searchInput.value = '';
+                }
+
+                const searchResults = document.getElementById('search-results');
+                if (searchResults) {
+                    searchResults.innerHTML = '';
+                }
+            }
+        }
+
+        document.getElementById('search-dialog').addEventListener('click', function (e) {
+            if (e.target === this) {
+                closeSearch();
+            }
+        });
+
+
+        function displaySearchResults(results, searchResultsElement) {
+            // Clear previous results
+            searchResultsElement.innerHTML = '';
+
+            // Show message if no results
+            if (results.length === 0) {
+                searchResultsElement.innerHTML = '<p class="no-results">No results found.</p>';
+                return;
+            }
+
+            // Limit to top 10 results for performance
+            const maxResults = Math.min(results.length, 10);
+
+            for (let i = 0; i < maxResults; i++) {
+                const result = results[i];
+                const item = result.item;
+
+                // Create result link
+                const link = document.createElement('a');
+                link.href = item.url;
+
+                // Get display name from URL if not available
+                const displayName = item.name || extractNameFromUrl(item.url);
+                link.textContent = displayName;
+
+                // Add click handler to close search when result is clicked
+                link.addEventListener('click', closeSearch);
+
+                // Add result to container
+                searchResultsElement.appendChild(link);
+            }
+
+            // Add "show more" if results exceed display limit
+            if (results.length > maxResults) {
+                const showMore = document.createElement('p');
+                showMore.className = 'search-show-more';
+                showMore.textContent = `Showing top ${maxResults} of ${results.length} results. Refine your search for more specific results.`;
+                searchResultsElement.appendChild(showMore);
+            }
+        }
+
+        function handleSearch(e) {
+            const query = e.target.value.trim();
+            const searchResults = document.getElementById('search-results');
+
+            if (query.length === 0) {
+                searchResults.innerHTML = '';
+                return;
+            }
+
+            if (!fuse || !searchIndex.length) {
+                searchResults.innerHTML = '<p class="search-error">Search is not initialized yet. Please wait or refresh the page.</p>';
+                return;
+            }
+
+            const results = fuse.search(query);
+
+            displaySearchResults(results, searchResults);
+        }
+
+
+        let searchIndex = [];
+        let fuse = null;
+        async function initializeSearch() {
+            try {
+                const response = await fetch('/static/search-index.json');
+                if (!response.ok) {
+                    throw new Error(`Failed to fetch search index: ${response.status} ${response.statusText}`);
+                }
+
+                searchIndex = await response.json();
+
+                if (!Array.isArray(searchIndex)) {
+                    throw new Error('Search index is not an array');
+                }
+
+                fuse = new Fuse(searchIndex, {
+                    keys: [
+                        {name: 'content', weight: 0.7},
+                        {name: 'name', weight: 0.3}
+                    ],
+                    threshold: 0.4,              // Lower threshold means more strict matching
+                    distance: 100,               // How far to look for matching characters
+                    includeScore: true,          // Include score in results
+                    includeMatches: true,        // Include matched indices for highlighting
+                    useExtendedSearch: true,     // Enable extended search features
+                    ignoreLocation: true,        // Search anywhere in the text
+                    minMatchCharLength: 2        // Minimum length of a matched pattern
+                });
+
+                console.log('Search initialized successfully with', searchIndex.length, 'items');
+            } catch (error) {
+                console.error('Error initializing search:', error);
+                document.getElementById('search-results').innerHTML =
+                    '<p class="search-error">Search initialization failed. Please try refreshing the page.</p>';
             }
         }
     </script>
