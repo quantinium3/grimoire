@@ -9,7 +9,8 @@
     "build": "bun run src/build.ts",
     "dev": "bun run serve dist",
     "setup": "bun run src/setup.ts",
-    "git": "bun run src/git.ts"
+    "git": "bun run src/git.ts",
+    "sync": "bun run clone && bun run git"
   },
   "repository": {
     "type": "git",
