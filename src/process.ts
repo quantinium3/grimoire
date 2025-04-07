@@ -125,7 +125,7 @@ const outputHtml = async (outputPath: string, html: string): Promise<void> => {
 
 const generateMetatags = async (metadata: Partial<Metadata>, config: Config, filePath: string): Promise<string> => {
     const tags: string[] = [];
-    const title = metadata.title || path.parse(basename(filePath)).name;
+    const title = metadata.title || path.basename(filePath, path.extname(filePath));
 
     tags.push(`<link rel="icon" href="/static/${path.basename(config.pfpURL)}" />`);
     tags.push(`<meta property="og:site_name" content="${config.owner}" />`);
