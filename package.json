@@ -8,7 +8,8 @@
     "clone": "bun run src/clone.ts",
     "build": "bun run src/build.ts",
     "dev": "bun run serve dist",
-    "setup": "bun run src/setup.ts"
+    "setup": "bun run src/setup.ts",
+    "git": "bun run src/git.ts"
   },
   "repository": {
     "type": "git",

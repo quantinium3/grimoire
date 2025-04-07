@@ -17,7 +17,7 @@ const runGitCommand = (cmd: string) => {
 const syncRepo = async () => {
     const config: Config = JSON.parse(await readFile(path.resolve(CONFIG_NAME), "utf-8"));
     runGitCommand('add .')
-    runGitCommand(`1commit -m ${new Date()}`)
+    runGitCommand(`commit -m "${new Date().toISOString().slice(0, 16).replace('T', ' ')}"`)
     runGitCommand('push origin main')
 
     if (!config.remoteURL) {
