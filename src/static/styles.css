@@ -10,8 +10,8 @@
     --comment: #808891;}
 
 .dark{
-    --background: #000000;
-    --lightbackground: #262C36;
+    --background: #121212;
+    --lightbackground: #1E1E1E;
     --darktext: #727981;
     --Heading: #D79921;
     --links-hover: #0969DA;
@@ -191,9 +191,9 @@ table {
     position: sticky;
     top: 0;
     border-right: 1px solid var(--lightbackground);
-    background: var(--background);
     height: 100vh;
     transition: transform 0.3s ease-in-out;
+    background: var(--lightbackground);
 }
 
 .sidebar-inner {
