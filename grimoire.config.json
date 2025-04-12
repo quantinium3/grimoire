@@ -3,7 +3,7 @@
   "owner": "Quantinium",
   "contentDir": "/home/quantinium/personal/obsidian/quantinium",
   "pfpURL": "./src/static/pfp.svg",
-  "baseURL": "https://grimoire.quantinium.dev/",
+  "baseURL": "https://grimoire.quantinium.dev",
   "remoteURL": "git@github.com:quantinium03/grimoire.git",
   "ignorePatterns": [
     ".obsidian"
@@ -23,7 +23,7 @@
         "comment": "#808891"
       },
       "darkMode": {
-        "background": "#0d1117",
+        "background": "#000000",
         "lightbackground": "#262C36",
         "darktext": "#727981",
         "Heading": "#D79921",
