@@ -84,6 +84,14 @@
         </div>
     </div>
     <script>
+        // Global variables for search functionality
+        let searchIndex = [];
+        let fuse = null;
+        let searchInitialized = false;
+        let searchInitializing = false;
+        let selectedResultIndex = -1;
+        let lastQuery = '';
+
         document.addEventListener('DOMContentLoaded', async function () {
             try {
                 const fileTreeData = JSON.parse('{{{fileTree}}}')
@@ -95,7 +103,9 @@
             initializeCopyButton();
             toggleKeyHints()
             keybindingInitialize();
-            await initializeSearch()
+
+            // Initialize search immediately on page load
+            initializeSearch();
 
             const searchInput = document.getElementById('search-input');
             searchInput.addEventListener('input', handleSearch);
@@ -105,6 +115,38 @@
                 }
             });
         })
+document.getElementById('search-input').addEventListener('keydown', function (e) {
+    const results = document.querySelectorAll('.result-item');
+    if (!results.length) return;
+
+    switch (e.key) {
+        case 'ArrowDown':
+            e.preventDefault();
+            updateSelectedResult(selectedResultIndex + 1, results.length);
+            break;
+        case 'ArrowUp':
+            e.preventDefault();
+            updateSelectedResult(selectedResultIndex - 1, results.length);
+            break;
+        case 'Enter':
+            e.preventDefault();
+            if (selectedResultIndex >= 0) {
+                results[selectedResultIndex].querySelector('a').click();
+            }
+            break;
+        case 'Escape':
+            e.preventDefault();
+            closeSearch();
+            break;
+    }
+});
+
+// Close search on outside click
+document.getElementById('search-dialog').addEventListener('click', function (e) {
+    if (e.target === this) {
+        closeSearch();
+    }
+});
 
         function keybindingInitialize() {
             const keybindingList = document.querySelector('.keybinding ul');
@@ -130,7 +172,7 @@
                 keybindingList.appendChild(li);
             });
 
-            document.head.appendChild(style);
+            const keybinding = document.querySelector('.keybinding');
             keybinding.classList.add('hidden');
             const title = document.createElement('h4');
             title.textContent = 'Keyboard Shortcuts';
@@ -140,6 +182,14 @@
         function printPage() {
             const el = document.querySelector('.content-container')
             html2pdf(el)
+        }
+
+        function debounce(func, wait) {
+            let timeout;
+            return function (...args) {
+                clearTimeout(timeout);
+                timeout = setTimeout(() => func.apply(this, args), wait);
+            };
         }
 
         function initializeFileTree(fileTreeData) {
@@ -223,21 +273,34 @@
             fileTreeElement.appendChild(rootList);
         }
 
-
         function toggleNav() {
             const sidebar = document.querySelector('.sidebar');
             sidebar.classList.toggle('open');
         }
 
         function openSearch() {
+            if (!searchInitialized && !searchInitializing) {
+                initializeSearch();
+            }
+
             const searchDialog = document.querySelector('.search-dialog');
             searchDialog.classList.add('open');
 
-            // Focus the search input after a short delay (for animation)
             setTimeout(() => {
                 const searchInput = document.getElementById('search-input');
                 searchInput.focus();
             }, 100);
+        }
+
+        function closeSearch() {
+            const searchDialog = document.getElementById('search-dialog');
+            searchDialog.classList.remove('open');
+            const searchInput = document.getElementById('search-input');
+            searchInput.value = '';
+            lastQuery = '';
+            selectedResultIndex = -1;
+            const searchResults = document.getElementById('search-results');
+            searchResults.innerHTML = '';
         }
 
         function toggleTheme(toggle = false) {
@@ -355,6 +418,7 @@
                     if (keybinding && !keybinding.classList.contains('hidden')) {
                         keybinding.classList.add('hidden');
                     }
+                    closeSearch();
                     break;
                 case 'home':
                     e.preventDefault();
@@ -400,127 +464,189 @@
                 .replace(/\b\w/g, char => char.toUpperCase()); // Capitalize first letter of each word
         }
 
-        function closeSearch() {
-            const searchDialog = document.getElementById('search-dialog');
-            if (searchDialog) {
-                searchDialog.classList.remove('open');
 
-                // Clear the search input and results
-                const searchInput = document.getElementById('search-input');
-                if (searchInput) {
-                    searchInput.value = '';
-                }
-
-                const searchResults = document.getElementById('search-results');
-                if (searchResults) {
-                    searchResults.innerHTML = '';
-                }
-            }
-        }
-
+        // Close search when clicking outside the search content
         document.getElementById('search-dialog').addEventListener('click', function (e) {
             if (e.target === this) {
                 closeSearch();
             }
         });
 
+        function updateSelectedResult(newIndex, resultsLength) {
+            const items = document.querySelectorAll('.result-item');
+            if (items.length === 0) return;
 
-        function displaySearchResults(results, searchResultsElement) {
-            // Clear previous results
-            searchResultsElement.innerHTML = '';
-
-            // Show message if no results
-            if (results.length === 0) {
-                searchResultsElement.innerHTML = '<p class="no-results">No results found.</p>';
-                return;
-            }
-
-            // Limit to top 10 results for performance
-            const maxResults = Math.min(results.length, 10);
-
-            for (let i = 0; i < maxResults; i++) {
-                const result = results[i];
-                const item = result.item;
-
-                // Create result link
-                const link = document.createElement('a');
-                link.href = item.url;
-
-                // Get display name from URL if not available
-                const displayName = item.name || extractNameFromUrl(item.url);
-                link.textContent = displayName;
-
-                // Add click handler to close search when result is clicked
-                link.addEventListener('click', closeSearch);
-
-                // Add result to container
-                searchResultsElement.appendChild(link);
-            }
-
-            // Add "show more" if results exceed display limit
-            if (results.length > maxResults) {
-                const showMore = document.createElement('p');
-                showMore.className = 'search-show-more';
-                showMore.textContent = `Showing top ${maxResults} of ${results.length} results. Refine your search for more specific results.`;
-                searchResultsElement.appendChild(showMore);
-            }
+            selectedResultIndex = Math.max(0, Math.min(newIndex, resultsLength - 1));
+            items.forEach((item, index) => {
+                item.classList.toggle('selected', index === selectedResultIndex);
+                if (index === selectedResultIndex) {
+                    item.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+                }
+            });
         }
 
-        function handleSearch(e) {
+        const debouncedHandleSearch = debounce(function (e) {
             const query = e.target.value.trim();
             const searchResults = document.getElementById('search-results');
 
-            if (query.length === 0) {
-                searchResults.innerHTML = '';
+            if (query === lastQuery) return;
+            lastQuery = query;
+
+            if (!query) {
+                searchResults.innerHTML = '<p class="search-ready">Type to start searching...</p>';
+                return;
+            }
+
+            if (!searchInitialized) {
+                searchResults.innerHTML = '<p class="search-loading">Search is initializing...</p>';
+                if (!searchInitializing) {
+                    initializeSearch().then(() => query && handleSearch(e));
+                }
                 return;
             }
 
             if (!fuse || !searchIndex.length) {
-                searchResults.innerHTML = '<p class="search-error">Search is not initialized yet. Please wait or refresh the page.</p>';
+                searchResults.innerHTML = '<p class="search-error">Search unavailable. Retrying...</p>';
+                initializeSearch().then(() => query && handleSearch(e));
                 return;
             }
 
             const results = fuse.search(query);
+            displaySearchResults(results, query, searchResults);
+        }, 300);
 
-            displaySearchResults(results, searchResults);
+        function displaySearchResults(results, query, searchResultsElement) {
+            searchResultsElement.innerHTML = '';
+            selectedResultIndex = -1;
+
+            if (!results.length) {
+                searchResultsElement.innerHTML = '<p class="no-results">No results found.</p>';
+                return;
+            }
+
+            const maxResults = Math.min(results.length, 10);
+            results.slice(0, maxResults).forEach((result, index) => {
+                const item = result.item;
+                const matches = result.matches || [];
+
+                const resultItem = document.createElement('div');
+                resultItem.className = 'result-item';
+                resultItem.dataset.index = index;
+
+                const link = document.createElement('a');
+                link.href = item.url;
+                link.className = 'result-link';
+                link.addEventListener('click', closeSearch);
+
+                const title = document.createElement('div');
+                title.className = 'result-title';
+                const displayName = item.name || extractNameFromUrl(item.url);
+                title.innerHTML = highlightMatch(displayName, matches.filter(m => m.key === 'name'));
+
+                const snippet = document.createElement('div');
+                snippet.className = 'result-snippet';
+                snippet.innerHTML = item.content
+                    ? generateSnippet(item.content, query)
+                    : 'No preview available';
+
+                link.appendChild(title);
+                link.appendChild(snippet);
+                resultItem.appendChild(link);
+                searchResultsElement.appendChild(resultItem);
+            });
+
+            if (results.length > maxResults) {
+                const showMore = document.createElement('p');
+                showMore.className = 'search-show-more';
+                showMore.textContent = `Showing ${maxResults} of ${results.length} results.`;
+                searchResultsElement.appendChild(showMore);
+            }
         }
 
-
-        let searchIndex = [];
-        let fuse = null;
+function handleSearch(e) {
+    debouncedHandleSearch(e);
+}
         async function initializeSearch() {
+            if (searchInitializing) return;
+            searchInitializing = true;
+
+            const searchResults = document.getElementById('search-results');
             try {
+                console.log('Initializing search...');
+                if (searchResults) {
+                    searchResults.innerHTML = '<p class="search-loading">Loading search index...</p>';
+                }
+
                 const response = await fetch('/static/search-index.json');
                 if (!response.ok) {
-                    throw new Error(`Failed to fetch search index: ${response.status} ${response.statusText}`);
+                    throw new Error(`Failed to fetch search index: ${response.status}`);
                 }
 
-                searchIndex = await response.json();
-
-                if (!Array.isArray(searchIndex)) {
-                    throw new Error('Search index is not an array');
+                const data = await response.json();
+                if (!Array.isArray(data)) {
+                    throw new Error('Invalid search index format');
                 }
 
+                searchIndex = data;
                 fuse = new Fuse(searchIndex, {
                     keys: [
-                        {name: 'content', weight: 0.7},
-                        {name: 'name', weight: 0.3}
+                        {name: 'name', weight: 0.5},
+                        {name: 'content', weight: 0.3},
+                        {name: 'tags', weight: 0.2} // Assuming tags might exist
                     ],
-                    threshold: 0.4,              // Lower threshold means more strict matching
-                    distance: 100,               // How far to look for matching characters
-                    includeScore: true,          // Include score in results
-                    includeMatches: true,        // Include matched indices for highlighting
-                    useExtendedSearch: true,     // Enable extended search features
-                    ignoreLocation: true,        // Search anywhere in the text
-                    minMatchCharLength: 2        // Minimum length of a matched pattern
+                    threshold: 0.3,
+                    distance: 200,
+                    includeScore: true,
+                    includeMatches: true,
+                    useExtendedSearch: true,
+                    ignoreLocation: false,
+                    minMatchCharLength: 2,
+                    shouldSort: true
                 });
 
-                console.log('Search initialized successfully with', searchIndex.length, 'items');
+                console.log('Search initialized with', searchIndex.length, 'items');
+                searchInitialized = true;
+
+                if (searchResults && document.querySelector('.search-dialog').classList.contains('open')) {
+                    searchResults.innerHTML = '<p class="search-ready">Type to start searching...</p>';
+                    const searchInput = document.getElementById('search-input');
+                    if (searchInput?.value.trim()) {
+                        handleSearch({target: searchInput});
+                    }
+                }
             } catch (error) {
-                console.error('Error initializing search:', error);
-                document.getElementById('search-results').innerHTML =
-                    '<p class="search-error">Search initialization failed. Please try refreshing the page.</p>';
+                console.error('Search init failed:', error);
+                searchInitialized = false;
+                if (searchResults) {
+                    searchResults.innerHTML = `
+                <p class="search-error">Failed to load search: ${error.message}</p>
+                <button class="retry-button" onclick="initializeSearch()">Retry</button>`;
+                }
+            } finally {
+                searchInitializing = false;
             }
+        }
+        function highlightMatch(text, matches) {
+            if (!matches || !matches.length) return text;
+            let result = text;
+            matches.forEach(match => {
+                const start = match.indices[0][0];
+                const end = match.indices[0][1] + 1;
+                const matchedText = text.slice(start, end);
+                result = result.replace(matchedText, `<mark>${matchedText}</mark>`);
+            });
+            return result;
+        }
+
+        function generateSnippet(content, query, maxLength = 100) {
+            const lowerContent = content.toLowerCase();
+            const lowerQuery = query.toLowerCase();
+            const index = lowerContent.indexOf(lowerQuery);
+            let start = Math.max(0, index - 50);
+            let snippet = content.slice(start, start + maxLength);
+            if (start > 0) snippet = '...' + snippet;
+            if (snippet.length < content.length) snippet += '...';
+            return highlightMatch(snippet, [{ indices: [[index - start, index - start + query.length - 1]] }]);
         }
     </script>
 </body>
