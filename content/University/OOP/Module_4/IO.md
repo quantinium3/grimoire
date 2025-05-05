@@ -5,10 +5,6 @@ tags: []
 title: IO
 ---
 
-Let’s dive into **I/O in Java**, covering **I/O Basics**, **Streams and Stream Classes**, **The Predefined Streams**, **Reading from and Writing to Console**, **Reading and Writing Files**, **The Transient and Volatile Modifiers**, and **Using Instance of Native Methods**. These topics are essential for handling input/output operations in Java and are likely to appear in your exams. I’ll explain each topic in detail, keeping it clear, concise, and exam-focused, while connecting to your previous questions about packages, interfaces, exception handling, and multithreading where relevant.
-
----
-
 ### 1. **I/O Basics**
 
 **Input/Output (I/O)** in Java refers to the process of reading data from a source (input) and writing data to a destination (output). Java provides a robust I/O framework to handle various data sources and destinations, such as files, console, network sockets, and memory.
