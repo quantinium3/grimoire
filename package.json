@@ -1,66 +1,20 @@
 {
   "name": "grimoire",
-  "version": "0.1.0",
-  "description": "static site generator for markdown notes",
-  "main": "src/index.ts",
+  "module": "index.ts",
   "type": "module",
+  "private": true,
   "scripts": {
-    "clone": "bun run src/clone.ts",
-    "build": "bun run src/build.ts",
-    "dev": "bun run serve dist",
-    "setup": "bun run src/setup.ts",
-    "git": "bun run src/git.ts",
-    "sync": "bun run clone && bun run git"
+    "build": "bun run src/index.ts"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/quantinium03/grimoire.git"
-  },
-  "author": "quantinium03",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/quantinium03/grimoire/issues"
-  },
-  "homepage": "https://github.com/quantinium03/grimoire#readme",
   "devDependencies": {
-    "@eslint/js": "^9.19.0",
-    "@types/bun": "^1.2.0",
-    "@types/fs-extra": "^11.0.4",
-    "@types/globby": "^9.1.0",
-    "autoprefixer": "^10.4.20",
-    "eslint": "^9.19.0",
-    "fs-extra": "^11.3.0",
-    "globals": "^15.14.0",
-    "globby": "^14.0.2",
-    "gray-matter": "^4.0.3",
-    "handlebars": "^4.7.8",
-    "prismjs": "^1.29.0",
-    "rehype-prism-plus": "^2.0.0",
-    "remark-html": "^16.0.1",
-    "remark-parse": "^11.0.0",
-    "typescript": "^5.7.3",
-    "typescript-eslint": "^8.21.0",
-    "unified": "^11.0.5"
+    "@types/bun": "latest",
+    "@types/fs-extra": "^11.0.4"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
   },
   "dependencies": {
-    "@types/fluent-ffmpeg": "^2.1.27",
-    "@types/html-minifier": "^4.0.5",
-    "@types/sharp": "^0.32.0",
-    "canvas": "^3.1.0",
-    "cli-progress": "^3.12.0",
-    "fluent-ffmpeg": "^2.1.3",
-    "fuse.js": "^7.1.0",
-    "glob": "^11.0.1",
-    "html-minifier": "^4.0.0",
-    "jimp": "^1.6.0",
-    "rehype-mathjax": "^7.1.0",
-    "rehype-raw": "^7.0.0",
-    "rehype-sanitize": "^6.0.0",
-    "rehype-stringify": "^10.0.1",
-    "remark-frontmatter": "^5.0.0",
-    "remark-gfm": "^4.0.1",
-    "remark-math": "^6.0.0",
-    "remark-rehype": "^11.1.1",
-    "sharp": "^0.33.5"
+    "commander": "^14.0.0",
+    "fs-extra": "^11.3.0"
   }
 }
