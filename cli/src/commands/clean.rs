@@ -1,6 +1,11 @@
-use crate::error::SSGError;
+use std::path::Path;
 
-pub async fn clean_content(dir: &str) -> Result<(), SSGError> {
-    println!("directory: {}", dir);
+use anyhow::{Context, Result};
+use tokio::fs::remove_dir_all;
+
+pub async fn clean_content(dir: &str) -> Result<()> {
+    remove_dir_all(Path::new(dir))
+        .await
+        .with_context(|| format!("failed to clean dir: {}", dir))?;
     Ok(())
 }
