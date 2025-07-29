@@ -1,4 +1,4 @@
-use anyhow::{Context, Result, anyhow};
+use anyhow::{Context, Result};
 use rust_embed::RustEmbed;
 use std::{path::Path, time::SystemTime};
 use time_util::print_system_time_to_rfc3339;

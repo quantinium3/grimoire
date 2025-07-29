@@ -1,10 +1,11 @@
-use anyhow::{Context, Result};
+use anyhow::{Context, Error, Result};
 use colored::Colorize;
 use rust_embed::RustEmbed;
 use std::{path::Path, time::SystemTime};
+use time_util::print_system_time_to_rfc3339;
 use tokio::fs::{self, create_dir_all};
 
-#[derive(rust_embed)]
+#[derive(RustEmbed)]
 #[folder = "static/"]
 struct StaticAssets;
 
@@ -66,7 +67,7 @@ async fn write_embedded_file(project_path: &Path, asset_path: &str) -> Result<()
         })?;
     }
 
-    fs::write(&out_path, content.data.as_ref())
+    fs::write(&out_path, content)
         .await
         .with_context(|| format!("Failed to write file to disk: {}", out_path.display()))?;
     Ok(())
@@ -75,14 +76,24 @@ async fn write_embedded_file(project_path: &Path, asset_path: &str) -> Result<()
 async fn write_examples(outdir: &str) -> Result<()> {
     let content = get_embedded_file("examples/blog.md")?;
     let now = SystemTime::now();
-    fs::write(format!("{}/blog/{}.md", outdir, now), content)
-        .await
-        .with_context(|| format!("Failed to create example in blog dir"))?;
+    fs::write(
+        format!("{}/blog/{}.md", outdir, print_system_time_to_rfc3339(&now)),
+        content,
+    )
+    .await
+    .with_context(|| format!("Failed to create example in blog dir"))?;
 
     let content = get_embedded_file("examples/static.md")?;
-    fs::write(format!("{}/static/{}.md", outdir, now), content)
-        .await
-        .with_context(|| format!("Failed to create example in static dir"))?;
+    fs::write(
+        format!(
+            "{}/static/{}.md",
+            outdir,
+            print_system_time_to_rfc3339(&now)
+        ),
+        content,
+    )
+    .await
+    .with_context(|| format!("Failed to create example in static dir"))?;
 
     let content = get_embedded_file("examples/index.md")?;
     fs::write(format!("{}/index.md", outdir), content)
@@ -92,7 +103,10 @@ async fn write_examples(outdir: &str) -> Result<()> {
     Ok(())
 }
 
-fn get_embedded_file(path: &str) -> Result<String> {
-    return StaticAssets::get(path)
-        .with_context(|| format!("failed to get embedded file: {}", path))?;
+fn get_embedded_file(path: &str) -> Result<String, Error> {
+    let file = StaticAssets::get(path)
+        .ok_or_else(|| anyhow::anyhow!("failed to get embedded file: {}", path))?;
+
+    String::from_utf8(file.data.to_vec())
+        .map_err(|_| anyhow::anyhow!("failed to convert embedded file to string: {}", path))
 }
