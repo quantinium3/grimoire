@@ -1,8 +1,10 @@
 use anyhow::Result;
 use clap::{Parser, Subcommand};
-use commands::{add::add_content, build::build_content, init::init_project, list::list_content, serve::serve_content, clean::clean_content};
+use commands::{
+    add::add_content, build::build_content, clean::clean_content, init::init_project,
+    list::list_content, serve::serve_content,
+};
 mod commands;
-mod error;
 
 #[derive(Parser, Debug)]
 #[command(name = "grimoire")]
@@ -22,15 +24,6 @@ enum Commands {
     Add {
         #[arg(short('d'), long("dir"))]
         directory: String,
-
-        #[arg(short('t'), long)]
-        title: Option<String>,
-
-        #[arg(long)]
-        draft: bool,
-
-        #[arg(long)]
-        tags: Option<String>,
     },
 
     Build {
@@ -66,27 +59,14 @@ async fn main() -> Result<()> {
 
     match &cli.command {
         Commands::Init { name } => init_project(name).await?,
-        Commands::Add {
-            directory,
-            title,
-            draft,
-            tags,
-        } => add_content(directory, title.as_ref(), *draft, tags.as_ref()).await?,
-        Commands::List { dirname } => {
-            list_content(dirname.as_ref()).await?
-        }
+        Commands::Add { directory } => add_content(directory).await?,
+        Commands::List { dirname } => list_content(dirname.as_ref()).await?,
         Commands::Build {
             include_drafts,
             output,
-        } => {
-            build_content(*include_drafts, output).await?
-        }
-        Commands::Serve { port, open } => {
-            serve_content(*port, *open).await?
-        }
-        Commands::Clean { directory } => {
-            clean_content(directory).await?
-        }
+        } => build_content(*include_drafts, output).await?,
+        Commands::Serve { port, open } => serve_content(*port, *open).await?,
+        Commands::Clean { directory } => clean_content(directory).await?,
     }
     Ok(())
 }
