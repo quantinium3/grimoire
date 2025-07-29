@@ -1,20 +1,22 @@
 {
   "name": "grimoire",
-  "module": "index.ts",
-  "type": "module",
   "private": true,
-  "scripts": {
-    "build": "bun run src/index.ts"
-  },
   "devDependencies": {
-    "@types/bun": "latest",
-    "@types/fs-extra": "^11.0.4"
+    "@types/bun": "latest"
   },
   "peerDependencies": {
     "typescript": "^5"
   },
   "dependencies": {
+    "@types/fs-extra": "^11.0.4",
     "commander": "^14.0.0",
-    "fs-extra": "^11.3.0"
+    "esbuild": "^0.25.8",
+    "fs-extra": "^11.3.0",
+    "gray-matter": "^4.0.3",
+    "handlebars": "^4.7.8",
+    "remark-html": "^16.0.1",
+    "remark-parse": "^11.0.0",
+    "remark-toc": "^9.0.0",
+    "unified": "^11.0.5"
   }
 }
