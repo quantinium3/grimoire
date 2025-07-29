@@ -1,15 +1,16 @@
 use anyhow::{Context, Result};
 use colored::Colorize;
 use rust_embed::RustEmbed;
-use std::path::Path;
+use std::{path::Path, time::SystemTime};
 use tokio::fs::{self, create_dir_all};
 
-#[derive(RustEmbed)]
+#[derive(rust_embed)]
 #[folder = "static/"]
 struct StaticAssets;
 
 pub async fn init_project(name: &str) -> Result<()> {
     let path = Path::new(name);
+    let content_dir = "content";
 
     create_dir_all(path)
         .await
@@ -17,8 +18,8 @@ pub async fn init_project(name: &str) -> Result<()> {
 
     let dirs = [
         "templates",
-        "content/blog",
-        "content/pages",
+        &format!("{}/blog", content_dir),
+        &format!("{}/static", content_dir),
         "static/js",
         "static/images",
         "static/styles",
@@ -43,6 +44,8 @@ pub async fn init_project(name: &str) -> Result<()> {
             .with_context(|| format!("Failed to write file: {}", file))?;
     }
 
+    write_examples(content_dir).await?;
+
     println!("Initialized new project: {}", name);
     println!("{}", "run:".cyan());
     println!("    cd {}", name.cyan());
@@ -52,8 +55,7 @@ pub async fn init_project(name: &str) -> Result<()> {
 }
 
 async fn write_embedded_file(project_path: &Path, asset_path: &str) -> Result<()> {
-    let content = StaticAssets::get(asset_path)
-        .with_context(|| format!("failed to get embedded file: {}", asset_path))?;
+    let content = get_embedded_file(asset_path)?;
     let out_path = project_path.join(asset_path);
     if let Some(parent) = out_path.parent() {
         create_dir_all(parent).await.with_context(|| {
@@ -68,4 +70,29 @@ async fn write_embedded_file(project_path: &Path, asset_path: &str) -> Result<()
         .await
         .with_context(|| format!("Failed to write file to disk: {}", out_path.display()))?;
     Ok(())
+}
+
+async fn write_examples(outdir: &str) -> Result<()> {
+    let content = get_embedded_file("examples/blog.md")?;
+    let now = SystemTime::now();
+    fs::write(format!("{}/blog/{}.md", outdir, now), content)
+        .await
+        .with_context(|| format!("Failed to create example in blog dir"))?;
+
+    let content = get_embedded_file("examples/static.md")?;
+    fs::write(format!("{}/static/{}.md", outdir, now), content)
+        .await
+        .with_context(|| format!("Failed to create example in static dir"))?;
+
+    let content = get_embedded_file("examples/index.md")?;
+    fs::write(format!("{}/index.md", outdir), content)
+        .await
+        .with_context(|| format!("Failed to create index.md"))?;
+
+    Ok(())
+}
+
+fn get_embedded_file(path: &str) -> Result<String> {
+    return StaticAssets::get(path)
+        .with_context(|| format!("failed to get embedded file: {}", path))?;
 }
