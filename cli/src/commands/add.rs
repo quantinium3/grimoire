@@ -57,10 +57,9 @@ fn get_embedded_file(path: &str) -> Result<String> {
 }
 
 mod tests {
-    use tokio::fs::remove_dir_all;
-
     use super::*;
     use std::fs::read_dir;
+    use tokio::fs::remove_dir_all;
 
     #[tokio::test]
     async fn test_add_content_dir() {
