@@ -23,7 +23,7 @@ pub async fn build_content(include_drafts: bool, output_dir: &str) -> Result<()>
         .context("Failed to execute grimoire command")?;
 
     if output.status.success() {
-        println!("✓ Grimoire compiled successfully");
+        println!("Grimoire compiled successfully");
 
         let stdout = String::from_utf8_lossy(&output.stdout);
         if !stdout.trim().is_empty() {
@@ -33,7 +33,7 @@ pub async fn build_content(include_drafts: bool, output_dir: &str) -> Result<()>
         Ok(())
     } else {
         let stderr = String::from_utf8_lossy(&output.stderr);
-        eprintln!("✗ Failed to build content");
+        eprintln!("Failed to build content");
         if !stderr.trim().is_empty() {
             eprintln!("Error details:\n{}", stderr);
         }
