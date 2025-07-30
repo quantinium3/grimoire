@@ -69,7 +69,6 @@
             strictDeps = true;
             nativeBuildInputs = [ pkgs.installShellFiles ];
             postInstall = ''
-              # Install the grimoire binary alongside grimoire-cli
               mkdir -p $out/bin
               cp ${grimoire}/bin/grimoire $out/bin/
             '';
