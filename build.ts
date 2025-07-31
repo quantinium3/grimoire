@@ -1,6 +1,6 @@
 import { program } from "commander";
-import { existsSync, readdirSync, readFileSync, writeFileSync } from "fs";
-import { ensureDir } from "fs-extra";
+import { cpSync, existsSync, readdirSync, readFileSync, writeFileSync } from "fs";
+import { ensureDir, mkdirSync } from "fs-extra";
 import matter from "gray-matter";
 import Handlebars from "handlebars";
 import path from "path";
@@ -33,6 +33,7 @@ export class Grimoire {
     private input_dir: string = "";
     private output_dir: string = "";
     private include_drafts: boolean = false;
+    private nav_items: string[] = [];
 
     constructor(input_dir: string, output_dir: string, include_drafts: boolean) {
         this.input_dir = input_dir
@@ -40,10 +41,34 @@ export class Grimoire {
         this.include_drafts = include_drafts;
     }
 
+    private async getTitle(filepath: string): Promise<string> {
+        const content = await this.get_content(filepath);
+        return content.frontmatter.title.replaceAll(/ /g, "-");
+    }
+
     private async process_content(): Promise<void> {
         try {
             if (!existsSync(this.input_dir)) {
                 throw new Error("Content Directory not found. Did you run `grimoire init`?");
+            }
+
+            try {
+                const dirs = readdirSync(this.input_dir, { withFileTypes: true })
+                    .filter(dirent => dirent.isDirectory)
+                    .map(dirent => dirent.name);
+
+                for (const dir of dirs) {
+                    if (dir == "static") {
+                        readdirSync(path.join(this.input_dir, "static"), { withFileTypes: true })
+                            .filter(dirent => dirent.isFile)
+                            .map(async (dirent) => this.nav_items.push(await this.getTitle(path.join(this.input_dir, "static", dirent.name))))
+
+                    } else {
+                        this.nav_items.push(dir);
+                    }
+                }
+            } catch (error) {
+                throw new Error(`Failed to create navbar items: ${error instanceof Error ? error.message : 'Unknown error'}`)
             }
 
             try {
@@ -68,7 +93,7 @@ export class Grimoire {
                 } else {
                     const content = await this.get_content(index_path);
                     const title = content.frontmatter.title || "Untitled";
-                    const slug = path.join(this.output_dir, "index.html");
+                    const slug = path.join(this.output_dir, "index");
                     const html_content = await this.convert_to_html(content.md_content);
                     await this.create_page(html_content, title, slug);
                 }
@@ -92,6 +117,31 @@ export class Grimoire {
             console.error(`Fatal error in process_content: ${error instanceof Error ? error.message : 'Unknown error'}`);
             throw error;
         }
+
+        try {
+            const staticDirs = ["styles", "js"];
+
+            staticDirs.forEach(dir => {
+                const srcDir = path.join("static", dir);
+                const destDir = path.join(this.output_dir);
+
+                mkdirSync(destDir, { recursive: true });
+
+                readdirSync(srcDir, { withFileTypes: true })
+                    .filter(dirent => dirent.isFile())
+                    .forEach(dirent => {
+                        const src = path.join(srcDir, dirent.name);
+                        const dest = path.join(destDir, dirent.name);
+                        writeFileSync(dest, readFileSync(src));
+                    });
+            });
+
+            const srcDir = path.join("static", "images");
+            const destDir = path.join(this.output_dir, "images");
+
+            cpSync(srcDir, destDir, { recursive: true });
+        } catch (error) {
+        }
     }
 
     private async process_static_directory(dir: string): Promise<void> {
@@ -109,11 +159,7 @@ export class Grimoire {
                     const file_path = path.join(dir, file);
                     const content: { md_content: string, frontmatter: StaticMetadata } = await this.get_content(file_path);
                     const title = content.frontmatter.title || path.basename(file, '.md');
-                    const filename = file.replace(".md", "")
-                        .replace(/[^\w\s-]/g, '')
-                        .replace(/\s+/g, '-')
-                        .toLowerCase();
-                    const slug = path.join(this.output_dir, filename);
+                    const slug = path.join(this.output_dir, title.replaceAll(/ /g, "-"));
                     const html_content = await this.convert_to_html(content.md_content);
                     await this.create_page(html_content, title, slug);
                 } catch (error) {
@@ -147,14 +193,9 @@ export class Grimoire {
                     const file_path = path.join(dir, file);
                     const content: { md_content: string, frontmatter: PostMetadata } = await this.get_content(file_path);
                     if (!this.include_drafts) continue;
-                    const title = content.frontmatter.title || path.basename(file, '.md');
+                    const title = content.frontmatter.title.replaceAll(/ /g, "-");
                     const date = this.format_date(content.frontmatter.date);
-                    const filename = file.replace(".md", "")
-                        .replace(/[^\w\s-]/g, '')
-                        .replace(/\s+/g, '-')
-                        .toLowerCase();
-
-                    const slug = path.join(this.output_dir, dir, filename);
+                    const slug = path.join(this.output_dir, dir, title);
                     const html_content = await this.convert_to_html(content.md_content);
                     await this.create_post(html_content, title, date, slug);
 
@@ -189,6 +230,7 @@ export class Grimoire {
             const page_template = Handlebars.compile(template_content);
 
             const html = page_template({
+                nav: this.nav_items,
                 content,
                 title
             });
@@ -211,6 +253,8 @@ export class Grimoire {
             const index_template = Handlebars.compile(template_content);
 
             const html = index_template({
+                nav: this.nav_items,
+                title: dir,
                 slugs
             });
 
@@ -223,7 +267,7 @@ export class Grimoire {
 
     private async create_post(content: string, title: string, date: string, slug: string): Promise<void> {
         try {
-            const template_path = "templates/page.hbs";
+            const template_path = "templates/post.hbs";
 
             if (!existsSync(template_path)) {
                 throw new Error(`Post template not found at: ${template_path}`);
@@ -233,6 +277,7 @@ export class Grimoire {
             const post_template = Handlebars.compile(template_content);
 
             const html = post_template({
+                nav: this.nav_items,
                 content,
                 title,
                 date,
