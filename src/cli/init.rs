@@ -1,7 +1,9 @@
-use crate::utils::get_embedded_files;
-use anyhow::{Context, Result};
+use crate::{consts::GRIMOIRE_CONFIG_NAME, utils::get_embedded_files};
+use anyhow::{Context, Result, bail};
 use colored::Colorize;
+use dialoguer::{Confirm, Input};
 use rust_embed::RustEmbed;
+use serde::Serialize;
 use std::{path::Path, time::SystemTime};
 use time_util::print_system_time_to_rfc3339;
 use tokio::fs::{create_dir_all, write};
@@ -10,16 +12,22 @@ use tokio::fs::{create_dir_all, write};
 #[folder = "static"]
 struct StaticAssets;
 
-const GRIMOIRE_CONFIG_NAME: &'static str = "grimoire.config.json";
+#[derive(Serialize)]
+struct Config {
+    project_name: String,
+    description: String,
+    domain: String,
+    content_dir: String,
+}
 
-pub async fn init_project(project_name: &str, content_dir: &str) -> Result<()> {
+pub async fn init_project(project_name: &str) -> Result<()> {
     let project_path = Path::new(project_name);
 
     // initialize dir | templates | examples | config
-    create_init_dirs(project_path, content_dir).await?;
+    let content_dir = create_init_config(project_name).await?;
+    create_init_dirs(project_path, &content_dir).await?;
     create_init_templates(project_path).await?;
-    create_init_examples(project_path, content_dir).await?;
-    create_init_config(project_path).await?;
+    create_init_examples(project_path, &content_dir).await?;
 
     println!("Initialized new project: {}", project_name);
     println!("{}", "run:".bold().cyan());
@@ -39,12 +47,48 @@ async fn create_init_templates(project_path: &Path) -> Result<()> {
     Ok(())
 }
 
-async fn create_init_config(project_path: &Path) -> Result<()> {
-    let contents = get_embedded_files("grimoire.config.json")?;
+async fn create_init_config(project_name: &str) -> Result<String> {
+    let confirm = Confirm::new()
+        .with_prompt("Do you want to continue?")
+        .interact()
+        .context("Failed to confirm initialization")?;
+
+    if !confirm {
+        bail!("Failed to init grimoire: confirmation negative");
+    }
+
+    let content_dir = Input::<String>::new()
+        .with_prompt("Enter content directory name (default: content): ")
+        .default("content".into())
+        .interact_text()
+        .context("Failed to input content directory")?;
+
+    let description = Input::<String>::new()
+        .with_prompt("Enter description: ")
+        .default("".into())
+        .interact_text()
+        .context("Failed to input project description")?;
+
+    let domain = Input::<String>::new()
+        .with_prompt("Enter project domain: ")
+        .default("http://localhost".into())
+        .interact_text()
+        .context("Failed to input project domain")?;
+
+    let config = Config {
+        project_name: project_name.to_string(),
+        content_dir: content_dir.clone(),
+        description,
+        domain,
+    };
+
+    let contents = serde_json::to_string(&config).context("Failed to parse config")?;
+
+    let project_path = Path::new(project_name);
     write(project_path.join(GRIMOIRE_CONFIG_NAME), contents)
         .await
         .context(format!("Failed to write to {}", GRIMOIRE_CONFIG_NAME))?;
-    Ok(())
+    Ok(content_dir)
 }
 
 async fn create_init_examples(project_path: &Path, content_dir: &str) -> Result<()> {
