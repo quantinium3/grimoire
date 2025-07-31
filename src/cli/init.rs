@@ -1,9 +1,11 @@
-use crate::{consts::GRIMOIRE_CONFIG_NAME, utils::get_embedded_files};
+use crate::{
+    consts::{Config, GRIMOIRE_CONFIG_NAME},
+    utils::get_embedded_files,
+};
 use anyhow::{Context, Result, bail};
 use colored::Colorize;
 use dialoguer::{Confirm, Input};
 use rust_embed::RustEmbed;
-use serde::Serialize;
 use std::{path::Path, time::SystemTime};
 use time_util::print_system_time_to_rfc3339;
 use tokio::fs::{create_dir_all, write};
@@ -11,14 +13,6 @@ use tokio::fs::{create_dir_all, write};
 #[derive(RustEmbed)]
 #[folder = "static"]
 struct StaticAssets;
-
-#[derive(Serialize)]
-struct Config {
-    project_name: String,
-    description: String,
-    domain: String,
-    content_dir: String,
-}
 
 pub async fn init_project(project_name: &str) -> Result<()> {
     let project_path = Path::new(project_name);
@@ -96,7 +90,9 @@ async fn create_init_examples(project_path: &Path, content_dir: &str) -> Result<
     let now = SystemTime::now();
     for dir in dirs {
         let contents = get_embedded_files(&format!("{}.md", dir))?;
-        let timestamp = print_system_time_to_rfc3339(&now);
+        let timestamp = print_system_time_to_rfc3339(&now)
+            .replace(":", "-")
+            .replace(".", "-");
         write(
             project_path
                 .join(content_dir)
