@@ -47,6 +47,12 @@ pub async fn init_project(name: &str) -> Result<()> {
 
     write_examples(&path.join(content_dir)).await?;
 
+    let config_content = get_embedded_file("grimoire.config.json")?;
+    let outpath = path.join("grimoire.config.json");
+    fs::write(&outpath, config_content)
+        .await
+        .with_context(|| format!("failed to write grimoire.config.json"))?;
+
     println!("Initialized new project: {}", name);
     println!("{}", "run:".cyan());
     println!("    cd {}", name.cyan());
