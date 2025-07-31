@@ -15,16 +15,14 @@
         </ul>
     </nav>
 
-    <header>
-        <h1>{{title}}</h1>
-    </header>
-
     <main>
-        <ul>
-            {{#each slugs}}
-                <li><a href="/{{../title}}/{{this}}">{{this}}</a></li>
-            {{/each}}
-        </ul>
+        <header>
+            <h1>{{title}}</h1>
+            <p>{{date}}</p>
+        </header>
+        <article>
+            {{{content}}}
+        </article>
     </main>
 </body>
 </html>
