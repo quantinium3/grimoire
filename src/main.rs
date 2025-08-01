@@ -1,7 +1,14 @@
 mod cli;
+mod consts;
 mod site;
+mod utils;
+
 use anyhow::Result;
 use clap::{Parser, Subcommand};
+use cli::{
+    add::add_content, build::build_content, clean::clean_content, init::init_project,
+    list::list_content, serve::serve_content,
+};
 
 #[derive(Parser, Debug)]
 #[command(name = "grimoire")]
@@ -15,6 +22,7 @@ struct Cli {
 #[derive(Subcommand, Debug)]
 enum Commands {
     Init {
+        #[arg(short('n'), long("name"))]
         project_name: String,
     },
 
@@ -57,13 +65,14 @@ async fn main() -> Result<()> {
     match &cli.command {
         Commands::Init { project_name } => init_project(project_name).await?,
         Commands::Add { content_type } => add_content(content_type).await?,
+        Commands::List { dirname } => list_content(dirname.as_ref()).await?,
+        Commands::Clean { directory } => clean_content(directory).await?,
+
         Commands::Build {
             include_drafts,
             output_dir,
         } => build_content(*include_drafts, output_dir).await?,
         Commands::Serve { port, open } => serve_content(*port, *open).await?,
-        Commands::List { dirname } => list_content(dirname.as_ref()).await?,
-        Commands::Clean { directory } => clean_content(directory).await?,
     }
     Ok(())
 }
