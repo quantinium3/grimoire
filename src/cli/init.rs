@@ -99,7 +99,9 @@ async fn create_init_examples(project_path: &Path, content_dir: &str) -> Result<
                 .join(dir)
                 .join(&format!("{}.md", timestamp)),
             contents,
-        );
+        )
+        .await
+        .context("failed to write init examples")?;
     }
 
     // write to /index.md for root

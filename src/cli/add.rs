@@ -36,7 +36,7 @@ pub async fn add_content(dirname: &str) -> Result<()> {
         contents,
     )
     .await
-    .context("Failed to create new file");
+    .context("Failed to create new file")?;
 
     Ok(())
 }
