@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title | default(value="Page") }} - My Site</title>
+    <meta name="description" content="{{ description | default(value="") }}">
+    <meta name="author" content="{{ author | default(value="") }}">
+
+    <style>
+        /* Same CSS as above */
+    </style>
+</head>
+<body>
+    <header>
+        <nav class="container">
+            <a href="/" class="logo">My Site</a>
+            <ul class="nav-links">
+                {% for item in navbar %}
+                <li><a href="/{{ item | lower | replace(from=" ", to="-") }}.html">{{ item | title }}</a></li>
+                {% endfor %}
+            </ul>
+        </nav>
+    </header>
+
+    <main class="container">
+        <article class="content">
+            <h1>{{ title | default(value="Untitled") }}</h1>
+
+            {% if author or date or tags %}
+            <div class="meta">
+                {% if author %}
+                    <span>👤 {{ author }}</span>
+                {% endif %}
+                {% if date %}
+                    <span>📅 {{ date }}</span>
+                {% endif %}
+                {% if tags %}
+                    {% for tag in tags %}
+                        <span>🏷️ {{ tag }}</span>
+                    {% endfor %}
+                {% endif %}
+            </div>
+            {% endif %}
+
+            {{ content | safe }}
+        </article>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2024 My Site. All rights reserved.</p>
+        </div>
+    </footer>
+</body>
+</html>
