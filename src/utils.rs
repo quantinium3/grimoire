@@ -1,8 +1,4 @@
-use serde::Deserialize;
-use std::collections::HashMap;
-
 use anyhow::{Context, Result};
-use comrak::{Options, Plugins, markdown_to_html_with_plugins};
 use gray_matter::{Matter, engine::YAML};
 use rust_embed::RustEmbed;
 use tokio::fs::read_to_string;
@@ -33,16 +29,22 @@ pub async fn get_content_dir() -> Result<String> {
 pub async fn get_slug(path: &str) -> Result<String> {
     let content = read_to_string(path)
         .await
-        .context("Failed to read contents of file and get the title")?;
+        .context(format!("Failed to read contents of file: {}", path))?;
+
+    // Initialize the frontmatter parser
     let matter = Matter::<YAML>::new();
+
+    // Parse the frontmatter
     let result = matter
-        .parse::<FrontMatter>(content.as_str())
+        .parse::<FrontMatter>(&content)
         .context("Failed to parse frontmatter from content")?;
+
+    // Extract the slug
     let title = result
         .data
-        .as_ref()
-        .context("failed to get title")?
-        .title
-        .to_owned();
+        .context("Failed to get frontmatter data")?
+        .slug
+        .unwrap_or("default-slug".to_string());
+
     Ok(title)
 }
