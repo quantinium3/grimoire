@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }}</title>
+    <meta name="description" content="{{ description }}">
+    <meta name="author" content="{{ author }}">
+    
+    <!-- Link to your CSS -->
+    <link rel="stylesheet" href="/static/css/style.css">
+    
+    <!-- Optional: Add favicon -->
+    <link rel="icon" type="image/x-icon" href="/static/images/favicon.ico">
+</head>
+<body>
+    <header>
+        <nav class="navbar">
+            <div class="nav-container">
+                <a href="/" class="nav-brand">{{ title }}</a>
+                <ul class="nav-menu">
+                    {% for item in navbar %}
+                    <li class="nav-item">
+                        {% if item == "blog" or item == "posts" or item == "resources" %}
+                            <a href="/{{ item }}/" class="nav-link">{{ item | title }}</a>
+                        {% else %}
+                            <a href="/{{ item }}.html" class="nav-link">{{ item | title }}</a>
+                        {% endif %}
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </nav>
+    </header>
+
+    <main class="main-content">
+        {% if category %}
+            <!-- Category Index Page -->
+            <div class="category-header">
+                <h1>{{ category_title }}</h1>
+                <p class="category-description">{{ description }}</p>
+            </div>
+            
+            <section class="posts-list">
+                {% if posts %}
+                    {% for post in posts %}
+                    <article class="post-preview">
+                        <h2><a href="{{ post.url }}" class="post-title-link">{{ post.title }}</a></h2>
+                        {% if post.date %}
+                            <p class="post-meta">
+                                <time datetime="{{ post.date }}">{{ post.date }}</time>
+                            </p>
+                        {% endif %}
+                        {% if post.description %}
+                            <p class="post-excerpt">{{ post.description }}</p>
+                        {% endif %}
+                        {% if post.tags %}
+                            <div class="post-tags">
+                                {% for tag in post.tags %}
+                                    <span class="tag">{{ tag }}</span>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </article>
+                    {% endfor %}
+                {% else %}
+                    <p>No posts available in this category.</p>
+                {% endif %}
+            </section>
+        {% else %}
+            <!-- Regular Index Page -->
+            <div class="hero-section">
+                <h1 class="hero-title">{{ title }}</h1>
+                {% if description %}
+                    <p class="hero-description">{{ description }}</p>
+                {% endif %}
+            </div>
+            
+            <div class="content-wrapper">
+                <article class="main-article">
+                    {{ content | safe }}
+                </article>
+            </div>
+        {% endif %}
+    </main>
+
+    <footer class="site-footer">
+        <div class="footer-content">
+            <p>&copy; 2025 {{ author }}. All rights reserved.</p>
+            {% if date %}
+                <p class="last-updated">Last updated: {{ date }}</p>
+            {% endif %}
+        </div>
+    </footer>
+
+    <!-- Optional: Add your JavaScript -->
+    <script src="/static/js/main.js"></script>
+</body>
+</html>

@@ -6,7 +6,7 @@ use anyhow::{Context, Result, bail};
 use colored::Colorize;
 use dialoguer::{Confirm, Input};
 use rust_embed::RustEmbed;
-use std::{path::Path, time::SystemTime};
+use std::{env, path::Path, time::SystemTime};
 use time_util::print_system_time_to_rfc3339;
 use tokio::fs::{create_dir_all, write};
 
@@ -14,24 +14,86 @@ use tokio::fs::{create_dir_all, write};
 #[folder = "static"]
 struct StaticAssets;
 
-pub async fn init_project(project_name: &str) -> Result<()> {
-    let project_path = Path::new(project_name);
+pub async fn init_project<P: AsRef<Path>>(path: P) -> Result<()> {
+    let path = path.as_ref();
 
-    // initialize dir | templates | examples | config
-    let content_dir = create_init_config(project_name).await?;
-    create_init_dirs(project_path, &content_dir).await?;
-    create_init_templates(project_path).await?;
-    create_init_examples(project_path, &content_dir).await?;
+    let (project_path, project_name) = resolve_project_path_and_name(path)?;
+
+    create_dir_all(&project_path).await.with_context(|| {
+        format!(
+            "Failed to create project directory: {}",
+            project_path.display()
+        )
+    })?;
+
+    if project_path.exists() && project_path.is_dir() {
+        let is_empty = project_path
+            .read_dir()
+            .context("Failed to read project directory")?
+            .next()
+            .is_none();
+
+        if !is_empty && path.to_string_lossy() != "." {
+            let confirm = Confirm::new()
+                .with_prompt(&format!(
+                    "Directory '{}' already exists and is not empty. Continue anyway?",
+                    project_path.display()
+                ))
+                .interact()
+                .context("Failed to confirm initialization")?;
+
+            if !confirm {
+                bail!("Initialization cancelled");
+            }
+        }
+    }
+
+    // Initialize project components
+    let content_dir = create_init_config(&project_path, &project_name).await?;
+    create_init_dirs(&project_path, &content_dir).await?;
+    create_init_templates(&project_path).await?;
+    create_init_examples(&project_path, &content_dir).await?;
 
     println!("Initialized new project: {}", project_name);
     println!("{}", "run:".bold().cyan());
-    println!("    cd {}", project_name.cyan());
+
+    if path.to_string_lossy() != "." {
+        println!("    cd {}", project_path.display().to_string().cyan());
+    }
     println!("    {}", "grimoire build".cyan());
     Ok(())
 }
 
-async fn create_init_templates(project_path: &Path) -> Result<()> {
-    let files = ["index.html", "page.html", "post.html"];
+fn resolve_project_path_and_name(path: &Path) -> Result<(&Path, String)> {
+    if path.to_string_lossy() == "." {
+        let current_dir = env::current_dir().context("Failed to get current directory")?;
+        let project_name = current_dir
+            .file_name()
+            .and_then(|name| name.to_str())
+            .context("Failed to get current directory name")?
+            .to_string();
+        Ok((path, project_name))
+    } else if path.is_absolute() {
+        let project_name = path
+            .file_name()
+            .and_then(|name| name.to_str())
+            .context("Failed to get project name from absolute path")?
+            .to_string();
+        Ok((path, project_name))
+    } else {
+        let project_name = path
+            .file_name()
+            .and_then(|name| name.to_str())
+            .unwrap_or_else(|| path.to_str().unwrap_or("project"))
+            .to_string();
+        Ok((path, project_name))
+    }
+}
+
+async fn create_init_templates<P: AsRef<Path>>(project_path: P) -> Result<()> {
+    let project_path = project_path.as_ref();
+    let files = ["index.html", "blog.html", "static.html"];
+
     for file in files {
         let contents = get_embedded_files(file)?;
         write(project_path.join("templates").join(file), contents)
@@ -41,7 +103,9 @@ async fn create_init_templates(project_path: &Path) -> Result<()> {
     Ok(())
 }
 
-async fn create_init_config(project_name: &str) -> Result<String> {
+async fn create_init_config<P: AsRef<Path>>(project_path: P, project_name: &str) -> Result<String> {
+    let project_path = project_path.as_ref();
+
     let confirm = Confirm::new()
         .with_prompt("Do you want to continue?")
         .interact()
@@ -78,16 +142,18 @@ async fn create_init_config(project_name: &str) -> Result<String> {
 
     let contents = serde_json::to_string(&config).context("Failed to parse config")?;
 
-    let project_path = Path::new(project_name);
     write(project_path.join(GRIMOIRE_CONFIG_NAME), contents)
         .await
         .context(format!("Failed to write to {}", GRIMOIRE_CONFIG_NAME))?;
+
     Ok(content_dir)
 }
 
-async fn create_init_examples(project_path: &Path, content_dir: &str) -> Result<()> {
+async fn create_init_examples<P: AsRef<Path>>(project_path: P, content_dir: &str) -> Result<()> {
+    let project_path = project_path.as_ref();
     let dirs = ["blog", "static"];
     let now = SystemTime::now();
+
     for dir in dirs {
         let contents = get_embedded_files(&format!("{}.md", dir))?;
         let timestamp = print_system_time_to_rfc3339(&now)
@@ -112,7 +178,8 @@ async fn create_init_examples(project_path: &Path, content_dir: &str) -> Result<
     Ok(())
 }
 
-async fn create_init_dirs(project_path: &Path, content_dir: &str) -> Result<()> {
+async fn create_init_dirs<P: AsRef<Path>>(project_path: P, content_dir: &str) -> Result<()> {
+    let project_path = project_path.as_ref();
     let dirs = [
         "templates",
         &format!("{}/blog", content_dir),

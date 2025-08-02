@@ -1,6 +1,1 @@
-{
-	"project_name": "hello",
-	"description": "hello",
-	"domain": "hello",
-	"content_dir": "hello"
-}
+{"project_name":"./","description":"","domain":"http://localhost","content_dir":"content"}

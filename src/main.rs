@@ -9,6 +9,7 @@ use cli::{
     add::add_content, build::build_content, clean::clean_content, init::init_project,
     list::list_content, serve::serve_content,
 };
+use std::path::PathBuf;
 
 #[derive(Parser, Debug)]
 #[command(name = "grimoire")]
@@ -22,36 +23,32 @@ struct Cli {
 #[derive(Subcommand, Debug)]
 enum Commands {
     Init {
-        #[arg(short('n'), long("name"))]
-        project_name: String,
+        #[arg(
+            default_value = ".",
+            help = "Project path (name, relative path, absolute path, or '.' for current directory)"
+        )]
+        path: PathBuf,
     },
-
     Add {
         #[arg(short('t'), long("type"))]
         content_type: String,
     },
-
     Build {
         #[arg(long)]
         include_drafts: bool,
-
         #[arg(short('o'), long, default_value = "public")]
         output_dir: String,
     },
-
     Serve {
         #[arg(short('p'), long, default_value = "5000")]
         port: u16,
-
         #[arg(long)]
         open: bool,
     },
-
     List {
         #[arg(short('l'), long("list"))]
         dirname: Option<String>,
     },
-
     Clean {
         #[arg(default_value = "public")]
         directory: String,
@@ -63,11 +60,10 @@ async fn main() -> Result<()> {
     let cli = Cli::parse();
 
     match &cli.command {
-        Commands::Init { project_name } => init_project(project_name).await?,
+        Commands::Init { path } => init_project(path).await?,
         Commands::Add { content_type } => add_content(content_type).await?,
         Commands::List { dirname } => list_content(dirname.as_ref()).await?,
         Commands::Clean { directory } => clean_content(directory).await?,
-
         Commands::Build {
             include_drafts,
             output_dir,

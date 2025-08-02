@@ -1,3 +1,5 @@
+use std::path::Path;
+
 use anyhow::{Context, Result};
 use gray_matter::{Matter, engine::YAML};
 use rust_embed::RustEmbed;
@@ -27,24 +29,16 @@ pub async fn get_content_dir() -> Result<String> {
 }
 
 pub async fn get_slug(path: &str) -> Result<String> {
-    let content = read_to_string(path)
-        .await
-        .context(format!("Failed to read contents of file: {}", path))?;
-
-    // Initialize the frontmatter parser
-    let matter = Matter::<YAML>::new();
-
-    // Parse the frontmatter
-    let result = matter
-        .parse::<FrontMatter>(&content)
-        .context("Failed to parse frontmatter from content")?;
-
-    // Extract the slug
-    let title = result
-        .data
-        .context("Failed to get frontmatter data")?
-        .slug
-        .unwrap_or("default-slug".to_string());
-
-    Ok(title)
+    let path = Path::new(path);
+    let file_name = path
+        .file_stem()
+        .and_then(|stem| stem.to_str())
+        .context("Failed to extract file stem")?;
+    Ok(file_name.to_lowercase().replace(' ', "-").replace(
+        [
+            '(', ')', '[', ']', '{', '}', '/', '\\', ':', ';', ',', '.', '?', '!', '@', '#', '$',
+            '%', '^', '&', '*', '+', '=', '|', '`', '~', '"', '\'',
+        ],
+        "",
+    ))
 }

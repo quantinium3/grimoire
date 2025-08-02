@@ -21,5 +21,5 @@ pub struct FrontMatter {
     pub description: Option<String>,
     pub slug: Option<String>,
     pub draft: Option<bool>,
-    pub extra: HashMap<String, serde_json::Value>,
+    pub extra: Option<HashMap<String, serde_json::Value>>,
 }
