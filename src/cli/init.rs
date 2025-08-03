@@ -1,206 +1,127 @@
-use crate::{
-    consts::{Config, GRIMOIRE_CONFIG_NAME},
-    utils::get_embedded_files,
-};
+use crate::consts::GRIMOIRE_CONFIG_NAME;
 use anyhow::{Context, Result, bail};
-use colored::Colorize;
 use dialoguer::{Confirm, Input};
-use rust_embed::RustEmbed;
-use std::{env, path::Path, time::SystemTime};
+use serde::Serialize;
+use std::env::current_dir;
+use std::path::{Path, PathBuf};
+use std::time::SystemTime;
 use time_util::print_system_time_to_rfc3339;
-use tokio::fs::{create_dir_all, write};
+use tokio::fs::{create_dir_all, read_dir, write};
 
-#[derive(RustEmbed)]
-#[folder = "static"]
-struct StaticAssets;
+use crate::utils::get_embedded_files;
+
+#[derive(Serialize, Debug, Clone)]
+pub struct Config {
+    pub project_name: String,
+    pub content_dir: String,
+    pub description: String,
+    pub domain: String,
+}
 
 pub async fn init_project<P: AsRef<Path>>(path: P) -> Result<()> {
-    let path = path.as_ref();
+    let project_path = get_absolute_path(path).context("Failed to resolve project path")?;
 
-    let (project_path, project_name) = resolve_project_path_and_name(path)?;
+    ensure_project_directory(&project_path)
+        .await
+        .context("Failed to prepare project directory")?;
 
-    create_dir_all(&project_path).await.with_context(|| {
-        format!(
-            "Failed to create project directory: {}",
-            project_path.display()
-        )
-    })?;
+    let project_name =
+        extract_project_name(&project_path).context("Failed to determine project name")?;
 
-    if project_path.exists() && project_path.is_dir() {
-        let is_empty = project_path
-            .read_dir()
-            .context("Failed to read project directory")?
-            .next()
-            .is_none();
+    let config =
+        collect_project_config(project_name).context("Failed to collect project configuration")?;
 
-        if !is_empty && path.to_string_lossy() != "." {
-            let confirm = Confirm::new()
-                .with_prompt(&format!(
-                    "Directory '{}' already exists and is not empty. Continue anyway?",
-                    project_path.display()
-                ))
-                .interact()
-                .context("Failed to confirm initialization")?;
+    create_project_structure(&config, &project_path)
+        .await
+        .context("Failed to create project structure")?;
 
-            if !confirm {
-                bail!("Initialization cancelled");
-            }
+    println!(
+        "Project '{}' initialized successfully at {}",
+        config.project_name,
+        project_path.display()
+    );
+
+    Ok(())
+}
+
+async fn ensure_project_directory(project_path: &Path) -> Result<()> {
+    create_dir_all(project_path)
+        .await
+        .with_context(|| format!("Failed to create directory: {}", project_path.display()))?;
+
+    if !is_directory_empty(project_path).await? {
+        let should_continue = Confirm::new()
+            .with_prompt(format!(
+                "Directory '{}' is not empty. Continue anyway?",
+                project_path.display()
+            ))
+            .default(false)
+            .interact()
+            .context("Failed to get user confirmation")?;
+
+        if !should_continue {
+            bail!("Project initialization cancelled by user");
         }
     }
 
-    // Initialize project components
-    let content_dir = create_init_config(&project_path, &project_name).await?;
-    create_init_dirs(&project_path, &content_dir).await?;
-    create_init_templates(&project_path).await?;
-    create_init_examples(&project_path, &content_dir).await?;
-
-    println!("Initialized new project: {}", project_name);
-    println!("{}", "run:".bold().cyan());
-
-    if path.to_string_lossy() != "." {
-        println!("    cd {}", project_path.display().to_string().cyan());
-    }
-    println!("    {}", "grimoire build".cyan());
     Ok(())
 }
 
-fn resolve_project_path_and_name(path: &Path) -> Result<(&Path, String)> {
-    if path.to_string_lossy() == "." {
-        let current_dir = env::current_dir().context("Failed to get current directory")?;
-        let project_name = current_dir
-            .file_name()
-            .and_then(|name| name.to_str())
-            .context("Failed to get current directory name")?
-            .to_string();
-        Ok((path, project_name))
-    } else if path.is_absolute() {
-        let project_name = path
-            .file_name()
-            .and_then(|name| name.to_str())
-            .context("Failed to get project name from absolute path")?
-            .to_string();
-        Ok((path, project_name))
-    } else {
-        let project_name = path
-            .file_name()
-            .and_then(|name| name.to_str())
-            .unwrap_or_else(|| path.to_str().unwrap_or("project"))
-            .to_string();
-        Ok((path, project_name))
-    }
+fn extract_project_name(project_path: &Path) -> Result<String> {
+    project_path
+        .file_name()
+        .and_then(|name| name.to_str())
+        .map(|s| s.to_string())
+        .context("Invalid project path: cannot determine project name")
 }
 
-async fn create_init_templates<P: AsRef<Path>>(project_path: P) -> Result<()> {
-    let project_path = project_path.as_ref();
-    let template_files = ["index.html", "blog.html", "static.html"];
-
-    for file in template_files {
-        let contents = get_embedded_files(file)?;
-        write(project_path.join("templates").join(file), contents)
-            .await
-            .context(format!("Failed to write template: {}", file))?;
-    }
-
-    let contents = get_embedded_files("style.css")?;
-    write(project_path.join("static").join("style.css"), contents)
+async fn create_project_structure(config: &Config, project_path: &Path) -> Result<()> {
+    create_config_file(config, project_path)
         .await
-        .context(format!("Failed to write template: style.css",))?;
+        .context("Failed to create configuration file")?;
 
-    let contents = get_embedded_files("script.js")?;
-    write(project_path.join("static").join("script.js"), contents)
+    create_directory_structure(config, project_path)
         .await
-        .context(format!("Failed to write template: script.js",))?;
+        .context("Failed to create directory structure")?;
+
+    create_template_files(project_path)
+        .await
+        .context("Failed to create template files")?;
+
+    create_static_files(project_path)
+        .await
+        .context("Failed to create static files")?;
+
+    create_example_content(config, project_path)
+        .await
+        .context("Failed to create example content")?;
 
     Ok(())
 }
 
-async fn create_init_config<P: AsRef<Path>>(project_path: P, project_name: &str) -> Result<String> {
-    let project_path = project_path.as_ref();
+async fn create_config_file(config: &Config, project_path: &Path) -> Result<()> {
+    let config_content =
+        serde_json::to_string_pretty(config).context("Failed to serialize configuration")?;
 
-    let confirm = Confirm::new()
-        .with_prompt("Do you want to continue?")
-        .interact()
-        .context("Failed to confirm initialization")?;
-
-    if !confirm {
-        bail!("Failed to init grimoire: confirmation negative");
-    }
-
-    let content_dir = Input::<String>::new()
-        .with_prompt("Enter content directory name (default: content): ")
-        .default("content".into())
-        .interact_text()
-        .context("Failed to input content directory")?;
-
-    let description = Input::<String>::new()
-        .with_prompt("Enter description: ")
-        .default("".into())
-        .interact_text()
-        .context("Failed to input project description")?;
-
-    let domain = Input::<String>::new()
-        .with_prompt("Enter project domain: ")
-        .default("http://localhost".into())
-        .interact_text()
-        .context("Failed to input project domain")?;
-
-    let config = Config {
-        project_name: project_name.to_string(),
-        content_dir: content_dir.clone(),
-        description,
-        domain,
-    };
-
-    let contents = serde_json::to_string(&config).context("Failed to parse config")?;
-
-    write(project_path.join(GRIMOIRE_CONFIG_NAME), contents)
+    let config_path = project_path.join(GRIMOIRE_CONFIG_NAME);
+    write(&config_path, config_content)
         .await
-        .context(format!("Failed to write to {}", GRIMOIRE_CONFIG_NAME))?;
+        .with_context(|| format!("Failed to write configuration to {}", config_path.display()))?;
 
-    Ok(content_dir)
-}
-
-async fn create_init_examples<P: AsRef<Path>>(project_path: P, content_dir: &str) -> Result<()> {
-    let project_path = project_path.as_ref();
-    let dirs = ["blog", "static"];
-    let now = SystemTime::now();
-
-    for dir in dirs {
-        let contents = get_embedded_files(&format!("{}.md", dir))?;
-        let timestamp = print_system_time_to_rfc3339(&now)
-            .replace(":", "-")
-            .replace(".", "-");
-        write(
-            project_path
-                .join(content_dir)
-                .join(dir)
-                .join(&format!("{}.md", timestamp)),
-            contents,
-        )
-        .await
-        .context("failed to write init examples")?;
-    }
-
-    // write to /index.md for root
-    let contents = get_embedded_files("index.md")?;
-    write(project_path.join(content_dir).join("index.md"), contents)
-        .await
-        .context("Failed to write to index.md")?;
     Ok(())
 }
 
-async fn create_init_dirs<P: AsRef<Path>>(project_path: P, content_dir: &str) -> Result<()> {
-    let project_path = project_path.as_ref();
-    let dirs = [
+async fn create_directory_structure(config: &Config, project_path: &Path) -> Result<()> {
+    let directories = [
         "templates",
-        &format!("{}/blog", content_dir),
-        &format!("{}/static", content_dir),
+        &format!("{}/blog", config.content_dir),
+        &format!("{}/static", config.content_dir),
         "static/js",
         "static/css",
         "static/images",
     ];
 
-    for dir in dirs {
+    for dir in &directories {
         let dir_path = project_path.join(dir);
         create_dir_all(&dir_path)
             .await
@@ -208,4 +129,147 @@ async fn create_init_dirs<P: AsRef<Path>>(project_path: P, content_dir: &str) ->
     }
 
     Ok(())
+}
+
+async fn create_template_files(project_path: &Path) -> Result<()> {
+    let template_files = ["index.html", "blog.html", "static.html"];
+    let templates_dir = project_path.join("templates");
+
+    for template_file in template_files {
+        let content = get_embedded_files(template_file)
+            .with_context(|| format!("Failed to get embedded template: {}", template_file))?;
+
+        let file_path = templates_dir.join(template_file);
+        write(&file_path, content)
+            .await
+            .with_context(|| format!("Failed to write template: {}", file_path.display()))?;
+    }
+
+    Ok(())
+}
+
+async fn create_static_files(project_path: &Path) -> Result<()> {
+    let static_dir = project_path.join("static");
+
+    let static_files = [("style.css", "style.css"), ("script.js", "script.js")];
+
+    for (embedded_name, file_name) in static_files {
+        let content = get_embedded_files(embedded_name)
+            .with_context(|| format!("Failed to get embedded file: {}", embedded_name))?;
+
+        let file_path = static_dir.join(file_name);
+        write(&file_path, content)
+            .await
+            .with_context(|| format!("Failed to write static file: {}", file_path.display()))?;
+    }
+
+    Ok(())
+}
+
+async fn create_example_content(config: &Config, project_path: &Path) -> Result<()> {
+    let now = SystemTime::now();
+    let timestamp = generate_timestamp(&now)?;
+
+    let content_types = ["blog", "static"];
+
+    for content_type in &content_types {
+        let content = get_embedded_files(&format!("{}.md", content_type))
+            .with_context(|| format!("Failed to get embedded content: {}.md", content_type))?;
+
+        let content_path = project_path
+            .join(&config.content_dir)
+            .join(content_type)
+            .join(format!("{}.md", timestamp));
+
+        write(&content_path, content).await.with_context(|| {
+            format!(
+                "Failed to write example content: {}",
+                content_path.display()
+            )
+        })?;
+    }
+
+    let index_content =
+        get_embedded_files("index.md").context("Failed to get embedded index.md")?;
+
+    let index_path = project_path.join(&config.content_dir).join("index.md");
+    write(&index_path, index_content)
+        .await
+        .with_context(|| format!("Failed to write index.md: {}", index_path.display()))?;
+
+    Ok(())
+}
+
+fn collect_project_config(project_name: String) -> Result<Config> {
+    println!("Setting up Grimoire: {}\n", project_name);
+
+    let should_continue = Confirm::new()
+        .with_prompt("Do you want to continue with project initialization?")
+        .default(true)
+        .interact()
+        .context("Failed to get initialization confirmation")?;
+
+    if !should_continue {
+        bail!("Project initialization cancelled");
+    }
+
+    let content_dir = Input::<String>::new()
+        .with_prompt("Content directory name")
+        .default("content".to_string())
+        .interact_text()
+        .context("Failed to get content directory name")?;
+
+    let description = Input::<String>::new()
+        .with_prompt("Project description")
+        .default(format!("A new Grimoire project: {}", project_name))
+        .interact_text()
+        .context("Failed to get project description")?;
+
+    let domain = Input::<String>::new()
+        .with_prompt("Project domain")
+        .default("http://localhost:8080".to_string())
+        .interact_text()
+        .context("Failed to get project domain")?;
+
+    Ok(Config {
+        project_name,
+        content_dir,
+        description,
+        domain,
+    })
+}
+
+async fn is_directory_empty<P: AsRef<Path>>(path: P) -> Result<bool> {
+    let path_ref = path.as_ref();
+
+    if !path_ref.exists() {
+        bail!(format!(
+            "Directory doesnt exist: {}",
+            path.as_ref().display()
+        ));
+    }
+
+    let mut entries = read_dir(path_ref)
+        .await
+        .with_context(|| format!("Failed to read directory: {}", path_ref.display()))?;
+
+    Ok(entries.next_entry().await?.is_none())
+}
+
+fn get_absolute_path<P: AsRef<Path>>(path: P) -> Result<PathBuf> {
+    let path_ref = path.as_ref();
+
+    if path_ref.is_absolute() {
+        Ok(path_ref.to_path_buf())
+    } else {
+        let current = current_dir().context("Failed to get current working directory")?;
+        Ok(current.join(path_ref))
+    }
+}
+
+fn generate_timestamp(time: &SystemTime) -> Result<String> {
+    let timestamp = print_system_time_to_rfc3339(time)
+        .replace(':', "-")
+        .replace('.', "-");
+    Ok(timestamp)
 }
