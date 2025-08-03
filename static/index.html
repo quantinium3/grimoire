@@ -6,11 +6,7 @@
     <title>{{ title }}</title>
     <meta name="description" content="{{ description }}">
     <meta name="author" content="{{ author }}">
-    
-    <!-- Link to your CSS -->
     <link rel="stylesheet" href="style.css">
-    
-    <!-- Optional: Add favicon -->
     <link rel="icon" type="image/x-icon" href="/images/b0f61-17050803861897-1920.jpg">
 </head>
 <body>
@@ -35,7 +31,6 @@
 
     <main class="main-content">
         {% if category %}
-            <!-- Category Index Page -->
             <div class="category-header">
                 <h1>{{ category_title }}</h1>
                 <p class="category-description">{{ description }}</p>
@@ -68,7 +63,6 @@
                 {% endif %}
             </section>
         {% else %}
-            <!-- Regular Index Page -->
             <div class="hero-section">
                 <h1 class="hero-title">{{ title }}</h1>
                 {% if description %}
@@ -93,7 +87,7 @@
         </div>
     </footer>
 
-    <!-- Optional: Add your JavaScript -->
-    <script src="/main.js"></script>
+    <script src="/script.js"></script>
 </body>
 </html>
+

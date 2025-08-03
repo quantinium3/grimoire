@@ -1,3 +1,47 @@
 * {
-    color: red;
+    color: #cdd6f4;
+    background-color: #1e1e2e;
+}
+
+a {
+    text-decoration: none;
+    color: inherit;
+}
+
+a:hover {
+    text-decoration: underline;
+    text-underline-offset: 0.1rem;
+}
+
+.navbar {
+    max-width: 700px;
+    margin: auto;
+}
+
+.main-content {
+    margin: auto;
+    max-width: 700px;
+}
+
+.nav-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.nav-brand {
+    font-size: 1.25rem;
+    font-weight: bold;
+}
+
+.nav-menu {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    list-style-type: none;
+}
+
+.site-footer {
+    max-width: 700px;
+    margin: auto;
 }

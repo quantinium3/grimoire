@@ -1,8 +1,7 @@
 use crate::{
     consts::FrontMatter,
-    utils::{copy_dir, get_content_dir, get_embedded_files, get_slug},
+    utils::{copy_dir, get_content_dir, get_slug},
 };
-
 use anyhow::{Context, Result, bail};
 use comrak::{Options, Plugins, markdown_to_html_with_plugins};
 use gray_matter::{Matter, engine::YAML};
@@ -29,203 +28,50 @@ struct PostInfo {
     url: String,
 }
 
-pub async fn build_content(include_drafts: bool, output_dir: &str) -> Result<()> {
-    println!("Building content...");
-
-    let content_dir = get_content_dir().await?;
-
-    // Create output directory
-    create_dir_all(output_dir)
+pub async fn build_content<P: AsRef<Path>>(include_draft: bool, output_dir: P) -> Result<()> {
+    let content_dir = get_content_dir()
         .await
-        .context("failed to create output directory")?;
+        .context("Failed to get content directory")?;
 
-    // Build navigation items
-    let nav_items = get_nav_items(&content_dir).await?;
-
-    let static_dir = "static";
-
-    // Build pages in order
-    create_index_page(&content_dir, output_dir, &nav_items).await?;
-    create_static_pages(&content_dir, output_dir, &nav_items, include_drafts).await?;
-    create_blog_categories(&content_dir, output_dir, &nav_items, include_drafts).await?;
-    copy_static_content(static_dir, output_dir).await?;
-
-    println!("✓ Build completed!");
-    Ok(())
-}
-
-async fn copy_static_content(static_dir: &str, output_dir: &str) -> Result<()> {
-    copy_dir(
-        Path::new(static_dir).join("images"),
-        Path::new(output_dir).join("images"),
-    )
-    .await
-    .context("failed to copy images")?;
-
-    copy(
-        Path::new(static_dir).join("style.css"),
-        Path::new(output_dir).join("style.css"),
-    )
-    .await
-    .context("failed to copy style.css")?;
-
-    copy(
-        Path::new(static_dir).join("script.js"),
-        Path::new(output_dir).join("script.js"),
-    )
-    .await
-    .context("failed to copy script.js")?;
-
-    Ok(())
-}
-
-async fn get_nav_items(content_dir: &str) -> Result<Vec<String>> {
-    let mut nav_items: Vec<String> = Vec::new();
-
-    // Add static page slugs to navbar
-    let static_dir = Path::new(content_dir).join("static");
-    if static_dir.exists() {
-        for entry in WalkDir::new(&static_dir)
-            .into_iter()
-            .filter_map(|e| e.ok())
-            .filter(|e| e.path().extension().and_then(|ext| ext.to_str()) == Some("md"))
-        {
-            let slug = get_page_slug(entry.path()).await?;
-            nav_items.push(slug);
-        }
-    }
-
-    // Add directory names for categories (except static)
-    for entry in WalkDir::new(content_dir)
-        .max_depth(1)
-        .into_iter()
-        .filter_map(|e| e.ok())
-        .filter(|e| e.file_type().is_dir())
-        .filter(|e| {
-            if let Some(dir_name) = e.file_name().to_str() {
-                !dir_name.starts_with('.')
-                    && dir_name != "static"
-                    && dir_name != "target"
-                    && dir_name != "node_modules"
-                    && e.path() != Path::new(content_dir)
-            } else {
-                false
-            }
-        })
-    {
-        if let Some(dir_name) = entry.file_name().to_str() {
-            nav_items.push(dir_name.to_string());
-        }
-    }
-
-    nav_items.sort();
-    Ok(nav_items)
-}
-
-async fn get_page_slug(path: &Path) -> Result<String> {
-    let file_content = read_to_string(path).await?;
-    let document = parse_content(&file_content)?;
-
-    if let Some(slug) = document.metadata.slug {
-        Ok(slug)
-    } else if let Some(title) = document.metadata.title {
-        Ok(title.to_lowercase().replace(' ', "-").replace(
-            [
-                '(', ')', '[', ']', '{', '}', '/', '\\', ':', ';', ',', '.', '?', '!', '@', '#',
-                '$', '%', '^', '&', '*', '+', '=', '|', '`', '~', '"', '\'',
-            ],
-            "",
-        ))
-    } else {
-        get_slug(path.to_string_lossy().as_ref()).await
-    }
-}
-
-async fn create_index_page(
-    content_dir: &str,
-    output_dir: &str,
-    nav_items: &[String],
-) -> Result<()> {
-    let index_path = Path::new(content_dir).join("index.md");
-
-    if !index_path.exists() {
-        bail!("index.md doesn't exist in content directory");
-    }
-
-    let file_content = read_to_string(&index_path).await?;
-    let document = parse_content(&file_content)?;
-
-    let content = render_page(&document, "index.html", nav_items, None).await?;
-
-    write(Path::new(output_dir).join("index.html"), content)
+    let content_dir = Path::new(content_dir.as_str());
+    create_dir_all(&output_dir)
         .await
-        .context("failed to write index.html")?;
+        .context("Failed to create output dir")?;
 
-    println!("✓ Created index.html");
+    let nav_items = get_nav_items(&content_dir)
+        .await
+        .context("Failed to get navbar items")?;
+
+    let static_dir = Path::new("static");
+    create_index_page(&content_dir, &output_dir.as_ref(), &nav_items).await?;
+    create_static_pages(&content_dir, output_dir.as_ref(), &nav_items, include_draft).await?;
+    create_blog_categories(&content_dir, output_dir.as_ref(), &nav_items, include_draft).await?;
+    copy_static_content(&static_dir, output_dir.as_ref()).await?;
     Ok(())
 }
 
-async fn create_static_pages(
-    content_dir: &str,
-    output_dir: &str,
-    nav_items: &[String],
-    include_drafts: bool,
-) -> Result<()> {
-    let static_dir = Path::new(content_dir).join("static");
+async fn copy_static_content(static_dir: &Path, output_dir: &Path) -> Result<()> {
+    copy_dir(static_dir.join("images"), output_dir.join("images"))
+        .await
+        .context("failed to copy images")?;
 
-    if !static_dir.exists() {
-        println!("No static directory found, skipping static pages");
-        return Ok(());
-    }
+    copy(static_dir.join("style.css"), output_dir.join("style.css"))
+        .await
+        .context("failed to copy style.css")?;
 
-    for entry in WalkDir::new(&static_dir)
-        .into_iter()
-        .filter_map(|e| e.ok())
-        .filter(|e| e.path().extension().and_then(|ext| ext.to_str()) == Some("md"))
-    {
-        let file_content = read_to_string(entry.path())
-            .await
-            .with_context(|| format!("Failed to read file: {}", entry.path().to_string_lossy()))?;
-
-        let document = parse_content(&file_content)?;
-
-        // Skip drafts unless include_drafts is true
-        if document.metadata.draft.unwrap_or(false) && !include_drafts {
-            continue;
-        }
-
-        let slug = get_page_slug(entry.path()).await.with_context(|| {
-            format!(
-                "Failed to get slug of file: {}",
-                entry.path().to_string_lossy()
-            )
-        })?;
-
-        let content = render_page(&document, "static.html", nav_items, None)
-            .await
-            .context(format!("Failed to render static page: {}", slug))?;
-
-        // Write to root of output directory as slug.html
-        let output_path = Path::new(output_dir).join(format!("{}.html", slug));
-        write(&output_path, content)
-            .await
-            .context(format!("Failed to create static page: {}", slug))?;
-
-        println!("✓ Created static page: {}.html", slug);
-    }
+    copy(static_dir.join("script.js"), output_dir.join("script.js"))
+        .await
+        .context("failed to copy script.js")?;
 
     Ok(())
 }
 
 async fn create_blog_categories(
-    content_dir: &str,
-    output_dir: &str,
+    content_dir: &Path,
+    output_dir: &Path,
     nav_items: &[String],
     include_drafts: bool,
 ) -> Result<()> {
-    let content_path = Path::new(content_dir);
-
-    // Get all directories except static and the content root
     for entry in WalkDir::new(content_dir)
         .max_depth(1)
         .into_iter()
@@ -233,18 +79,14 @@ async fn create_blog_categories(
         .filter(|e| e.file_type().is_dir())
         .filter(|e| {
             if let Some(dir_name) = e.file_name().to_str() {
-                !dir_name.starts_with('.')
-                    && dir_name != "target"
-                    && dir_name != "node_modules"
-                    && dir_name != "static"
-                    && e.path() != content_path
+                !dir_name.starts_with('.') && dir_name != "static"
             } else {
                 false
             }
         })
     {
-        let dir_name = entry.file_name().to_str().unwrap();
-        let category_dir = Path::new(output_dir).join(dir_name);
+        let dir_name = entry.file_name().to_string_lossy();
+        let category_dir = output_dir.join(dir_name.as_ref());
 
         create_dir_all(&category_dir)
             .await
@@ -252,7 +94,6 @@ async fn create_blog_categories(
 
         let mut posts = Vec::new();
 
-        // Process all markdown files in this blog category
         for post_entry in WalkDir::new(entry.path())
             .into_iter()
             .filter_map(|e| e.ok())
@@ -265,22 +106,19 @@ async fn create_blog_categories(
                 )
             })?;
 
-            let document = parse_content(&file_content)?;
-
-            // Skip drafts unless include_drafts is true
+            let document = parse_content(&file_content, &post_entry.path().as_ref()).await?;
             if document.metadata.draft.unwrap_or(false) && !include_drafts {
                 continue;
             }
 
-            let slug = get_page_slug(post_entry.path()).await.with_context(|| {
+            let slug = get_slug(&post_entry.path()).await.with_context(|| {
                 format!(
                     "Failed to get slug for blog post: {}",
                     post_entry.path().to_string_lossy()
                 )
             })?;
 
-            // Create individual blog post
-            let post_content = render_page(&document, "blog.html", nav_items, None)
+            let post_content = render_page(&document, "blog.html", nav_items)
                 .await
                 .with_context(|| format!("Failed to process blog post: {}", slug))?;
 
@@ -290,12 +128,7 @@ async fn create_blog_categories(
                 .await
                 .with_context(|| format!("Failed to write blog post file: {}", slug))?;
 
-            // Collect post info for category index
-            let title = document
-                .metadata
-                .title
-                .clone()
-                .unwrap_or_else(|| slug.clone());
+            let title = document.metadata.title;
 
             let tags = document.metadata.tags.map(|tags_str| {
                 tags_str
@@ -307,17 +140,16 @@ async fn create_blog_categories(
 
             posts.push(PostInfo {
                 slug: slug.clone(),
-                title: title.clone(),
-                date: document.metadata.date.clone(),
-                description: document.metadata.description.clone(),
+                title: title,
+                date: document.metadata.date,
+                description: document.metadata.description,
                 tags,
-                url: format!("/{}/{}.html", dir_name, slug),
+                url: format!("/{}/{}.html", dir_name, &slug),
             });
 
             println!("✓ Created blog post: {}/{}.html", dir_name, slug);
         }
 
-        // Sort posts by date (newest first) then by title
         posts.sort_by(|a, b| match (&b.date, &a.date) {
             (Some(date_b), Some(date_a)) => date_b.cmp(date_a),
             (Some(_), None) => std::cmp::Ordering::Less,
@@ -325,8 +157,7 @@ async fn create_blog_categories(
             (None, None) => a.title.cmp(&b.title),
         });
 
-        // Create category index page
-        let index_content = create_category_index(dir_name, &posts, nav_items)?;
+        let index_content = create_category_index(dir_name.as_ref(), &posts, nav_items).await?;
 
         let index_path = category_dir.join("index.html");
 
@@ -340,87 +171,18 @@ async fn create_blog_categories(
             posts.len()
         );
     }
-
     Ok(())
 }
 
-async fn render_page(
-    document: &Document,
-    template: &str,
-    nav_items: &[String],
-    extra_context: Option<&tera::Context>,
-) -> Result<String> {
-    let templ = get_embedded_files(template)?;
-
-    let mut tera = Tera::default();
-    tera.add_raw_template("document", &templ)?;
-
-    let mut context = tera::Context::new();
-
-    // Basic document fields
-    context.insert(
-        "title",
-        &document.metadata.title.as_deref().unwrap_or("Untitled"),
-    );
-    context.insert(
-        "author",
-        &document.metadata.author.as_deref().unwrap_or("Unknown"),
-    );
-    context.insert(
-        "description",
-        &document.metadata.description.as_deref().unwrap_or(""),
-    );
-    context.insert("content", &document.html_content);
-    context.insert("raw_content", &document.content);
-    context.insert("navbar", nav_items);
-
-    // Optional fields
-    if let Some(date) = &document.metadata.date {
-        context.insert("date", date);
-    }
-
-    if let Some(tags) = &document.metadata.tags {
-        let tags_vec: Vec<String> = tags
-            .split(',')
-            .map(|tag| tag.trim().to_string())
-            .filter(|tag| !tag.is_empty())
-            .collect();
-        context.insert("tags", &tags_vec);
-    }
-
-    if let Some(slug) = &document.metadata.slug {
-        context.insert("slug", slug);
-    }
-
-    // Insert extra frontmatter fields if present
-    if let Some(extra) = &document.metadata.extra {
-        for (key, value) in extra {
-            context.insert(key, value);
-        }
-    }
-
-    // Add any extra context provided
-    if let Some(extra_ctx) = extra_context {
-        for (key, value) in extra_ctx.clone().into_json().as_object().unwrap() {
-            context.insert(key, value);
-        }
-    }
-
-    let rendered = tera
-        .render("document", &context)
-        .context("Failed to render template")?;
-
-    Ok(rendered)
-}
-
-fn create_category_index(
+async fn create_category_index(
     category: &str,
     posts: &[PostInfo],
     nav_items: &[String],
 ) -> Result<String> {
-    // Use index.html template for category indexes
-    let template_content = get_embedded_files("index.html")
-        .context("Failed to get index.html template for category index")?;
+    let template_file = Path::new("templates").join("index.html");
+    let template_content = read_to_string(Path::new("templates").join("index.html"))
+        .await
+        .with_context(|| format!("Failed to read file: {:?}", template_file))?;
 
     let mut tera = Tera::default();
     tera.add_raw_template("category_index", &template_content)?;
@@ -434,7 +196,6 @@ fn create_category_index(
     );
     context.insert("navbar", nav_items);
 
-    // Category-specific context
     context.insert("category", category);
     context.insert(
         "category_title",
@@ -442,7 +203,6 @@ fn create_category_index(
     );
     context.insert("posts", posts);
 
-    // Create a simple HTML content listing all posts
     let posts_html = posts
         .iter()
         .map(|post| {
@@ -470,24 +230,141 @@ fn create_category_index(
     Ok(rendered)
 }
 
-fn parse_content(input: &str) -> Result<Document> {
+async fn create_static_pages(
+    content_dir: &Path,
+    output_dir: &Path,
+    nav_items: &[String],
+    include_drafts: bool,
+) -> Result<()> {
+    let static_dir = content_dir.join("static");
+
+    if !static_dir.exists() {
+        println!("No static directory found, skipping static pages");
+        return Ok(());
+    }
+
+    for entry in WalkDir::new(&static_dir)
+        .into_iter()
+        .filter_map(|e| e.ok())
+        .filter(|e| e.path().extension().and_then(|ext| ext.to_str()) == Some("md"))
+    {
+        let file_content = read_to_string(entry.path())
+            .await
+            .with_context(|| format!("Failed to read file: {}", entry.path().to_string_lossy()))?;
+
+        let document = parse_content(&file_content, entry.path().as_ref()).await?;
+        if document.metadata.draft.unwrap_or(false) && !include_drafts {
+            continue;
+        }
+
+        let slug = get_slug(entry.path()).await.with_context(|| {
+            format!(
+                "Failed to get slug of file: {}",
+                entry.path().to_string_lossy()
+            )
+        })?;
+
+        let content = render_page(&document, "static.html", nav_items)
+            .await
+            .context(format!("Failed to render static page: {}", slug))?;
+
+        let output_path = Path::new(output_dir).join(format!("{}.html", slug));
+        write(&output_path, content)
+            .await
+            .context(format!("Failed to create static page: {}", slug))?;
+
+        println!("✓ Created static page: {}.html", slug);
+    }
+
+    Ok(())
+}
+
+async fn create_index_page(
+    content_dir: &Path,
+    output_dir: &Path,
+    nav_items: &[String],
+) -> Result<()> {
+    let index_path = Path::new(content_dir).join("index.md");
+
+    if !index_path.exists() {
+        bail!("index.md doesn't exist in content directory");
+    }
+
+    let file_content = read_to_string(&index_path).await?;
+    let document = parse_content(&file_content, index_path.as_path()).await?;
+
+    let content = render_page(&document, "index.html", nav_items).await?;
+
+    write(Path::new(output_dir).join("index.html"), content)
+        .await
+        .context("failed to write index.html")?;
+
+    println!("✓ Created index.html");
+    Ok(())
+}
+
+async fn render_page(document: &Document, template: &str, nav_items: &[String]) -> Result<String> {
+    let templ = read_to_string(Path::new("templates").join(template))
+        .await
+        .with_context(|| format!("Failed to read template file: {}", template))?;
+
+    let mut tera = Tera::default();
+    tera.add_raw_template("document", &templ)?;
+
+    let mut context = tera::Context::new();
+
+    context.insert("title", &document.metadata.title);
+    context.insert("author", &document.metadata.author.as_deref().unwrap_or(""));
+    context.insert(
+        "description",
+        &document.metadata.description.as_deref().unwrap_or(""),
+    );
+    context.insert("content", &document.html_content);
+    context.insert("raw_content", &document.content);
+    context.insert("navbar", nav_items);
+    if let Some(date) = &document.metadata.date {
+        context.insert("date", date);
+    }
+    if let Some(tags) = &document.metadata.tags {
+        let tags_vec: Vec<String> = tags
+            .split(',')
+            .map(|tag| tag.trim().to_string())
+            .filter(|tag| !tag.is_empty())
+            .collect();
+        context.insert("tags", &tags_vec);
+    }
+    if let Some(extra) = &document.metadata.extra {
+        for (key, value) in extra {
+            context.insert(key, value);
+        }
+    }
+    let rendered = tera
+        .render("document", &context)
+        .context("Failed to render template")?;
+
+    Ok(rendered)
+}
+
+async fn parse_content(input: &str, path: &Path) -> Result<Document> {
     let matter = Matter::<YAML>::new();
     let result = matter
         .parse::<FrontMatter>(input)
         .context("Failed to parse frontmatter in markdown")?;
+    let metadata = if let Some(data) = result.data {
+        data
+    } else {
+        FrontMatter {
+            title: "Untitled".to_string(),
+            author: None,
+            date: None,
+            tags: None,
+            description: None,
+            slug: get_slug(path).await?,
+            draft: None,
+            extra: None,
+        }
+    };
 
-    let metadata: FrontMatter = result.data.unwrap_or_else(|| FrontMatter {
-        title: None,
-        author: None,
-        date: None,
-        tags: None,
-        description: None,
-        slug: None,
-        draft: None,
-        extra: None,
-    });
-
-    // Configure markdown options
     let mut options = Options::default();
     options.extension.strikethrough = true;
     options.extension.tagfilter = true;
@@ -514,4 +391,33 @@ fn parse_content(input: &str) -> Result<Document> {
         content: result.content,
         html_content,
     })
+}
+
+async fn get_nav_items<P: AsRef<Path>>(content_dir: P) -> Result<Vec<String>> {
+    let mut nav_items: Vec<String> = Vec::new();
+
+    let static_dir = content_dir.as_ref().join("static");
+    if static_dir.exists() {
+        for entry in WalkDir::new(&static_dir)
+            .into_iter()
+            .filter_map(|e| e.ok())
+            .filter(|e| e.path().extension().and_then(|ext| ext.to_str()) == Some("md"))
+        {
+            let slug = get_slug(entry.path()).await?;
+            nav_items.push(slug);
+        }
+    }
+
+    let dirs = WalkDir::new(&content_dir)
+        .min_depth(1)
+        .max_depth(1)
+        .into_iter()
+        .filter_map(|e| e.ok())
+        .filter(|entry| entry.file_type().is_dir())
+        .filter(|entry| entry.file_name() != "static")
+        .map(|entry| entry.file_name().to_string_lossy().to_string())
+        .collect::<Vec<_>>();
+    nav_items.extend(dirs);
+    nav_items.sort();
+    Ok(nav_items)
 }
