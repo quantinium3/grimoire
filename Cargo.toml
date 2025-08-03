@@ -5,15 +5,12 @@ edition = "2024"
 
 [dependencies]
 anyhow = "1.0.98"
-axum = { version = "0.8.4", features = ["ws"] }
+axum = "0.8.4"
 clap = { version = "4.5.42", features = ["derive"] }
 colored = "3.0.0"
 comrak = { version = "0.40.0", features = ["syntect"] }
 dialoguer = "0.11.0"
-futures-util = "0.3.31"
 gray_matter = "0.3.2"
-notify = "8.1.0"
-rand = "0.9.2"
 rust-embed = "8.7.2"
 serde = { version = "1.0.219", features = ["derive"] }
 serde_json = "1.0.141"
@@ -21,7 +18,8 @@ syntect = "5.2.0"
 tera = "1.20.0"
 time-util = { version = "0.3.4", features = ["chrono"] }
 tokio = { version = "1.47.0", features = ["full"] }
+tower = { version = "0.5.2", features = ["util"] }
 tower-http = { version = "0.6.6", features = ["fs", "trace"] }
 tracing = "0.1.41"
-tracing-subscriber = "0.3.19"
+tracing-subscriber = { version = "0.3.19", features = ["env-filter", "std"] }
 walkdir = "2.5.0"

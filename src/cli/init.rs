@@ -92,14 +92,25 @@ fn resolve_project_path_and_name(path: &Path) -> Result<(&Path, String)> {
 
 async fn create_init_templates<P: AsRef<Path>>(project_path: P) -> Result<()> {
     let project_path = project_path.as_ref();
-    let files = ["index.html", "blog.html", "static.html"];
+    let template_files = ["index.html", "blog.html", "static.html"];
 
-    for file in files {
+    for file in template_files {
         let contents = get_embedded_files(file)?;
         write(project_path.join("templates").join(file), contents)
             .await
             .context(format!("Failed to write template: {}", file))?;
     }
+
+    let contents = get_embedded_files("style.css")?;
+    write(project_path.join("static").join("style.css"), contents)
+        .await
+        .context(format!("Failed to write template: style.css",))?;
+
+    let contents = get_embedded_files("script.js")?;
+    write(project_path.join("static").join("script.js"), contents)
+        .await
+        .context(format!("Failed to write template: script.js",))?;
+
     Ok(())
 }
 

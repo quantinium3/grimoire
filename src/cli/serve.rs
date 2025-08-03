@@ -1,196 +1,158 @@
+use std::{net::SocketAddr, path::Path};
+
 use anyhow::Result;
-use axum::{
-    Router,
-    extract::ws::{Message, WebSocket, WebSocketUpgrade},
-    response::IntoResponse,
-    routing::get,
-};
-use futures_util::stream::StreamExt;
-use notify::{Config, Event, EventKind, RecommendedWatcher, RecursiveMode, Watcher};
-use std::path::PathBuf;
-use std::sync::Arc;
-use tokio::{
-    process::Command,
-    sync::{
-        broadcast::{self, Sender},
-        mpsc,
-    },
-};
+use axum::{http::StatusCode, routing::get, Router};
 use tower_http::{
-    services::{ServeDir, ServeFile},
-    trace::TraceLayer,
+    services::ServeFile, trace::TraceLayer
 };
-use tracing::Level;
+use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
+use walkdir::WalkDir;
+use tower::util::ServiceExt;
 
-pub async fn serve_content(port: u16, _open: bool) -> Result<()> {
-    tracing_subscriber::fmt().with_max_level(Level::INFO).init();
-    let (tx, _) = broadcast::channel::<String>(16);
-    let tx = Arc::new(tx);
-
-    let content_dir = PathBuf::from("content");
-    let tx_clone = Arc::clone(&tx);
-    tokio::spawn(async move {
-        if let Err(e) = watch_files(&content_dir, tx_clone).await {
-            tracing::error!("File watcher error: {:?}", e);
-        }
-    });
-
-    let dist_dir = PathBuf::from("dist");
-
-    if !dist_dir.exists() {
-        tracing::error!("Dist directory does not exist: {:?}", dist_dir);
-        return Err(anyhow::anyhow!("Dist directory not found"));
-    }
-
-    let app = Router::new()
-        .route(
-            "/ws",
-            get({
-                let tx = Arc::clone(&tx);
-                move |ws| ws_handler(ws, tx)
+pub async fn serve_content(port: u16, open: bool) -> Result<()> {
+    tracing_subscriber::registry()
+        .with(
+            tracing_subscriber::EnvFilter::try_from_default_env().unwrap_or_else(|_| {
+                format!("{}=info,tower_http=info", env!("CARGO_CRATE_NAME")).into()
             }),
         )
-        .fallback_service(
-            ServeDir::new(&dist_dir).fallback(ServeFile::new(dist_dir.join("index.html"))),
-        )
-        .layer(TraceLayer::new_for_http());
+        .with(tracing_subscriber::fmt::layer())
+        .init();
 
-    let addr = std::net::SocketAddr::from(([127, 0, 0, 1], port));
-    tracing::info!("Server starting on http://{}", addr);
+    let app = create_static_server("public")?;
+    let addr = SocketAddr::from(([127, 0, 0, 1], port));
+    
+    println!("Server running at http://localhost:{}", port);
+    
+    if open {
+        if let Err(e) = open_browser(&format!("http://localhost:{}", port)) {
+            tracing::warn!("Failed to open browser: {}", e);
+        }
+    }
 
     let listener = tokio::net::TcpListener::bind(addr).await?;
-    axum::serve(
-        listener,
-        app.into_make_service_with_connect_info::<std::net::SocketAddr>(),
-    )
-    .await?;
-
-    Ok(())
-}
-
-async fn watch_files(
-    content_dir: &PathBuf,
-    tx: Arc<Sender<String>>,
-) -> Result<(), Box<dyn std::error::Error>> {
-    if !content_dir.exists() {
-        return Err(anyhow::anyhow!("Content directory does not exist: {:?}", content_dir).into());
-    }
-
-    let (mut watcher, mut rx) = {
-        let config = Config::default()
-            .with_poll_interval(std::time::Duration::from_secs(1))
-            .with_compare_contents(true); // More reliable change detection
-        let (tx_watcher, rx) = mpsc::channel(32); // Increased buffer size
-        let watcher = RecommendedWatcher::new(
-            move |res: Result<Event, notify::Error>| {
-                if let Err(e) = tx_watcher.blocking_send(res) {
-                    tracing::error!("Failed to send watcher event: {:?}", e);
-                }
-            },
-            config,
-        )?;
-        (watcher, rx)
-    };
-
-    watcher.watch(content_dir, RecursiveMode::Recursive)?;
-
-    while let Some(event) = rx.recv().await {
-        match event {
-            Ok(event) => match event.kind {
-                EventKind::Modify(_) | EventKind::Create(_) => {
-                    for path in event.paths {
-                        let relative_path = path
-                            .strip_prefix(content_dir)
-                            .map(|p| p.to_string_lossy().into_owned())
-                            .unwrap_or_else(|_| path.to_string_lossy().into_owned());
-
-                        tracing::info!("Detected change in: {}", relative_path);
-
-                        let output = Command::new("grimoire")
-                            .arg("build")
-                            .arg(&relative_path)
-                            .output()
-                            .await;
-
-                        match output {
-                            Ok(output) => {
-                                if output.status.success() {
-                                    tracing::info!(
-                                        "Grimoire build successful for {}",
-                                        relative_path
-                                    );
-                                    let _ = tx.send("reload".to_string()).map_err(|e| {
-                                        tracing::error!("Failed to send reload signal: {:?}", e);
-                                    });
-                                } else {
-                                    tracing::error!(
-                                        "Grimoire build failed: {}",
-                                        String::from_utf8_lossy(&output.stderr)
-                                    );
-                                }
-                            }
-                            Err(e) => {
-                                tracing::error!("Failed to run grimoire build: {:?}", e);
-                            }
-                        }
-                    }
-                }
-                _ => {}
-            },
-            Err(e) => {
-                tracing::error!("File watch error: {:?}", e);
-            }
-        }
-    }
-
-    Ok(())
-}
-
-async fn ws_handler(ws: WebSocketUpgrade, tx: Arc<Sender<String>>) -> impl IntoResponse {
-    ws.on_upgrade(move |socket| handle_socket(socket, tx))
-}
-
-async fn handle_socket(mut socket: WebSocket, tx: Arc<Sender<String>>) {
-    let mut rx = tx.subscribe();
-
-    if let Err(e) = socket
-        .send(Message::Text("WebSocket connected!".to_string().into()))
+    axum::serve(listener, app)
         .await
-    {
-        tracing::error!("Failed to send welcome message: {:?}", e);
-        return;
-    }
+        .map_err(|e| anyhow::anyhow!("Server error: {}", e))?;
 
-    loop {
-        tokio::select! {
-            result = rx.recv() => {
-                match result {
-                    Ok(msg) if msg == "reload" => {
-                        if let Err(e) = socket.send(Message::Text("reload".to_string().into())).await {
-                            tracing::error!("Failed to send reload message: {:?}", e);
-                            return;
-                        }
+    Ok(())
+}
+
+fn create_static_server(directory: &str) -> Result<Router> {
+    let mut router = Router::new();
+    let mut route_count = 0;
+    let mut directory_routes = std::collections::HashMap::new();
+    
+    for entry in WalkDir::new(directory)
+        .follow_links(true)
+        .into_iter()
+        .filter_map(|e| e.ok())
+    {
+        if entry.file_type().is_file() {
+            let file_path = entry.path();
+            let relative_path = file_path.strip_prefix(directory)?;
+            
+            let route_path = format!("/{}", relative_path.to_string_lossy().replace('\\', "/"));
+            let serve_path = file_path.to_path_buf();
+            router = router.route(&route_path, get(move || async move {
+                ServeFile::new(&serve_path).oneshot(
+                    axum::http::Request::builder()
+                        .uri("/")
+                        .body(axum::body::Body::empty())
+                        .unwrap()
+                ).await
+            }));
+            
+            route_count += 1;
+            tracing::debug!("Added route: {} -> {:?}", route_path, file_path);
+            if file_path.file_name().and_then(|n| n.to_str()) == Some("index.html") {
+                let parent_route = if let Some(parent) = relative_path.parent() {
+                    if parent.as_os_str().is_empty() {
+                        "/".to_string()
+                    } else {
+                        format!("/{}", parent.to_string_lossy().replace('\\', "/"))
                     }
-                    Ok(_) => {}
-                    Err(e) => {
-                        tracing::error!("Broadcast channel error: {:?}", e);
-                        return;
-                    }
-                }
-            }
-            Some(result) = socket.next() => {
-                match result {
-                    Ok(Message::Close(_)) => {
-                        tracing::info!("WebSocket connection closed by client");
-                        return;
-                    }
-                    Ok(_) => {}
-                    Err(e) => {
-                        tracing::error!("WebSocket error: {:?}", e);
-                        return;
-                    }
+                } else {
+                    "/".to_string()
+                };
+                
+                if parent_route != "/" {
+                    directory_routes.insert(parent_route, file_path.to_path_buf());
                 }
             }
         }
     }
+    
+    for (dir_route, index_path) in directory_routes {
+        let serve_path = index_path.clone();
+        router = router.route(&dir_route, get(move || async move {
+            ServeFile::new(&serve_path).oneshot(
+                axum::http::Request::builder()
+                    .uri("/")
+                    .body(axum::body::Body::empty())
+                    .unwrap()
+            ).await
+        }));
+        tracing::info!("Added directory route: {} -> {:?}", dir_route, index_path);
+        route_count += 1;
+        
+        let dir_route_with_slash = format!("{}/", dir_route);
+        let serve_path_with_slash = index_path.clone();
+        router = router.route(&dir_route_with_slash, get(move || async move {
+            ServeFile::new(&serve_path_with_slash).oneshot(
+                axum::http::Request::builder()
+                    .uri("/")
+                    .body(axum::body::Body::empty())
+                    .unwrap()
+            ).await
+        }));
+        route_count += 1;
+    }
+    
+    let index_path = Path::new(directory).join("index.html");
+    if index_path.exists() {
+        let index_serve_path = index_path.clone();
+        router = router.route("/", get(move || async move {
+            ServeFile::new(&index_serve_path).oneshot(
+                axum::http::Request::builder()
+                    .uri("/")
+                    .body(axum::body::Body::empty())
+                    .unwrap()
+            ).await
+        }));
+        tracing::info!("Added root route serving index.html");
+    }
+    
+    println!("📋 Created {} file routes", route_count);
+    
+    router = router.fallback(|| async {
+        (StatusCode::NOT_FOUND, "File not found")
+    });
+    
+    Ok(router.layer(TraceLayer::new_for_http()))
+}
+
+fn open_browser(url: &str) -> Result<()> {
+    #[cfg(target_os = "windows")]
+    {
+        std::process::Command::new("cmd")
+            .args(["/c", "start", url])
+            .spawn()?;
+    }
+    
+    #[cfg(target_os = "macos")]
+    {
+        std::process::Command::new("open")
+            .arg(url)
+            .spawn()?;
+    }
+    
+    #[cfg(target_os = "linux")]
+    {
+        std::process::Command::new("xdg-open")
+            .arg(url)
+            .spawn()?;
+    }
+    
+    Ok(())
 }

@@ -1,15 +1,15 @@
 use crate::{
     consts::FrontMatter,
-    utils::{get_content_dir, get_embedded_files, get_slug},
+    utils::{copy_dir, get_content_dir, get_embedded_files, get_slug},
 };
 
 use anyhow::{Context, Result, bail};
 use comrak::{Options, Plugins, markdown_to_html_with_plugins};
 use gray_matter::{Matter, engine::YAML};
 use serde::Serialize;
-use std::{path::Path};
+use std::path::Path;
 use tera::Tera;
-use tokio::fs::{create_dir_all, read_to_string, write};
+use tokio::fs::{copy, create_dir_all, read_to_string, write};
 use walkdir::WalkDir;
 
 #[derive(Debug)]
@@ -42,12 +42,40 @@ pub async fn build_content(include_drafts: bool, output_dir: &str) -> Result<()>
     // Build navigation items
     let nav_items = get_nav_items(&content_dir).await?;
 
+    let static_dir = "static";
+
     // Build pages in order
     create_index_page(&content_dir, output_dir, &nav_items).await?;
     create_static_pages(&content_dir, output_dir, &nav_items, include_drafts).await?;
     create_blog_categories(&content_dir, output_dir, &nav_items, include_drafts).await?;
+    copy_static_content(static_dir, output_dir).await?;
 
     println!("✓ Build completed!");
+    Ok(())
+}
+
+async fn copy_static_content(static_dir: &str, output_dir: &str) -> Result<()> {
+    copy_dir(
+        Path::new(static_dir).join("images"),
+        Path::new(output_dir).join("images"),
+    )
+    .await
+    .context("failed to copy images")?;
+
+    copy(
+        Path::new(static_dir).join("style.css"),
+        Path::new(output_dir).join("style.css"),
+    )
+    .await
+    .context("failed to copy style.css")?;
+
+    copy(
+        Path::new(static_dir).join("script.js"),
+        Path::new(output_dir).join("script.js"),
+    )
+    .await
+    .context("failed to copy script.js")?;
+
     Ok(())
 }
 
@@ -97,13 +125,17 @@ async fn get_nav_items(content_dir: &str) -> Result<Vec<String>> {
 async fn get_page_slug(path: &Path) -> Result<String> {
     let file_content = read_to_string(path).await?;
     let document = parse_content(&file_content)?;
-    
+
     if let Some(slug) = document.metadata.slug {
         Ok(slug)
     } else if let Some(title) = document.metadata.title {
-        Ok(title.to_lowercase()
-            .replace(' ', "-")
-            .replace(['(', ')', '[', ']', '{', '}', '/', '\\', ':', ';', ',', '.', '?', '!', '@', '#', '$', '%', '^', '&', '*', '+', '=', '|', '`', '~', '"', '\''], ""))
+        Ok(title.to_lowercase().replace(' ', "-").replace(
+            [
+                '(', ')', '[', ']', '{', '}', '/', '\\', ':', ';', ',', '.', '?', '!', '@', '#',
+                '$', '%', '^', '&', '*', '+', '=', '|', '`', '~', '"', '\'',
+            ],
+            "",
+        ))
     } else {
         get_slug(path.to_string_lossy().as_ref()).await
     }
@@ -140,7 +172,7 @@ async fn create_static_pages(
     include_drafts: bool,
 ) -> Result<()> {
     let static_dir = Path::new(content_dir).join("static");
-    
+
     if !static_dir.exists() {
         println!("No static directory found, skipping static pages");
         return Ok(());
@@ -162,13 +194,12 @@ async fn create_static_pages(
             continue;
         }
 
-        let slug = get_page_slug(entry.path()).await
-            .with_context(|| {
-                format!(
-                    "Failed to get slug of file: {}",
-                    entry.path().to_string_lossy()
-                )
-            })?;
+        let slug = get_page_slug(entry.path()).await.with_context(|| {
+            format!(
+                "Failed to get slug of file: {}",
+                entry.path().to_string_lossy()
+            )
+        })?;
 
         let content = render_page(&document, "static.html", nav_items, None)
             .await
@@ -227,14 +258,12 @@ async fn create_blog_categories(
             .filter_map(|e| e.ok())
             .filter(|e| e.path().extension().and_then(|ext| ext.to_str()) == Some("md"))
         {
-            let file_content = read_to_string(post_entry.path())
-                .await
-                .with_context(|| {
-                    format!(
-                        "Failed to read blog post file: {}",
-                        post_entry.path().to_string_lossy()
-                    )
-                })?;
+            let file_content = read_to_string(post_entry.path()).await.with_context(|| {
+                format!(
+                    "Failed to read blog post file: {}",
+                    post_entry.path().to_string_lossy()
+                )
+            })?;
 
             let document = parse_content(&file_content)?;
 
@@ -243,14 +272,12 @@ async fn create_blog_categories(
                 continue;
             }
 
-            let slug = get_page_slug(post_entry.path())
-                .await
-                .with_context(|| {
-                    format!(
-                        "Failed to get slug for blog post: {}",
-                        post_entry.path().to_string_lossy()
-                    )
-                })?;
+            let slug = get_page_slug(post_entry.path()).await.with_context(|| {
+                format!(
+                    "Failed to get slug for blog post: {}",
+                    post_entry.path().to_string_lossy()
+                )
+            })?;
 
             // Create individual blog post
             let post_content = render_page(&document, "blog.html", nav_items, None)
@@ -271,7 +298,8 @@ async fn create_blog_categories(
                 .unwrap_or_else(|| slug.clone());
 
             let tags = document.metadata.tags.map(|tags_str| {
-                tags_str.split(',')
+                tags_str
+                    .split(',')
                     .map(|tag| tag.trim().to_string())
                     .filter(|tag| !tag.is_empty())
                     .collect::<Vec<String>>()
@@ -317,10 +345,10 @@ async fn create_blog_categories(
 }
 
 async fn render_page(
-    document: &Document, 
-    template: &str, 
+    document: &Document,
+    template: &str,
     nav_items: &[String],
-    extra_context: Option<&tera::Context>
+    extra_context: Option<&tera::Context>,
 ) -> Result<String> {
     let templ = get_embedded_files(template)?;
 
@@ -330,9 +358,18 @@ async fn render_page(
     let mut context = tera::Context::new();
 
     // Basic document fields
-    context.insert("title", &document.metadata.title.as_deref().unwrap_or("Untitled"));
-    context.insert("author", &document.metadata.author.as_deref().unwrap_or("Unknown"));
-    context.insert("description", &document.metadata.description.as_deref().unwrap_or(""));
+    context.insert(
+        "title",
+        &document.metadata.title.as_deref().unwrap_or("Untitled"),
+    );
+    context.insert(
+        "author",
+        &document.metadata.author.as_deref().unwrap_or("Unknown"),
+    );
+    context.insert(
+        "description",
+        &document.metadata.description.as_deref().unwrap_or(""),
+    );
     context.insert("content", &document.html_content);
     context.insert("raw_content", &document.content);
     context.insert("navbar", nav_items);
@@ -343,7 +380,8 @@ async fn render_page(
     }
 
     if let Some(tags) = &document.metadata.tags {
-        let tags_vec: Vec<String> = tags.split(',')
+        let tags_vec: Vec<String> = tags
+            .split(',')
             .map(|tag| tag.trim().to_string())
             .filter(|tag| !tag.is_empty())
             .collect();
@@ -390,16 +428,23 @@ fn create_category_index(
     let mut context = tera::Context::new();
     context.insert("title", &format!("{} Posts", category));
     context.insert("author", "Unknown");
-    context.insert("description", &format!("All posts in the {} category", category));
+    context.insert(
+        "description",
+        &format!("All posts in the {} category", category),
+    );
     context.insert("navbar", nav_items);
-    
+
     // Category-specific context
     context.insert("category", category);
-    context.insert("category_title", &format!("{} - Posts", category.to_uppercase()));
+    context.insert(
+        "category_title",
+        &format!("{} - Posts", category.to_uppercase()),
+    );
     context.insert("posts", posts);
-    
+
     // Create a simple HTML content listing all posts
-    let posts_html = posts.iter()
+    let posts_html = posts
+        .iter()
         .map(|post| {
             let date_str = post.date.as_deref().unwrap_or("No date");
             let desc_str = post.description.as_deref().unwrap_or("No description");

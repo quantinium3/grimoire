@@ -1,11 +1,11 @@
 use std::path::Path;
 
-use anyhow::{Context, Result};
-use gray_matter::{Matter, engine::YAML};
+use anyhow::{Context, Result, bail};
 use rust_embed::RustEmbed;
-use tokio::fs::read_to_string;
+use tokio::fs::{copy, create_dir_all, read_to_string};
+use walkdir::WalkDir;
 
-use crate::consts::{Config, FrontMatter, GRIMOIRE_CONFIG_NAME};
+use crate::consts::{Config, GRIMOIRE_CONFIG_NAME};
 
 #[derive(RustEmbed)]
 #[folder = "static"]
@@ -41,4 +41,57 @@ pub async fn get_slug(path: &str) -> Result<String> {
         ],
         "",
     ))
+}
+
+pub async fn copy_dir<A: AsRef<Path>, B: AsRef<Path>>(from: A, to: B) -> Result<()> {
+    let from = from.as_ref();
+    let to = to.as_ref();
+    
+    if !from.exists() {
+        bail!(
+            "Source path {} does not exist",
+            from.to_str().unwrap_or("<invalid path>")
+        );
+    }
+    
+    if !from.is_dir() {
+        bail!(
+            "Source path {} is not a directory",
+            from.to_str().unwrap_or("<invalid_path>")
+        );
+    }
+    
+    create_dir_all(to)
+        .await
+        .context(format!("Failed to create directory: {:?}", to))?;
+    
+    for entry in WalkDir::new(from).into_iter().filter_map(|e| e.ok()) {
+        let entry_path = entry.path();
+        
+        let rel_path = entry_path.strip_prefix(from)?;
+        let dest_path = to.join(rel_path);
+        
+        if entry.file_type().is_dir() {
+            if !dest_path.exists() {
+                create_dir_all(&dest_path)
+                    .await
+                    .context(format!("Failed to create directory: {:?}", dest_path))?;
+            }
+        } else {
+            if let Some(parent) = dest_path.parent() {
+                create_dir_all(parent)
+                    .await
+                    .context(format!("Failed to create parent directory: {:?}", parent))?;
+            }
+            
+            let _bytes_copied = copy(entry_path, &dest_path)
+                .await
+                .context(format!(
+                    "Failed to copy file from {:?} to {:?}",
+                    entry_path, dest_path
+                ))?;
+        }
+    }
+    
+    Ok(())
 }
