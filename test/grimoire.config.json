@@ -1,6 +1,6 @@
 {
-  "project_name": "test",
+  "project": "Grimoire",
   "content_dir": "content",
   "description": "A new Grimoire project: test",
-  "domain": "http://localhost:8080"
+  "author": "quantinium"
 }

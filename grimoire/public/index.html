@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title></title>
+		<meta name="description" content="the index page for grimoire - a static site generator" />
+		<meta name="author" content="quantinium" />
+
+		<link rel="stylesheet" href="/style.css" />
+		<link
+			rel="icon"
+			type="image/x-icon"
+			href="/images/b0f61-17050803861897-1920.jpg"
+		/>
+	</head>
+	<body>
+		<header>
+        <nav class="navbar">
+            <a href="/" class="nav-header">grimoire</a>
+            <ul class="nav-items">
+                
+                <li class="nav-item">
+                    
+                    <a href="/about.html" class="nav-link">about</a>
+                    
+                </li>
+                
+                <li class="nav-item">
+                    
+                    <a href="/blog" class="nav-link">blog</a>
+                    
+                </li>
+                
+            </ul>
+        </nav>
+		</header>
+
+		<main class="main-content">
+            <h1 class="page-title"></h1>
+            <div class="article-content"><p>a simple, minimal and extensible filesystem based static site generator converting your markdown blog into an one click deployable website.</p>
+<h2><a href="#quick-start" aria-hidden="true" class="anchor" id="user-content-quick-start"></a>Quick Start</h2>
+<h3><a href="#install" aria-hidden="true" class="anchor" id="user-content-install"></a>Install</h3>
+<pre class="code"><code><span class="source shell bash"><span class="meta function-call shell"><span class="variable function shell">$</span></span><span class="meta function-call arguments shell"> curl<span class="variable parameter option shell"><span class="punctuation definition parameter shell"> -</span>sS</span> https://grimoire.quantinium.dev/install.sh</span> <span class="keyword operator logical pipe shell">|</span> <span class="meta function-call shell"><span class="variable function shell">sh</span></span>
+</span></code></pre>
+<h4><a href="#github" aria-hidden="true" class="anchor" id="user-content-github"></a>Github</h4>
+<pre class="code"><code><span class="source shell bash"><span class="meta function-call shell"><span class="variable function shell">$</span></span><span class="meta function-call arguments shell"> git clone https://github.com/quantinium3/grimoire.git</span>
+<span class="meta function-call shell"><span class="variable function shell">$</span></span><span class="meta function-call arguments shell"> cargo build</span>
+</span></code></pre>
+<h4><a href="#nix" aria-hidden="true" class="anchor" id="user-content-nix"></a>Nix</h4>
+<pre class="code"><code><span class="source shell bash"><span class="meta function-call shell"><span class="variable function shell">nix</span></span><span class="meta function-call arguments shell"> run github:quantinium3/grimoire</span>
+</span></code></pre>
+<h3><a href="#start-blogging" aria-hidden="true" class="anchor" id="user-content-start-blogging"></a>Start blogging</h3>
+<ul>
+<li><code>grimoire init grim</code> - this initializes a repository named grim in which we can write our content in the <code>content</code> dir.</li>
+<li><code>grimoire build</code> - this output the html from the markdown content we have into <code>public</code></li>
+<li><code>grimoire serve</code> - serve the public directory to <code>localhost:5000</code> for testing.</li>
+<li><code>grimoire add --type &lt;content_type&gt;</code> - you can manually create new and directories or run this command to automatically do it. Presently we support two types of pages.
+<ul>
+<li><code>static</code> - these are single pages</li>
+<li><code>blog</code> - these are blog type pages which come under one category.</li>
+</ul>
+</li>
+<li><code>grimoire clean</code> - clean your public directory.</li>
+<li><code>grimoire list</code> - list all the files in your <code>content</code> directory.</li>
+</ul>
+</div>
+		</main>
+
+        <div class="updated">
+            
+            <p class="footer-date">Published: 2025-08-04</p>
+            
+        </div>
+        <footer class="footer">
+            <p>&copy; 2025 quantinium. All rights reserved.</p>
+        </footer>
+
+		<script src="/script.js"></script>
+	</body>
+</html>

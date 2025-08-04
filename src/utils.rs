@@ -29,6 +29,15 @@ pub async fn get_content_dir() -> Result<String> {
     Ok(config.content_dir)
 }
 
+pub async fn get_config() -> Result<Config> {
+    let file = read_to_string(GRIMOIRE_CONFIG_NAME)
+        .await
+        .context(format!("Failed to read: {}", GRIMOIRE_CONFIG_NAME))?;
+
+    let config: Config = serde_json::from_str(&file)?;
+    Ok(config)
+}
+
 pub async fn get_slug<P: AsRef<Path>>(path: P) -> Result<String> {
     let path_ref = path.as_ref();
     let content = read_to_string(path_ref)

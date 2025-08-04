@@ -1,15 +1,18 @@
 use crate::{
     consts::FrontMatter,
-    utils::{copy_dir, get_content_dir, get_slug},
+    utils::{copy_dir, get_config, get_content_dir, get_slug},
 };
 use anyhow::{Context, Result, bail};
-use comrak::{Options, Plugins, markdown_to_html_with_plugins};
+use comrak::{adapters::SyntaxHighlighterAdapter, markdown_to_html_with_plugins, Options, Plugins};
 use gray_matter::{Matter, engine::YAML};
 use serde::Serialize;
-use std::path::Path;
+use std::{collections::HashMap, path::Path};
 use tera::Tera;
 use tokio::fs::{copy, create_dir_all, read_to_string, write};
 use walkdir::WalkDir;
+use syntect::{highlighting::ThemeSet, html::{css_for_theme_with_class_style, ClassStyle, ClassedHTMLGenerator}};
+use syntect::parsing::SyntaxSet;
+use syntect::util::LinesWithEndings;
 
 #[derive(Debug)]
 struct Document {
@@ -28,6 +31,77 @@ struct PostInfo {
     url: String,
 }
 
+#[derive(Debug, PartialEq, Serialize)]
+enum NavType {
+    FILE,
+    DIR,
+}
+
+#[derive(Debug, Serialize, PartialEq)]
+struct NavItem {
+    name: String,
+    nav_type: NavType,
+}
+
+struct SyntectAdapter {
+    syntax_set: SyntaxSet,
+}
+
+impl SyntectAdapter {
+    fn new() -> Self {
+        Self {
+            syntax_set: SyntaxSet::load_defaults_newlines(),
+        }
+    }
+}
+
+
+impl SyntaxHighlighterAdapter for SyntectAdapter {
+    fn write_highlighted(
+        &self,
+        output: &mut dyn std::io::Write,
+        lang: Option<&str>,
+        code: &str,
+    ) -> std::io::Result<()> {
+        let lang = lang.unwrap_or("text");
+        let syntax = self.syntax_set
+            .find_syntax_by_token(lang)
+            .unwrap_or_else(|| self.syntax_set.find_syntax_plain_text());
+        
+        let mut html_generator = ClassedHTMLGenerator::new_with_class_style(
+            syntax, 
+            &self.syntax_set, 
+            ClassStyle::Spaced
+        );
+        
+        for line in LinesWithEndings::from(code) {
+            html_generator.parse_html_for_line_which_includes_newline(line)
+                .map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))?;
+        }
+        
+        write!(output, "{}", html_generator.finalize())?;
+        Ok(())
+    }
+
+    fn write_pre_tag(
+        &self,
+        output: &mut dyn std::io::Write,
+        _attributes: HashMap<String, String>,
+    ) -> std::io::Result<()> {
+        output.write_all(b"<pre class=\"code\">")?;
+        Ok(())
+    }
+
+    fn write_code_tag(
+        &self,
+        output: &mut dyn std::io::Write,
+        _attributes: HashMap<String, String>,
+    ) -> std::io::Result<()> {
+        output.write_all(b"<code>")?;
+        Ok(())
+    }
+}
+
 pub async fn build_content<P: AsRef<Path>>(include_draft: bool, output_dir: P) -> Result<()> {
     let content_dir = get_content_dir()
         .await
@@ -41,6 +115,9 @@ pub async fn build_content<P: AsRef<Path>>(include_draft: bool, output_dir: P) -
     let nav_items = get_nav_items(&content_dir)
         .await
         .context("Failed to get navbar items")?;
+
+
+    generate_syntax_themes(&output_dir.as_ref()).await?;
 
     let static_dir = Path::new("static");
     create_index_page(&content_dir, &output_dir.as_ref(), &nav_items).await?;
@@ -66,13 +143,81 @@ async fn copy_static_content(static_dir: &Path, output_dir: &Path) -> Result<()>
     Ok(())
 }
 
+async fn generate_syntax_themes(output_dir: &Path) -> Result<()> {
+    let theme_set = ThemeSet::load_defaults();
+    
+    let dark_theme = &theme_set.themes["base16-mocha.dark"];
+    let css_dark = css_for_theme_with_class_style(dark_theme, ClassStyle::Spaced)
+        .context("Failed to generate dark theme CSS")?;
+    
+    write(output_dir.join("theme-dark.css"), css_dark).await
+        .context("Failed to write dark theme CSS")?;
+    
+    let light_theme = &theme_set.themes["base16-ocean.light"];
+    let css_light = css_for_theme_with_class_style(light_theme, ClassStyle::Spaced)
+        .context("Failed to generate light theme CSS")?;
+    
+    write(output_dir.join("theme-light.css"), css_light).await
+        .context("Failed to write light theme CSS")?;
+    
+    let main_css = r#"
+/* Syntax highlighting with automatic light/dark theme switching */
+@import url("theme-light.css") (prefers-color-scheme: light);
+@import url("theme-dark.css") (prefers-color-scheme: dark);
+
+/* Default to light theme for older browsers */
+@import url("theme-light.css");
+
+/* Code block styling */
+.code {
+    font-family: 'Fira Code', 'Monaco', 'Cascadia Code', 'Roboto Mono', monospace;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    padding: 1rem;
+    border-radius: 0.375rem;
+    overflow-x: auto;
+    margin: 1rem 0;
+}
+
+/* Light theme body styling */
+@media (prefers-color-scheme: light) {
+    .code {
+        background-color: #fdf6e3;
+        border: 1px solid #eee8d5;
+    }
+}
+
+/* Dark theme body styling */
+@media (prefers-color-scheme: dark) {
+    .code {
+        background-color: #002b36;
+        border: 1px solid #073642;
+    }
+}
+"#;
+    
+    write(output_dir.join("syntax.css"), main_css).await
+        .context("Failed to write main syntax CSS")?;
+    
+    Ok(())
+}
+
+fn create_highlighted_content(input: &str, options: &Options) -> Result<String> {
+    let adapter = SyntectAdapter::new();
+    let mut plugins = Plugins::default();
+    plugins.render.codefence_syntax_highlighter = Some(&adapter);
+
+    Ok(markdown_to_html_with_plugins(input, options, &plugins))
+}
+
 async fn create_blog_categories(
     content_dir: &Path,
     output_dir: &Path,
-    nav_items: &[String],
+    nav_items: &[NavItem],
     include_drafts: bool,
 ) -> Result<()> {
     for entry in WalkDir::new(content_dir)
+        .min_depth(1)
         .max_depth(1)
         .into_iter()
         .filter_map(|e| e.ok())
@@ -106,19 +251,19 @@ async fn create_blog_categories(
                 )
             })?;
 
-            let document = parse_content(&file_content, &post_entry.path().as_ref()).await?;
+            let document = parse_content(&file_content, post_entry.path()).await?;
             if document.metadata.draft.unwrap_or(false) && !include_drafts {
                 continue;
             }
 
-            let slug = get_slug(&post_entry.path()).await.with_context(|| {
+            let slug = get_slug(post_entry.path()).await.with_context(|| {
                 format!(
                     "Failed to get slug for blog post: {}",
                     post_entry.path().to_string_lossy()
                 )
             })?;
 
-            let post_content = render_page(&document, "blog.html", nav_items)
+            let post_content = render_page(&document, "static.html", nav_items)
                 .await
                 .with_context(|| format!("Failed to process blog post: {}", slug))?;
 
@@ -128,9 +273,9 @@ async fn create_blog_categories(
                 .await
                 .with_context(|| format!("Failed to write blog post file: {}", slug))?;
 
-            let title = document.metadata.title;
+            let title = document.metadata.title.clone();
 
-            let tags = document.metadata.tags.map(|tags_str| {
+            let tags = document.metadata.tags.as_ref().map(|tags_str| {
                 tags_str
                     .split(',')
                     .map(|tag| tag.trim().to_string())
@@ -140,9 +285,9 @@ async fn create_blog_categories(
 
             posts.push(PostInfo {
                 slug: slug.clone(),
-                title: title,
-                date: document.metadata.date,
-                description: document.metadata.description,
+                title,
+                date: document.metadata.date.clone(),
+                description: document.metadata.description.clone(),
                 tags,
                 url: format!("/{}/{}.html", dir_name, &slug),
             });
@@ -157,6 +302,7 @@ async fn create_blog_categories(
             (None, None) => a.title.cmp(&b.title),
         });
 
+        // Category index uses blog.html template (the listing template)
         let index_content = create_category_index(dir_name.as_ref(), &posts, nav_items).await?;
 
         let index_path = category_dir.join("index.html");
@@ -177,51 +323,28 @@ async fn create_blog_categories(
 async fn create_category_index(
     category: &str,
     posts: &[PostInfo],
-    nav_items: &[String],
+    nav_items: &[NavItem],
 ) -> Result<String> {
+    // Use blog.html template for category listings
     let template_file = Path::new("templates").join("index.html");
-    let template_content = read_to_string(Path::new("templates").join("index.html"))
+    let template_content = read_to_string(&template_file)
         .await
-        .with_context(|| format!("Failed to read file: {:?}", template_file))?;
+        .with_context(|| format!("Failed to read template file: {:?}", template_file))?;
 
     let mut tera = Tera::default();
     tera.add_raw_template("category_index", &template_content)?;
+    let config = get_config().await?;
 
     let mut context = tera::Context::new();
+    context.insert("heading", &config.project);
     context.insert("title", &format!("{} Posts", category));
-    context.insert("author", "Unknown");
+    context.insert("author", &config.author);
     context.insert(
         "description",
         &format!("All posts in the {} category", category),
     );
     context.insert("navbar", nav_items);
-
-    context.insert("category", category);
-    context.insert(
-        "category_title",
-        &format!("{} - Posts", category.to_uppercase()),
-    );
     context.insert("posts", posts);
-
-    let posts_html = posts
-        .iter()
-        .map(|post| {
-            let date_str = post.date.as_deref().unwrap_or("No date");
-            let desc_str = post.description.as_deref().unwrap_or("No description");
-            format!(
-                r#"<article>
-                    <h3><a href="{}">{}</a></h3>
-                    <p class="post-meta">Date: {}</p>
-                    <p>{}</p>
-                </article>"#,
-                post.url, post.title, date_str, desc_str
-            )
-        })
-        .collect::<Vec<String>>()
-        .join("\n");
-
-    context.insert("content", &posts_html);
-    context.insert("raw_content", &posts_html);
 
     let rendered = tera
         .render("category_index", &context)
@@ -233,7 +356,7 @@ async fn create_category_index(
 async fn create_static_pages(
     content_dir: &Path,
     output_dir: &Path,
-    nav_items: &[String],
+    nav_items: &[NavItem],
     include_drafts: bool,
 ) -> Result<()> {
     let static_dir = content_dir.join("static");
@@ -252,7 +375,7 @@ async fn create_static_pages(
             .await
             .with_context(|| format!("Failed to read file: {}", entry.path().to_string_lossy()))?;
 
-        let document = parse_content(&file_content, entry.path().as_ref()).await?;
+        let document = parse_content(&file_content, entry.path()).await?;
         if document.metadata.draft.unwrap_or(false) && !include_drafts {
             continue;
         }
@@ -264,14 +387,15 @@ async fn create_static_pages(
             )
         })?;
 
+        // Static pages use static.html template and are stored at root
         let content = render_page(&document, "static.html", nav_items)
             .await
-            .context(format!("Failed to render static page: {}", slug))?;
+            .with_context(|| format!("Failed to render static page: {}", slug))?;
 
-        let output_path = Path::new(output_dir).join(format!("{}.html", slug));
+        let output_path = output_dir.join(format!("{}.html", slug));
         write(&output_path, content)
             .await
-            .context(format!("Failed to create static page: {}", slug))?;
+            .with_context(|| format!("Failed to create static page: {}", slug))?;
 
         println!("✓ Created static page: {}.html", slug);
     }
@@ -282,20 +406,20 @@ async fn create_static_pages(
 async fn create_index_page(
     content_dir: &Path,
     output_dir: &Path,
-    nav_items: &[String],
+    nav_items: &[NavItem],
 ) -> Result<()> {
-    let index_path = Path::new(content_dir).join("index.md");
+    let index_path = content_dir.join("index.md");
 
     if !index_path.exists() {
         bail!("index.md doesn't exist in content directory");
     }
 
     let file_content = read_to_string(&index_path).await?;
-    let document = parse_content(&file_content, index_path.as_path()).await?;
+    let document = parse_content(&file_content, &index_path).await?;
 
-    let content = render_page(&document, "index.html", nav_items).await?;
+    let content = render_page(&document, "static.html", nav_items).await?;
 
-    write(Path::new(output_dir).join("index.html"), content)
+    write(output_dir.join("index.html"), content)
         .await
         .context("failed to write index.html")?;
 
@@ -303,18 +427,27 @@ async fn create_index_page(
     Ok(())
 }
 
-async fn render_page(document: &Document, template: &str, nav_items: &[String]) -> Result<String> {
+async fn render_page(document: &Document, template: &str, nav_items: &[NavItem]) -> Result<String> {
     let templ = read_to_string(Path::new("templates").join(template))
         .await
         .with_context(|| format!("Failed to read template file: {}", template))?;
+    let config = get_config().await.context("Failed to get project name")?;
 
     let mut tera = Tera::default();
     tera.add_raw_template("document", &templ)?;
 
     let mut context = tera::Context::new();
 
+    context.insert("heading", &config.project);
     context.insert("title", &document.metadata.title);
-    context.insert("author", &document.metadata.author.as_deref().unwrap_or(""));
+    context.insert(
+        "author",
+        &document
+            .metadata
+            .author
+            .as_deref()
+            .unwrap_or(&config.author),
+    );
     context.insert(
         "description",
         &document.metadata.description.as_deref().unwrap_or(""),
@@ -381,10 +514,9 @@ async fn parse_content(input: &str, path: &Path) -> Result<Document> {
     options.render.hardbreaks = false;
     options.render.github_pre_lang = true;
     options.render.width = 80;
-    options.render.unsafe_ = false;
+    options.render.unsafe_ = true;
 
-    let plugins = Plugins::default();
-    let html_content = markdown_to_html_with_plugins(&result.content, &options, &plugins);
+    let html_content = create_highlighted_content(&result.content, &options)?;
 
     Ok(Document {
         metadata,
@@ -393,8 +525,8 @@ async fn parse_content(input: &str, path: &Path) -> Result<Document> {
     })
 }
 
-async fn get_nav_items<P: AsRef<Path>>(content_dir: P) -> Result<Vec<String>> {
-    let mut nav_items: Vec<String> = Vec::new();
+async fn get_nav_items<P: AsRef<Path>>(content_dir: P) -> Result<Vec<NavItem>> {
+    let mut nav_items: Vec<NavItem> = Vec::new();
 
     let static_dir = content_dir.as_ref().join("static");
     if static_dir.exists() {
@@ -404,7 +536,10 @@ async fn get_nav_items<P: AsRef<Path>>(content_dir: P) -> Result<Vec<String>> {
             .filter(|e| e.path().extension().and_then(|ext| ext.to_str()) == Some("md"))
         {
             let slug = get_slug(entry.path()).await?;
-            nav_items.push(slug);
+            nav_items.push(NavItem {
+                name: slug,
+                nav_type: NavType::FILE,
+            });
         }
     }
 
@@ -415,9 +550,14 @@ async fn get_nav_items<P: AsRef<Path>>(content_dir: P) -> Result<Vec<String>> {
         .filter_map(|e| e.ok())
         .filter(|entry| entry.file_type().is_dir())
         .filter(|entry| entry.file_name() != "static")
-        .map(|entry| entry.file_name().to_string_lossy().to_string())
-        .collect::<Vec<_>>();
+        .map(|entry| NavItem {
+            name: entry.file_name().to_string_lossy().into(),
+            nav_type: NavType::DIR,
+        })
+        .collect::<Vec<NavItem>>();
+
     nav_items.extend(dirs);
-    nav_items.sort();
+
     Ok(nav_items)
 }
+

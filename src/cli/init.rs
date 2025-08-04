@@ -1,7 +1,6 @@
-use crate::consts::GRIMOIRE_CONFIG_NAME;
+use crate::consts::{Config, GRIMOIRE_CONFIG_NAME};
 use anyhow::{Context, Result, bail};
 use dialoguer::{Confirm, Input};
-use serde::Serialize;
 use std::env::current_dir;
 use std::path::{Path, PathBuf};
 use std::time::SystemTime;
@@ -9,14 +8,6 @@ use time_util::print_system_time_to_rfc3339;
 use tokio::fs::{create_dir_all, read_dir, write};
 
 use crate::utils::get_embedded_files;
-
-#[derive(Serialize, Debug, Clone)]
-pub struct Config {
-    pub project_name: String,
-    pub content_dir: String,
-    pub description: String,
-    pub domain: String,
-}
 
 pub async fn init_project<P: AsRef<Path>>(path: P) -> Result<()> {
     let project_path = get_absolute_path(path).context("Failed to resolve project path")?;
@@ -37,7 +28,7 @@ pub async fn init_project<P: AsRef<Path>>(path: P) -> Result<()> {
 
     println!(
         "Project '{}' initialized successfully at {}",
-        config.project_name,
+        config.project,
         project_path.display()
     );
 
@@ -201,7 +192,7 @@ async fn create_example_content(config: &Config, project_path: &Path) -> Result<
 }
 
 fn collect_project_config(project_name: String) -> Result<Config> {
-    println!("Setting up Grimoire: {}\n", project_name);
+    println!("Setting up Grimoire: {}", project_name);
 
     let should_continue = Confirm::new()
         .with_prompt("Do you want to continue with project initialization?")
@@ -213,6 +204,12 @@ fn collect_project_config(project_name: String) -> Result<Config> {
         bail!("Project initialization cancelled");
     }
 
+    let project = Input::<String>::new()
+        .with_prompt("Project name")
+        .default(project_name.clone())
+        .interact_text()
+        .context("Failed to get content directory name")?;
+
     let content_dir = Input::<String>::new()
         .with_prompt("Content directory name")
         .default("content".to_string())
@@ -221,21 +218,21 @@ fn collect_project_config(project_name: String) -> Result<Config> {
 
     let description = Input::<String>::new()
         .with_prompt("Project description")
-        .default(format!("A new Grimoire project: {}", project_name))
+        .default(format!("{}", project_name))
         .interact_text()
         .context("Failed to get project description")?;
 
-    let domain = Input::<String>::new()
-        .with_prompt("Project domain")
-        .default("http://localhost:8080".to_string())
+    let author = Input::<String>::new()
+        .with_prompt("Author: ")
+        .default("".to_string())
         .interact_text()
         .context("Failed to get project domain")?;
 
     Ok(Config {
-        project_name,
+        project,
         content_dir,
         description,
-        domain,
+        author,
     })
 }
 

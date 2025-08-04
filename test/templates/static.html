@@ -1,79 +1,51 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ title }}</title>
-    <meta name="description" content="{{ description }}">
-    <meta name="author" content="{{ author }}">
-    
-    <link rel="stylesheet" href="/style.css">
-    <link rel="icon" type="image/x-icon" href="/images/b0f61-17050803861897-1920.jpg">
-</head>
-<body>
-    <header>
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>{{ title }}</title>
+		<meta name="description" content="{{ description }}" />
+		<meta name="author" content="{{ author }}" />
+
+		<link rel="stylesheet" href="/style.css" />
+		<link
+			rel="icon"
+			type="image/x-icon"
+			href="/images/b0f61-17050803861897-1920.jpg"
+		/>
+	</head>
+	<body>
+		<header>
         <nav class="navbar">
-            <div class="nav-container">
-                <a href="/" class="nav-brand">Home</a>
-                <ul class="nav-menu">
-                    {% for item in navbar %}
-                    <li class="nav-item">
-                        {% if item == "blog" or item == "posts" or item == "resources" %}
-                            <a href="/{{ item }}/" class="nav-link">{{ item | title }}</a>
-                        {% else %}
-                            <a href="/{{ item }}.html" class="nav-link">{{ item | title }}</a>
-                        {% endif %}
-                    </li>
-                    {% endfor %}
-                </ul>
-            </div>
+            <a href="/" class="nav-header">{{ heading }}</a>
+            <ul class="nav-items">
+                {% for item in navbar %}
+                <li class="nav-item">
+                    {% if item.nav_type == "FILE"%}
+                    <a href="/{{ item.name }}.html" class="nav-link">{{ item.name }}</a>
+                    {% else %}
+                    <a href="/{{ item.name }}" class="nav-link">{{ item.name }}</a>
+                    {% endif %}
+                </li>
+                {% endfor %}
+            </ul>
         </nav>
-    </header>
+		</header>
 
-    <main class="main-content">
-        <div class="page-header">
+		<main class="main-content">
             <h1 class="page-title">{{ title }}</h1>
-            {% if description %}
-                <p class="page-description">{{ description }}</p>
-            {% endif %}
-        </div>
-        
-        <div class="content-wrapper">
-            <article class="static-page">
-                <div class="article-meta">
-                    {% if author %}
-                        <span class="author">By {{ author }}</span>
-                    {% endif %}
-                    {% if date %}
-                        <time class="date" datetime="{{ date }}">{{ date }}</time>
-                    {% endif %}
-                </div>
-                
-                <div class="article-content">
-                    {{ content | safe }}
-                </div>
-                
-                {% if tags %}
-                    <div class="article-tags">
-                        <h3>Tags:</h3>
-                        {% for tag in tags %}
-                            <span class="tag">{{ tag }}</span>
-                        {% endfor %}
-                    </div>
-                {% endif %}
-            </article>
-        </div>
-    </main>
+            <div class="article-content">{{ content }}</div>
+		</main>
 
-    <footer class="site-footer">
-        <div class="footer-content">
-            <p>&copy; 2025 {{ author }}. All rights reserved.</p>
+        <div class="updated">
             {% if date %}
-                <p class="last-updated">Last updated: {{ date }}</p>
+            <p class="footer-date">Published: {{ date }}</p>
             {% endif %}
         </div>
-    </footer>
+        <footer class="footer">
+            <p>&copy; 2025 {{ author }}. All rights reserved.</p>
+        </footer>
 
-    <script src="/script.js"></script>
-</body>
+		<script src="/script.js"></script>
+	</body>
 </html>

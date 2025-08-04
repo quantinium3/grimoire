@@ -6,10 +6,10 @@ pub const GRIMOIRE_CONFIG_NAME: &'static str = "grimoire.config.json";
 
 #[derive(Serialize, Debug, Clone, Deserialize)]
 pub struct Config {
-    pub project_name: String,
+    pub project: String,
     pub content_dir: String,
     pub description: String,
-    pub domain: String,
+    pub author: String,
 }
 
 #[derive(Deserialize, Debug)]

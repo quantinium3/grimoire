@@ -1,93 +1,64 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>{{ title }}</title>
-    <meta name="description" content="{{ description }}">
-    <meta name="author" content="{{ author }}">
-    <link rel="stylesheet" href="style.css">
-    <link rel="icon" type="image/x-icon" href="/images/b0f61-17050803861897-1920.jpg">
+    <meta name="description" content="{{ description }}" />
+    <meta name="author" content="{{ author }}" />
+    <link rel="stylesheet" href="style.css" />
+    <link rel="icon" type="image/x-icon" href="/images/b0f61-17050803861897-1920.jpg" />
 </head>
+
 <body>
     <header>
         <nav class="navbar">
-            <div class="nav-container">
-                <a href="/" class="nav-brand">{{ title }}</a>
-                <ul class="nav-menu">
-                    {% for item in navbar %}
-                    <li class="nav-item">
-                        {% if item == "blog" or item == "posts" or item == "resources" %}
-                            <a href="/{{ item }}/" class="nav-link">{{ item | title }}</a>
-                        {% else %}
-                            <a href="/{{ item }}.html" class="nav-link">{{ item | title }}</a>
-                        {% endif %}
-                    </li>
-                    {% endfor %}
-                </ul>
-            </div>
+            <a href="/" class="nav-header">{{ heading }}</a>
+            <ul class="nav-items">
+                {% for item in navbar %}
+                <li class="nav-item">
+                    {% if item.nav_type == "FILE"%}
+                    <a href="/{{ item.name }}.html" class="nav-link">{{ item.name }}</a>
+                    {% else %}
+                    <a href="/{{ item.name }}" class="nav-link">{{ item.name }}</a>
+                    {% endif %}
+                </li>
+                {% endfor %}
+            </ul>
         </nav>
     </header>
+    <main>
+        <section class="section-posts">
+            {% if posts %} {% for post in posts %}
+            <article class="index-item">
+                <div class="index-title">
+                    <a href="{{ post.url }}" class="index-title-link"
+                        >{{ post.title }}</a
+                    >
+                </div>
 
-    <main class="main-content">
-        {% if category %}
-            <div class="category-header">
-                <h1>{{ category_title }}</h1>
-                <p class="category-description">{{ description }}</p>
-            </div>
-            
-            <section class="posts-list">
-                {% if posts %}
-                    {% for post in posts %}
-                    <article class="post-preview">
-                        <h2><a href="{{ post.url }}" class="post-title-link">{{ post.title }}</a></h2>
-                        {% if post.date %}
-                            <p class="post-meta">
-                                <time datetime="{{ post.date }}">{{ post.date }}</time>
-                            </p>
-                        {% endif %}
-                        {% if post.description %}
-                            <p class="post-excerpt">{{ post.description }}</p>
-                        {% endif %}
-                        {% if post.tags %}
-                            <div class="post-tags">
-                                {% for tag in post.tags %}
-                                    <span class="tag">{{ tag }}</span>
-                                {% endfor %}
-                            </div>
-                        {% endif %}
-                    </article>
-                    {% endfor %}
-                {% else %}
-                    <p>No posts available in this category.</p>
+                {% if post.date %}
+                <div class="index-date">
+                    <time datetime="{{ post.date }}">Published date: {{ post.date }}</time>
+                </div>
+                {% endif %} 
+
+                {% if post.description %}
+                <p class="post-excerpt">{{ post.description }}</p>
                 {% endif %}
-            </section>
-        {% else %}
-            <div class="hero-section">
-                <h1 class="hero-title">{{ title }}</h1>
-                {% if description %}
-                    <p class="hero-description">{{ description }}</p>
-                {% endif %}
-            </div>
-            
-            <div class="content-wrapper">
-                <article class="main-article">
-                    {{ content | safe }}
-                </article>
-            </div>
-        {% endif %}
+            </article>
+            {% endfor %} {% else %}
+            <p>No posts available in this category.</p>
+            {% endif %}
+        </section>
+
     </main>
 
-    <footer class="site-footer">
-        <div class="footer-content">
-            <p>&copy; 2025 {{ author }}. All rights reserved.</p>
-            {% if date %}
-                <p class="last-updated">Last updated: {{ date }}</p>
-            {% endif %}
-        </div>
+
+    <footer class="index-footer">
+        <p>&copy; 2025 {{ author }}. All rights reserved.</p>
     </footer>
-
-    <script src="/script.js"></script>
 </body>
-</html>
 
+</html>
