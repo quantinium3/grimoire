@@ -1,0 +1,198 @@
+@import url("syntax.css");
+
+* {
+    color: #cdd6f4;
+    background-color: #1e1e2e;
+    margin: 0;
+    padding: 0;
+    line-height: 125%;
+    font-size: 1.1rem;
+}
+
+body {
+    max-width: 800px;
+    margin: auto;
+}
+
+a {
+    text-decoration: none;
+    color: inherit;
+}
+
+a:hover {
+    text-decoration: underline;
+    text-underline-offset: 0.1rem;
+}
+
+ul,
+ol {
+    padding-left: 2rem;
+}
+
+li {
+    padding: 0.2rem 0;
+}
+
+
+.navbar {
+    margin: 0.5rem 0;
+    display: flex;
+    justify-content: space-between;
+    border-bottom: 1px solid #45475a;
+    padding-bottom: 0.5rem;
+}
+
+.nav-header {
+    font-weight: bold;
+    font-size: 2rem;
+    color: #cba6f7;
+}
+
+.nav-items {
+    display: flex;
+    list-style-type: none;
+    gap: 1rem;
+    align-items: center;
+    font-weight: bold;
+    font-size: 18px;
+}
+
+h1 {
+    font-size: 1.9rem;
+    padding: 0.5rem 0;
+}
+
+h2 {
+    font-size: 1.75rem;
+    padding: 0.5rem 0;
+}
+
+h3 {
+    font-size: 1.5rem;
+    padding: 0.5rem 0;
+}
+
+h4 {
+    font-size: 1.25rem;
+    padding: 0.5rem 0;
+}
+
+h5 {
+    font-size: 1.15rem;
+    padding: 0.5rem 0;
+}
+
+h6 {
+    font-size: 1.05rem;
+    padding: 0.5rem 0;
+}
+
+.code {
+    background-color: #11111b !important;
+    border: 1px solid #45475a !important;
+}
+
+.code>code span {
+    background-color: #11111b !important;
+}
+
+.code>code {
+    padding: 0;
+    border: none !important;
+}
+
+code {
+    background-color: #11111b !important;
+    border: 1px solid #45475a !important;
+    padding: 1px 3px;
+    border-radius: 0.1rem;
+}
+
+.updated {
+    padding-top: 2rem;
+}
+
+.footer {
+    border-top: 1px solid #45475a;
+    margin-top: 1rem;
+    padding: 1rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+
+@media (max-width: 800px) {
+    body {
+        padding-left: 16px;
+        padding-right: 16px;
+    }
+}
+
+hr {
+    border: none;
+    height: 1px;
+    background-color: #45475a;
+    margin: 1rem 0;
+}
+
+img {
+    margin: 1rem 0;
+}
+
+blockquote {
+    border-left: 2px solid #45475a;
+    padding-left: 0.5rem;
+    margin: 1rem 0;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1rem 0;
+  font-size: 1rem;
+  font-family: sans-serif;
+}
+
+th, td {
+  border: 1px solid #45475a;
+  padding: 0.75rem;
+  text-align: left;
+}
+
+th {
+  font-weight: bold;
+}
+
+caption {
+  caption-side: bottom;
+  font-size: 0.9rem;
+  color: #666;
+  margin-top: 0.5rem;
+}
+
+.index-item {
+    border-bottom: 1px solid #313244;
+    padding-top: 1rem;
+}
+
+.index-title {
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin-bottom: 0.25rem;
+}
+
+.index-data {
+    display: flex;
+    flex-direction: column;
+}
+
+.post-excerpt {
+    padding: 1rem 0;
+}
+
+.index-footer {
+    display: flex;
+    justify-content: center;
+    padding: 1rem 0;
+}

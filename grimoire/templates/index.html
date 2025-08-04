@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{{ title }}</title>
+    <meta name="description" content="{{ description }}" />
+    <meta name="author" content="{{ author }}" />
+    <link rel="stylesheet" href="style.css" />
+    <link rel="icon" type="image/x-icon" href="/images/b0f61-17050803861897-1920.jpg" />
+</head>
+
+<body>
+    <header>
+        <nav class="navbar">
+            <a href="/" class="nav-header">{{ heading }}</a>
+            <ul class="nav-items">
+                {% for item in navbar %}
+                <li class="nav-item">
+                    {% if item.nav_type == "FILE"%}
+                    <a href="/{{ item.name }}.html" class="nav-link">{{ item.name }}</a>
+                    {% else %}
+                    <a href="/{{ item.name }}" class="nav-link">{{ item.name }}</a>
+                    {% endif %}
+                </li>
+                {% endfor %}
+            </ul>
+        </nav>
+    </header>
+    <main>
+        <section class="section-posts">
+            {% if posts %} {% for post in posts %}
+            <article class="index-item">
+                <div class="index-title">
+                    <a href="{{ post.url }}" class="index-title-link"
+                        >{{ post.title }}</a
+                    >
+                </div>
+
+                {% if post.date %}
+                <div class="index-date">
+                    <time datetime="{{ post.date }}">Published date: {{ post.date }}</time>
+                </div>
+                {% endif %} 
+
+                {% if post.description %}
+                <p class="post-excerpt">{{ post.description }}</p>
+                {% endif %}
+            </article>
+            {% endfor %} {% else %}
+            <p>No posts available in this category.</p>
+            {% endif %}
+        </section>
+
+    </main>
+
+
+    <footer class="index-footer">
+        <p>&copy; 2025 {{ author }}. All rights reserved.</p>
+    </footer>
+</body>
+
+</html>
